@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
+/* Root Theme Variables */
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -19,8 +20,136 @@
   }
 }
 
+/* Base Body Styling */
 body {
-  background: var(--background);
+  background-color: #020B1A;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Floating Stars */
+@keyframes floatStars {
+  0% { transform: translateY(0px); opacity: 0.5; }
+  50% { transform: translateY(-12px); opacity: 0.9; }
+  100% { transform: translateY(0px); opacity: 0.5; }
+}
+
+.star {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #2EDBFF;
+  border-radius: 50%;
+  opacity: 0.6;
+  filter: blur(1px);
+  animation: floatStars 7s ease-in-out infinite;
+}
+
+.star:nth-child(2) { width: 4px; height: 4px; }
+.star:nth-child(3) { width: 3px; height: 3px; opacity: 0.4; }
+
+/* Wind Drift Layer */
+@keyframes windDrift {
+  0% { transform: translateX(-5%); }
+  50% { transform: translateX(5%); }
+  100% { transform: translateX(-5%); }
+}
+
+.wind-layer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(46, 219, 255, 0.04) 30%,
+    transparent 60%
+  );
+  animation: windDrift 18s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Background Breathing */
+@keyframes backgroundShift {
+  0% { transform: scale(1.05); }
+  50% { transform: scale(1.07); }
+  100% { transform: scale(1.05); }
+}
+
+/* ========================= */
+/* WIND ATMOSPHERE SYSTEM   */
+/* ========================= */
+
+@keyframes windDrift {
+  0% { transform: translateX(-3%); }
+  50% { transform: translateX(3%); }
+  100% { transform: translateX(-3%); }
+}
+
+@keyframes shimmerRise {
+  0% { opacity: 0.05; transform: translateY(0); }
+  50% { opacity: 0.12; transform: translateY(-10px); }
+  100% { opacity: 0.05; transform: translateY(0); }
+}
+
+@keyframes subtleBreath {
+  0% { transform: scale(1.05); }
+  50% { transform: scale(1.065); }
+  100% { transform: scale(1.05); }
+}
+
+/* Horizontal Wind Layer */
+.wind-layer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(46, 219, 255, 0.035) 25%,
+    transparent 55%
+  );
+  animation: windDrift 22s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Vertical Shimmer */
+.shimmer-layer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    transparent 40%,
+    rgba(46, 219, 255, 0.06),
+    transparent 90%
+  );
+  animation: shimmerRise 14s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Background Breathing */
+.bg-breath {
+  animation: subtleBreath 60s ease-in-out infinite;
+}
+
+@keyframes flow {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
+.animate-flow {
+  animation: flow 2.5s linear infinite;
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Slightly softer scroll feel */
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Section spacing consistency */
+section {
+  scroll-margin-top: 120px;
 }
