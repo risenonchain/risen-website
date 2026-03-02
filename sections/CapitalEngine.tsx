@@ -2,9 +2,9 @@ export default function CapitalEngine() {
   return (
     <section
       id="engine"
-      className="relative bg-[#010913] py-32 px-6 text-white overflow-hidden"
+      className="relative scroll-mt-32 bg-[#010913] py-24 md:py-28 px-6 text-white overflow-hidden"
     >
-
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
       <div className="max-w-6xl mx-auto text-center">
 
         <h2 className="text-3xl md:text-4xl font-bold">

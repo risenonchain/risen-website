@@ -1,436 +1,237 @@
-\# RISEN ($RSN)
-
-
-
-\[!\[Status](https://img.shields.io/badge/Status-Building-blue)]()
-
-\[!\[Network](https://img.shields.io/badge/Chain-TBA-purple)]()
-
-\[!\[Supply](https://img.shields.io/badge/Supply-1B\_Fixed-gold)]()
-
-\[!\[Tax](https://img.shields.io/badge/Buy/Sell-3%25\_/\_3%25-lightgrey)]()
-
-\[!\[Philosophy](https://img.shields.io/badge/Philosophy-Disciplined\_Growth-black)]()
-
-
+# RISEN ($RSN)
 
 > Renewal as a principle.  
-
 > Disciplined growth as a strategy.  
-
 > Belief earned over time.
 
+---
 
+# Table of Contents
+
+- [Abstract](#abstract)
+- [The RISEN Philosophy](#the-risen-philosophy)
+- [Market Thesis](#market-thesis)
+- [The RISEN Framework](#the-risen-framework)
+- [Tokenomics](#tokenomics)
+- [Liquidity & Stability](#liquidity--stability)
+- [Security & Evolution](#security--evolution)
+- [Ecosystem Utility](#ecosystem-utility)
+- [Token Identity & Mechanics](#token-identity--mechanics)
+- [The Long View](#the-long-view)
+- [Closing Statement](#closing-statement)
 
 ---
 
+# Abstract
 
+Most market failures are not caused by weak ideas — but by structures that were never given time to mature.
 
-\# Table of Contents
-
-
-
-\- \[Abstract](#abstract)
-
-\- \[The RISEN Philosophy](#the-risen-philosophy)
-
-\- \[Market Thesis](#market-thesis)
-
-\- \[The RISEN Framework](#the-risen-framework)
-
-\- \[Tokenomics](#tokenomics)
-
-\- \[Liquidity \& Stability](#liquidity--stability)
-
-\- \[Security \& Evolution](#security--evolution)
-
-\- \[Ecosystem Utility](#ecosystem-utility)
-
-\- \[Token Identity \& Mechanics](#token-identity--mechanics)
-
-\- \[The Long View](#the-long-view)
-
-\- \[Closing Statement](#closing-statement)
-
-
-
----
-
-
-
-\# Abstract
-
-
-
-Most market failures are not caused by weak ideas — but by structures that never had time to work.
-
-
-
-\*\*RISEN ($RSN)\*\* is a structured digital asset engineered for durability, clarity, and long-term participation.
-
-
+**RISEN ($RSN)** is a structured digital asset engineered for durability, clarity, and disciplined participation.
 
 It exists for participants who value:
 
+- Systems over slogans  
+- Consistency over spectacle  
+- Structure over hype  
 
+Built with intentional mechanics, transparent allocation, and accountable stewardship, RISEN prioritizes continuity over short-term excitement.
 
-\- Systems over slogans  
-
-\- Consistency over spectacle  
-
-\- Structure over hype  
-
-
-
-Built with intentional mechanics, transparent allocation, and accountable stewardship, RISEN prioritizes continuity and trust over short-term performance.
-
-
+This is not momentum-driven design.  
+This is architecture.
 
 ---
 
+# The RISEN Philosophy
 
+RISEN treats **renewal as a principle — not an event**.
 
-\# The RISEN Philosophy
-
-
-
-RISEN treats \*\*renewal as a principle, not an event\*\*.
-
-
-
-Markets operate in cycles. Projects collapse not because markets fall — but because they lack structure.
-
-
+Markets move in cycles. Projects rarely fail because markets decline. They fail because they lack structure when volatility arrives.
 
 RISEN embraces:
 
+- Patience as advantage  
+- Silence as filtration  
+- Structure as reinforcement  
 
+> **Core Axiom**  
+> *What rises naturally, lasts longer.*
 
-\- Patience as advantage  
-
-\- Silence as filtration  
-
-\- Structure as reinforcement  
-
-
-
-> \*\*Core Axiom:\*\*  
-
-> \*What rises naturally, lasts longer.\*
-
-
+Strength compounds quietly.
 
 ---
 
+# Market Thesis
 
+Modern markets operate on compressed attention cycles.
 
-\# Market Thesis
+Common distortions include:
 
+- Visibility mistaken for value  
+- Speed mistaken for strength  
+- Hype mistaken for sustainability  
 
+The result:
 
-Modern markets are shaped by short attention economics.
-
-
-
-Common distortions:
-
-
-
-\- Visibility mistaken for value  
-
-\- Speed mistaken for strength  
-
-\- Hype mistaken for sustainability  
-
-
-
-This results in:
-
-
-
-\- Speculative excess  
-
-\- Fragile liquidity  
-
-\- Post-hype collapses  
-
-
+- Speculative excess  
+- Fragile liquidity  
+- Post-hype collapses  
 
 RISEN is designed as a counterweight.
 
+Growth is allowed to form organically — aligned with real liquidity, measured participation, and structural reinforcement.
 
-
-Growth is allowed to form organically, aligned with real liquidity and genuine participation.
-
-
+No artificial acceleration.
 
 ---
 
+# The RISEN Framework
 
+RISEN translates intention into mechanism.
 
-\# The RISEN Framework
+### Design Principles
 
+- Built for durability, not virality  
+- Rewards participation over impatience  
+- Encourages responsible market behavior  
+- Aligns holders, builders, and liquidity health  
 
+Price discovery is organic — emerging from conviction and depth rather than manufactured stimulus.
 
-RISEN translates intention into structure.
-
-
-
-\### Design Principles
-
-
-
-\- Built for durability, not virality  
-
-\- Rewards participation over impatience  
-
-\- Builds self-sustaining growth loops  
-
-\- Aligns holders, builders, and market health  
-
-
-
-Price discovery is organic — emerging from depth and conviction rather than artificial stimulus.
-
-
+The system is designed to sustain itself.
 
 ---
 
+# Tokenomics
 
-
-\# Tokenomics
-
-
-
-\## Allocation
-
-
+## Allocation
 
 | Category | Allocation |
-
 |----------|------------|
-
-| Marketing \& Growth | 40% |
-
+| Marketing & Growth | 40% |
 | Liquidity Support | 30% |
-
 | Development | 20% |
+| Operations & Reserves | 10% |
 
-| Operations \& Reserves | 10% |
+Allocation reflects function — not narrative.
 
+Every transaction contributes to liquidity strength, infrastructure continuity, and ecosystem execution.
 
-
-Every transaction reinforces liquidity, infrastructure, and long-term execution.
-
-
-
-The ecosystem sustains itself through participation — not external injections.
-
-
+Participation reinforces structure.
 
 ---
 
-
-
-\# Liquidity \& Stability
-
-
+# Liquidity & Stability
 
 Liquidity is treated as infrastructure — not marketing.
 
+It exists to:
 
+- Absorb volatility  
+- Reduce thin-book manipulation  
+- Support fair price discovery  
 
-It is reinforced to:
+Stability is engineered.
 
-
-
-\- Absorb volatility  
-
-\- Prevent thin-book manipulation  
-
-\- Support fair price discovery  
-
-
-
-Stability is engineered, not improvised.
-
-
+Not improvised.
 
 ---
 
+# Security & Evolution
 
+RISEN acknowledges risk with transparency.
 
-\# Security \& Evolution
+Development follows a structured, iterative model:
 
+- Direction over deadlines  
+- Structure over spectacle  
+- Transparency over narrative  
 
+Evolution is steady.
 
-RISEN acknowledges risk honestly.
-
-
-
-Development follows an iterative approach:
-
-
-
-\- Direction over deadlines  
-
-\- Structure over spectacle  
-
-\- Transparency over narrative  
-
-
+Not reactive.
 
 ---
 
+# Ecosystem Utility
 
+## Cross-Chain Capital Efficiency
 
-\# Ecosystem Utility
+RISEN prioritizes practical usability.
 
+Utility initiatives include:
 
+- Cross-asset bridging  
+- Cross-chain dust consolidation  
+- Fragmented balance recovery  
 
-\## Cross-Chain Capital Efficiency
+The objective is simple:
 
-
-
-RISEN focuses on practical utility through:
-
-
-
-\- Cross-asset bridging  
-
-\- Cross-chain dust sweeping  
-
-\- Fragmented balance consolidation  
-
-
-
-Utility restores usability to everyday market activity.
-
-
+Restore usability to everyday digital capital.
 
 ---
 
+# Token Identity & Mechanics
 
+**Token Name:** RISEN  
+**Ticker:** $RSN  
+**Total Supply:** 1,000,000,000 (Fixed)
 
-\# Token Identity \& Mechanics
+### Supply Characteristics
 
+- No hidden emissions  
+- No inflation vectors  
+- No complex unlock schedules  
+- Fully fixed supply  
 
+Simplicity reduces ambiguity.
 
-\*\*Token Name:\*\* RISEN  
-
-\*\*Ticker:\*\* $RSN  
-
-\*\*Total Supply:\*\* 1,000,000,000 (Fixed)
-
-
-
-\### Supply Characteristics
-
-
-
-\- No hidden emissions  
-
-\- No inflation vectors  
-
-\- No complex unlock schedules  
-
-\- Fully fixed supply  
-
-
-
-Simplicity is intentional.
-
-
+Clarity builds trust.
 
 ---
 
+## Transaction Model
 
-
-\## Transaction Model
-
-
-
-\- 3% Buy Tax  
-
-\- 3% Sell Tax  
-
-\- Capped and symmetrical  
-
-
+- 3% Buy Tax  
+- 3% Sell Tax  
+- Symmetrical and capped  
 
 Purpose:
 
-
-
-\- Introduce controlled friction  
-
-\- Discourage destructive behavior  
-
-\- Fund ecosystem health  
-
-
+- Introduce controlled friction  
+- Discourage destabilizing behavior  
+- Fund liquidity and ecosystem reinforcement  
 
 Activity sustains infrastructure — not insiders.
 
-
-
 ---
 
-
-
-\# The Long View
-
-
+# The Long View
 
 RISEN is built for participants who treat time as an ally.
 
-
-
 Conviction replaces speculation.  
-
 Structure replaces noise.  
-
 Accumulation replaces chasing.
 
-
+Durability compounds.
 
 ---
 
+# Closing Statement
 
+RISEN represents disciplined belief in a market often driven by impulse.
 
-\# Closing Statement
-
-
-
-RISEN represents disciplined belief in a market driven by impulse.
-
-
-
-Trust is earned through repetition, execution, and structure.
-
-
+Trust is earned through repetition, execution, and structural integrity.
 
 Renewal as a principle.  
-
 Disciplined growth as a strategy.  
-
 Belief earned over time.
-
-
 
 ---
 
+## Official Links
 
-
-\## Official Links
-
-
-
-Website: \*TBA\*  
-
-Documentation: \*Coming Soon\*  
-
-Twitter/X: \*https://x.com/risenonchain?s=11\*  
-
-Contract: \*TBA\*
-
+Website: risenonchain.net  
+Documentation: Coming Soon  
+Twitter/X: https://x.com/risenonchain  
+Contract: TBA

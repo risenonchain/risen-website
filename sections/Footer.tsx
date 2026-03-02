@@ -17,27 +17,51 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Navigation */}
+          {/* Documentation */}
           <div>
             <div className="text-white font-semibold mb-4">
-              Ecosystem
+              Documentation
             </div>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-3 text-sm">
+
               <li>
-                <a href="http://dew.meme/" className="hover:text-white transition">
-                  Launch on DewMoonex
+                <a
+                  href="/litepaper"
+                  className="hover:text-white transition"
+                >
+                  Litepaper
                 </a>
               </li>
+
               <li>
-                <a href="#" className="hover:text-white transition">
-                  Access Telegram Bot
+                <a
+                  href="/whitepaper"
+                  className="hover:text-white transition"
+                >
+                  Whitepaper (Technical)
                 </a>
               </li>
+
               <li>
-                <a href="#" className="hover:text-white transition">
-                  Whitepaper
+                <a
+                  href="/whitepaper.pdf"
+                  target="_blank"
+                  className="hover:text-white transition"
+                >
+                  Download Whitepaper PDF
                 </a>
               </li>
+
+              <li>
+                <a
+                  href="https://github.com/Official-Able/risen/tree/main/docs"
+                  target="_blank"
+                  className="hover:text-white transition"
+                >
+                  View Documentation on GitHub
+                </a>
+              </li>
+
             </ul>
           </div>
 

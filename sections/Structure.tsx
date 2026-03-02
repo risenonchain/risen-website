@@ -2,9 +2,9 @@ export default function Structure() {
   return (
     <section
       id="structure"
-      className="relative bg-risen-bg py-32 px-6 text-white overflow-hidden"
+      className="relative scroll-mt-32 bg-risen-bg py-24 md:py-28 px-6 text-white overflow-hidden"
     >
-      
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
       {/* Subtle Grid Pattern */}
       <div
         className="absolute inset-0 opacity-[0.02] pointer-events-none"

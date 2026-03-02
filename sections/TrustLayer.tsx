@@ -2,9 +2,9 @@ export default function TrustLayer() {
   return (
     <section
       id="trust"
-      className="relative bg-[#020B1A] py-32 px-6 text-white overflow-hidden"
+      className="relative scroll-mt-32 bg-[#020B1A] py-24 md:py-28 px-6 text-white overflow-hidden"
     >
-
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
       {/* Top Gradient Fade */}
       <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-risen-primary/5 to-transparent pointer-events-none"></div>
 

@@ -2,8 +2,9 @@ export default function UtilityLayer() {
   return (
     <section
       id="utility"
-      className="relative bg-[#010913] py-32 px-6 text-white overflow-hidden"
-    >   
+      className="relative scroll-mt-32 bg-[#010913] py-24 md:py-28 px-6 text-white overflow-hidden"
+    > 
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>  
       {/* Subtle background glow */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-risen-primary/5 blur-[120px] pointer-events-none"></div>
 
