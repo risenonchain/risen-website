@@ -28,7 +28,7 @@ const config: Config = {
   plugins: [require("@tailwindcss/typography")],
 };
 
-=======
+
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -58,5 +58,4 @@ const config: Config = {
   plugins: [require("@tailwindcss/typography")],
 };
 
->>>>>>> c7dd306ad08ecfc715c3c129e68a2486c0eddb6b
 export default config;
