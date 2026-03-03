@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -27,4 +28,35 @@ const config: Config = {
   plugins: [require("@tailwindcss/typography")],
 };
 
+=======
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  content: [
+    "./app/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./sections/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        risen: {
+          bg: "#020B1A",
+          navy: "#061B33",
+          primary: "#2EDBFF",
+          accent: "#7FE8FF",
+        },
+      },
+      boxShadow: {
+        glow: "0 0 40px rgba(46, 219, 255, 0.6)",
+      },
+      animation: {
+        'spin-slow': 'spin 20s linear infinite',
+      },
+    },
+  },
+  plugins: [require("@tailwindcss/typography")],
+};
+
+>>>>>>> c7dd306ad08ecfc715c3c129e68a2486c0eddb6b
 export default config;
