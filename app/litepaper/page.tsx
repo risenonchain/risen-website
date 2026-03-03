@@ -33,7 +33,6 @@ export default function Litepaper() {
             content={content}
             pdfLink="/litepaper.pdf"
 
-            githubLink="https://github.com/risenonchain/risen-website/blob/main/docs/litepaper.md"
 
             githubLink="https://github.com/risenonchain/risen-website/blob/main/app/litepaper/litepaper.md"
 

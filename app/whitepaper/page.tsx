@@ -42,7 +42,6 @@ export default function Whitepaper() {
             content={content}
             pdfLink="/whitepaper.pdf"
 
-            githubLink="https://github.com/risenonchain/risen-website/blob/main/docs/Whitepaper.md"
 
             githubLink="https://github.com/risenonchain/risen-website/blob/main/app/whitepaper/whitepaper.md"
 
