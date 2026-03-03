@@ -39,7 +39,7 @@ export default function Litepaper() {
             title="RISEN Litepaper"
             content={content}
             pdfLink="/litepaper.pdf"
-            githubLink="https://github.com/Official-Able/risen/blob/main/docs/litepaper.md"
+            githubLink="https://github.com/risenonchain/risen-website/blob/main/docs/litepaper.md"
           />
         </div>
       </div>
