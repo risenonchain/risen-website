@@ -31,22 +31,15 @@ export default function Home() {
     "shadow-[0_0_0_1px_rgba(255,255,255,0.03)] " +
     "hover:border-risen-primary/25 hover:bg-white/10 transition-all duration-300";
 
-  // Inside-circle particles (most of them)
-  const rsnParticlesInside = [
-    { left: "42%", delay: "0s", dur: "3.2s", size: "text-[10px]" },
-    { left: "50%", delay: "0.6s", dur: "3.7s", size: "text-[11px]" },
-    { left: "58%", delay: "1.1s", dur: "3.4s", size: "text-[10px]" },
-    { left: "36%", delay: "1.4s", dur: "4.0s", size: "text-[12px]" },
-    { left: "64%", delay: "1.8s", dur: "3.6s", size: "text-[10px]" },
-    { left: "46%", delay: "2.1s", dur: "4.2s", size: "text-[11px]" },
-    { left: "54%", delay: "2.5s", dur: "3.9s", size: "text-[10px]" },
-  ] as const;
-
-  // Escaping particles (few + subtle, outside circle)
-  const rsnParticlesEscape = [
-    { left: "64%", delay: "0.2s", dur: "5.2s", size: "text-[10px]" },
-    { left: "72%", delay: "1.4s", dur: "5.8s", size: "text-[11px]" },
-    { left: "58%", delay: "2.6s", dur: "6.1s", size: "text-[10px]" },
+  // Premium floating $RSN — wider spread + higher rise
+  const rsnParticles = [
+    { left: "34%", delay: "0s", dur: "5.0s", size: "text-[10px]" },
+    { left: "42%", delay: "0.8s", dur: "5.6s", size: "text-[11px]" },
+    { left: "50%", delay: "1.4s", dur: "5.2s", size: "text-[10px]" },
+    { left: "58%", delay: "2.1s", dur: "5.9s", size: "text-[12px]" },
+    { left: "66%", delay: "2.7s", dur: "5.4s", size: "text-[10px]" },
+    { left: "38%", delay: "3.1s", dur: "6.2s", size: "text-[11px]" },
+    { left: "62%", delay: "3.6s", dur: "6.0s", size: "text-[10px]" },
   ] as const;
 
   return (
@@ -117,7 +110,7 @@ export default function Home() {
                 resilience.
               </p>
 
-              {/* PROOF CHIPS (only Litepaper link) */}
+              {/* PROOF CHIPS */}
               <div className="mt-5 flex flex-wrap gap-2.5">
                 <span className={chip}>
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-risen-primary shadow-[0_0_10px_rgba(46,219,255,0.9)]" />
@@ -233,22 +226,22 @@ export default function Home() {
               </div>
             </div>
 
-            {/* RIGHT PORTAL */}
+            {/* RIGHT (NO CIRCLE) — Logo + Premium Glow + Rising $RSN */}
             <div className="relative flex justify-center md:justify-end md:translate-x-6 lg:translate-x-10">
-              {/* Outer glow */}
-              <div className="absolute w-[320px] h-[320px] md:w-[520px] md:h-[520px] bg-risen-primary opacity-15 blur-[150px] rounded-full" />
+              {/* Big ambient glow behind */}
+              <div className="absolute -inset-10 bg-risen-primary/10 blur-[160px] rounded-full" />
 
-              {/* Escaping particles (outside circle) */}
+              {/* Rising $RSN (wider + higher) */}
               <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-                {rsnParticlesEscape.map((p, i) => (
+                {rsnParticles.map((p, i) => (
                   <span
-                    key={`escape-${i}`}
-                    className={`absolute ${p.size} font-semibold tracking-wide text-white/35 rsnEscape`}
+                    key={`rsn-${i}`}
+                    className={`absolute ${p.size} font-semibold tracking-wide text-white/55 rsnRise`}
                     style={{
                       left: p.left,
-                      top: "58%",
+                      bottom: "18%",
                       transform: "translateX(-50%)",
-                      textShadow: "0 0 16px rgba(46,219,255,0.25)",
+                      textShadow: "0 0 18px rgba(46,219,255,0.35)",
                       animationDuration: p.dur,
                       animationDelay: p.delay,
                     }}
@@ -258,72 +251,19 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Circle portal */}
-              <div
-                className="
-                  relative z-10
-                  w-[290px] h-[290px]
-                  sm:w-[360px] sm:h-[360px]
-                  md:w-[460px] md:h-[460px]
-                  rounded-full overflow-hidden
-                  border border-white/10
-                  bg-white/5 backdrop-blur-md
-                  shadow-[0_0_0_1px_rgba(255,255,255,0.03)]
-                "
-              >
-                {/* Inner depth */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_35%_30%,rgba(255,255,255,0.10)_0%,rgba(255,255,255,0.04)_35%,rgba(1,9,19,0.00)_70%)]" />
-                <div className="absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_60%_70%,rgba(46,219,255,0.08)_0%,rgba(2,11,26,0)_55%)]" />
+              {/* Logo block */}
+              <div className="relative z-10 translate-y-6 sm:translate-y-8 md:translate-y-10">
+                {/* Premium layered glow (3 layers) */}
+                <div className="absolute -inset-16 rounded-full bg-risen-primary/10 blur-[60px] pulseGlow" />
+                <div className="absolute -inset-24 rounded-full bg-risen-primary/8 blur-[110px]" />
+                <div className="absolute -inset-32 rounded-full bg-white/5 blur-[140px]" />
 
-                {/* Soft rain (masked in circle) */}
-                <div
-                  className="
-                    absolute inset-0 pointer-events-none
-                    opacity-[0.30] mix-blend-screen
-                    [background-image:repeating-linear-gradient(115deg,rgba(255,255,255,0)_0px,rgba(255,255,255,0)_5px,rgba(255,255,255,0.10)_6px,rgba(255,255,255,0)_10px)]
-                    [filter:blur(0.25px)]
-                    rainMove
-                    [mask-image:radial-gradient(circle_at_center,black_62%,transparent_74%)]
-                    [-webkit-mask-image:radial-gradient(circle_at_center,black_62%,transparent_74%)]
-                  "
-                  aria-hidden="true"
+                <Image
+                  src={logo}
+                  alt="RISEN Logo"
+                  className="w-56 sm:w-64 md:w-72 relative drop-shadow-[0_0_70px_rgba(46,219,255,0.80)]"
+                  priority
                 />
-
-                {/* Rising $RSN particles (inside circle) */}
-                <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-                  {rsnParticlesInside.map((p, i) => (
-                    <span
-                      key={`in-${i}`}
-                      className={`absolute ${p.size} font-semibold tracking-wide text-white/70 rsnRise`}
-                      style={{
-                        left: p.left,
-                        bottom: "26%",
-                        transform: "translateX(-50%)",
-                        textShadow: "0 0 18px rgba(46,219,255,0.40)",
-                        animationDuration: p.dur,
-                        animationDelay: p.delay,
-                      }}
-                    >
-                      $RSN
-                    </span>
-                  ))}
-                </div>
-
-                {/* Logo (centered + down more + bigger) */}
-                <div className="absolute inset-0 flex items-center justify-center translate-y-10 sm:translate-y-12 md:translate-y-14">
-                  <div className="relative">
-                    <div className="absolute -inset-10 rounded-full bg-risen-primary/12 blur-[38px] pulseGlow" />
-                    <Image
-                      src={logo}
-                      alt="RISEN Logo"
-                      className="w-48 sm:w-56 md:w-64 relative z-10 drop-shadow-[0_0_60px_rgba(46,219,255,0.75)]"
-                      priority
-                    />
-                  </div>
-                </div>
-
-                {/* Ring highlight */}
-                <div className="absolute inset-0 rounded-full ring-1 ring-white/10 pointer-events-none" />
               </div>
             </div>
           </div>

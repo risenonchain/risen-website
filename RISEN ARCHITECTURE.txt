@@ -1,0 +1,20 @@
+RISEN ARCHITECTURE
+
+FRONTEND (React / Next.js)
+    |
+    |-- Website Pages
+    |-- Wallet Integration (Web3/MetaMask)
+    |-- Utility UI
+    |-- Dashboard (Tax + Bridge)
+    |
+BACKEND (Node.js / Express)
+    |
+    |-- Blockchain RPC Access (Alchemy / BSC RPC)
+    |-- API Endpoints
+          |-- Token Stats
+          |-- Tax Split + Treasury
+          |-- Cross-Chain Utility Data
+    |
+DATabases
+    |
+    |-- PostgreSQL or MongoDB
