@@ -3,7 +3,13 @@ import path from "path";
 import DocumentEngine from "@/components/DocumentEngine";
 
 export default function Whitepaper() {
-  const filePath = path.join(process.cwd(), "docs", "whitepaper.md");
+  const filePath = path.join(
+    process.cwd(),
+    "app",
+    "whitepaper",
+    "whitepaper.md"
+  );
+
   const content = fs.readFileSync(filePath, "utf8");
 
   return (
@@ -12,11 +18,9 @@ export default function Whitepaper() {
       {/* Background Glow */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(46,219,255,0.12),transparent_60%)] pointer-events-none" />
 
-      {/* FULL-WIDTH Fixed Navigation */}
+      {/* Fixed Navigation */}
       <div className="fixed top-0 left-0 right-0 w-full bg-[#010913]/90 backdrop-blur-xl border-b border-risen-primary/20 z-50">
-
         <div className="w-full max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
-
           <a
             href="/"
             className="text-risen-primary font-semibold hover:opacity-80 transition"
@@ -27,7 +31,6 @@ export default function Whitepaper() {
           <span className="text-white font-bold tracking-wide">
             RISEN
           </span>
-
         </div>
       </div>
 
@@ -38,7 +41,11 @@ export default function Whitepaper() {
             title="RISEN Whitepaper"
             content={content}
             pdfLink="/whitepaper.pdf"
+
             githubLink="https://github.com/risenonchain/risen-website/blob/main/docs/Whitepaper.md"
+
+            githubLink="https://github.com/risenonchain/risen-website/blob/main/app/whitepaper/whitepaper.md"
+
           />
         </div>
       </div>
