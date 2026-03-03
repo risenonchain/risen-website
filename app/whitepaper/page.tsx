@@ -38,7 +38,7 @@ export default function Whitepaper() {
             title="RISEN Whitepaper"
             content={content}
             pdfLink="/whitepaper.pdf"
-            githubLink="https://github.com/Official-Able/risen/blob/main/docs/whitepaper.md"
+            githubLink="https://github.com/risenonchain/risen-website/blob/main/docs/Whitepaper.md"
           />
         </div>
       </div>
