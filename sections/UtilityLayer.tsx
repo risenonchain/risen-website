@@ -3,8 +3,9 @@ export default function UtilityLayer() {
     <section
       id="utility"
       className="relative scroll-mt-32 bg-[#010913] py-24 md:py-28 px-6 text-white overflow-hidden"
-    > 
-      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>  
+    >
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
       {/* Subtle background glow */}
       <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-risen-primary/5 blur-[120px] pointer-events-none"></div>
 
@@ -56,11 +57,16 @@ export default function UtilityLayer() {
 
           </div>
 
-          {/* Stronger CTA */}
+          {/* CTA BUTTON */}
           <div className="mt-12">
-            <button className="px-8 py-4 bg-risen-primary text-white font-bold rounded-xl shadow-[0_0_25px_rgba(46,219,255,0.4)] hover:scale-105 transition-all duration-300">
+            <a
+              href="https://t.me/RisenInfrastructureBot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-8 py-4 bg-risen-primary text-white font-bold rounded-xl shadow-[0_0_25px_rgba(46,219,255,0.4)] hover:scale-105 transition-all duration-300"
+            >
               Access RISEN Bot
-            </button>
+            </a>
           </div>
         </div>
 
