@@ -31,7 +31,7 @@ export default function Litepaper() {
           <DocumentEngine
             title="RISEN Litepaper"
             content={content}
-            pdfLink="/public/litepaper.pdf"
+            pdfLink="/litepaper.pdf"
 
 
             githubLink="https://github.com/risenonchain/risen-website/blob/main/app/litepaper/litepaper.md"
