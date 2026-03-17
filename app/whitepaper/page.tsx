@@ -40,7 +40,7 @@ export default function Whitepaper() {
           <DocumentEngine
             title="RISEN Whitepaper"
             content={content}
-            pdfLink="/public/whitepaper.pdf"
+            pdfLink="/whitepaper.pdf"
 
 
             githubLink="https://github.com/risenonchain/risen-website/blob/main/app/whitepaper/whitepaper.md"
