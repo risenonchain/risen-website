@@ -74,7 +74,10 @@ export default function Navbar() {
     const el = document.getElementById(id);
     if (!el) return;
 
-    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    const offset = 92;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+
+    window.scrollTo({ top, behavior: "smooth" });
     setActive(id);
     setMenuOpen(false);
   };
@@ -91,6 +94,16 @@ export default function Navbar() {
 
   const pillBase =
     "rounded-2xl border border-risen-primary/20 bg-[#06111f]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(46,219,255,0.10)]";
+
+  const rushLinkClass =
+    "inline-flex items-center gap-2 rounded-full border border-risen-primary/35 " +
+    "bg-[linear-gradient(180deg,rgba(46,219,255,0.16),rgba(46,219,255,0.05))] " +
+    "px-4 py-2 text-sm font-semibold text-white transition-all duration-300 " +
+    "shadow-[0_0_20px_rgba(46,219,255,0.22),inset_0_0_18px_rgba(46,219,255,0.05)] " +
+    "hover:border-risen-primary/60 hover:shadow-[0_0_30px_rgba(46,219,255,0.35),inset_0_0_24px_rgba(46,219,255,0.10)] hover:-translate-y-[1px]";
+
+  const rushDot =
+    "inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95),0_0_22px_rgba(46,219,255,0.55)] animate-pulse";
 
   return (
     <div
@@ -118,7 +131,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop nav */}
-          <div className="hidden lg:flex items-center gap-8 px-6 py-2 rounded-full bg-[#020B1A]/80 backdrop-blur-md border border-risen-primary/20 shadow-[0_0_25px_rgba(46,219,255,0.08)]">
+          <div className="hidden lg:flex items-center gap-6 px-6 py-2 rounded-full bg-[#020B1A]/80 backdrop-blur-md border border-risen-primary/20 shadow-[0_0_25px_rgba(46,219,255,0.08)]">
             {sections.map((s) => (
               <button
                 key={s.id}
@@ -135,6 +148,11 @@ export default function Navbar() {
                 )}
               </button>
             ))}
+
+            <a href="/rush" className={rushLinkClass}>
+              <span className={rushDot} />
+              RISEN Rush
+            </a>
 
             <a
               href="/litepaper"
@@ -181,6 +199,14 @@ export default function Navbar() {
 
           {/* Mobile controls */}
           <div className="flex md:hidden items-center gap-2 shrink-0">
+            <a
+              href="/rush"
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-risen-primary/30 bg-[#06111f]/85 text-white text-[11px] font-semibold tracking-wide shadow-[0_0_18px_rgba(46,219,255,0.22)]"
+            >
+              <span className={rushDot} />
+              Rush
+            </a>
+
             <div className={`px-3 py-2 ${pillBase}`}>
               <div className="flex items-center gap-2">
                 <span className="inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
@@ -219,7 +245,7 @@ export default function Navbar() {
 
         {/* Tablet nav row */}
         <div className="hidden md:flex lg:hidden mt-3 justify-center">
-          <div className="flex items-center gap-6 px-5 py-2 rounded-full bg-[#020B1A]/80 backdrop-blur-md border border-risen-primary/20 shadow-[0_0_25px_rgba(46,219,255,0.08)]">
+          <div className="flex items-center gap-5 px-5 py-2 rounded-full bg-[#020B1A]/80 backdrop-blur-md border border-risen-primary/20 shadow-[0_0_25px_rgba(46,219,255,0.08)]">
             {sections.map((s) => (
               <button
                 key={s.id}
@@ -236,6 +262,11 @@ export default function Navbar() {
                 )}
               </button>
             ))}
+
+            <a href="/rush" className={rushLinkClass}>
+              <span className={rushDot} />
+              Rush
+            </a>
 
             <a
               href="/litepaper"
@@ -261,6 +292,10 @@ export default function Navbar() {
                 </button>
               ))}
 
+              <a href="/rush" className={mobileLinkClass}>
+                RISEN Rush
+              </a>
+
               <a href="/litepaper" className={mobileLinkClass}>
                 Litepaper
               </a>
@@ -281,7 +316,10 @@ export default function Navbar() {
                   { value: minutes, label: "Min" },
                   { value: seconds, label: "Sec" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-lg bg-white/5 border border-white/10 py-2">
+                  <div
+                    key={item.label}
+                    className="rounded-lg bg-white/5 border border-white/10 py-2"
+                  >
                     <div className="text-sm font-bold text-white tabular-nums">
                       {String(item.value).padStart(2, "0")}
                     </div>

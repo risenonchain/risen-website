@@ -188,3 +188,22 @@ html {
 .rsnRise { animation-timing-function: ease-out; animation-iteration-count: infinite; animation-name: rsnRise; }
 .rsnEscape { animation-timing-function: ease-out; animation-iteration-count: infinite; animation-name: rsnEscape; }
 .pulseGlow { animation: pulseGlow 2.8s ease-in-out infinite; }
+
+@keyframes tickerScroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-track {
+  display: inline-flex;
+  align-items: center;
+  min-width: max-content;
+  white-space: nowrap;
+  animation: tickerScroll 28s linear infinite;
+  will-change: transform;
+}
+

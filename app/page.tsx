@@ -5,6 +5,7 @@ import UtilityLayer from "../sections/UtilityLayer";
 import TrustLayer from "../sections/TrustLayer";
 import CapitalEngine from "../sections/CapitalEngine";
 import Structure from "../sections/Structure";
+import ContestModal from "../components/ContestModal";
 import Image from "next/image";
 import logo from "../public/logo.png";
 
@@ -41,8 +42,25 @@ export default function Home() {
     { left: "62%", delay: "3.6s", dur: "6.0s", size: "text-[10px]" },
   ] as const;
 
+  const tickerItems = [
+    "RISEN AI in Development",
+    "RISEN Rush on the Go",
+    "Ambassador Winner Announcement — March 22",
+    "Dust Scanner Architecture Finalized",
+    "Smart Contract Layer Pending",
+    "Community Narrative Campaign Active",
+    "RISEN Thread Contest Live",
+    "Launch Window Approaching",
+    "Bitcoin above $68k",
+    "Ethereum Gas trending lower",
+    "BSC activity rising",
+    "Web3 narrative shifting to infrastructure tokens",
+  ];
+
   return (
     <>
+      <ContestModal />
+
       <main className="relative min-h-screen text-white overflow-hidden pb-16">
         {/* Background Image */}
         <div className="absolute inset-0 -z-30">
@@ -228,10 +246,7 @@ export default function Home() {
                     <span className="font-medium text-white">TikTok</span>
                   </a>
 
-                  <a
-                    href="mailto:team@risenonchain.net"
-                    className={socialBtn}
-                  >
+                  <a href="mailto:team@risenonchain.net" className={socialBtn}>
                     <span className={socialIconWrap}>
                       <svg
                         className="w-4 h-4"
@@ -378,18 +393,31 @@ export default function Home() {
       <FinalCTA />
       <Footer />
 
-      {/* LIVE PROTOCOL STATUS */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#010913]/70 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 text-[11px] sm:text-sm">
-          <div className="flex items-center gap-2 text-white font-semibold uppercase tracking-widest shrink-0">
+      {/* LIVE PROTOCOL STATUS / TICKER */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#010913]/78 backdrop-blur-xl overflow-hidden">
+        <div className="relative flex items-center">
+          <div className="shrink-0 px-4 sm:px-6 py-3 border-r border-white/10 flex items-center gap-2 text-white font-semibold uppercase tracking-widest text-[11px] sm:text-sm bg-[#04101a]/90">
             <span className="inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
-            Live Protocol Status
+            Live Updates
           </div>
 
-          <div className="text-white/85 font-medium text-right">
-            Phase 2 — Dust Scanner Architecture Finalized
-            <span className="mx-3 text-white/25">|</span>
-            Smart Contract Layer — Design Pending
+          <a
+            href="/rush"
+            className="shrink-0 hidden sm:inline-flex items-center gap-2 px-4 py-3 border-r border-white/10 text-[11px] sm:text-sm font-semibold uppercase tracking-widest text-white bg-[linear-gradient(180deg,rgba(46,219,255,0.16),rgba(46,219,255,0.05))] hover:bg-[linear-gradient(180deg,rgba(46,219,255,0.22),rgba(46,219,255,0.08))] transition-all duration-300 shadow-[0_0_18px_rgba(46,219,255,0.18)]"
+          >
+            <span className="inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)] animate-pulse" />
+            Play RISEN Rush
+          </a>
+
+          <div className="relative flex-1 overflow-hidden py-3">
+            <div className="ticker-track whitespace-nowrap text-white/85 font-medium text-[11px] sm:text-sm">
+              {[...tickerItems, ...tickerItems].map((item, index) => (
+                <span key={`${item}-${index}`} className="inline-flex items-center">
+                  <span className="mx-4 text-risen-primary">●</span>
+                  <span>{item}</span>
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
