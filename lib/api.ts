@@ -33,6 +33,25 @@ export type LoginPayload = {
   password: string;
 };
 
+export type ForgotPasswordPayload = {
+  email: string;
+};
+
+export type ResetPasswordPayload = {
+  token: string;
+  new_password: string;
+};
+
+export type ForgotPasswordResponse = {
+  message: string;
+  reset_token?: string | null;
+  expires_at?: string | null;
+};
+
+export type MessageResponse = {
+  message: string;
+};
+
 export type MeResponse = {
   id: number;
   email: string;
@@ -53,6 +72,11 @@ function getStoredToken() {
   return localStorage.getItem("risen_rush_token");
 }
 
+export function getStoredRushUsername() {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("risen_rush_username");
+}
+
 function getAuthHeaders(): HeadersInit {
   const token = getStoredToken();
 
@@ -60,6 +84,11 @@ function getAuthHeaders(): HeadersInit {
     "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+}
+
+async function parseApiError(response: Response, fallbackMessage: string) {
+  const error = await response.json().catch(() => ({}));
+  throw new Error(error.detail || fallbackMessage);
 }
 
 export async function registerRushUser(payload: RegisterPayload) {
@@ -72,8 +101,7 @@ export async function registerRushUser(payload: RegisterPayload) {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || "Registration failed");
+    await parseApiError(response, "Registration failed");
   }
 
   return response.json();
@@ -93,8 +121,7 @@ export async function loginRushUser(payload: LoginPayload) {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || "Login failed");
+    await parseApiError(response, "Login failed");
   }
 
   return response.json() as Promise<{ access_token: string; token_type: string }>;
@@ -104,11 +131,11 @@ export async function fetchCurrentRushUser(): Promise<MeResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/me`, {
     method: "GET",
     headers: getAuthHeaders(),
+    cache: "no-store",
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to fetch current user");
+    await parseApiError(response, "Failed to fetch current user");
   }
 
   return response.json();
@@ -137,8 +164,7 @@ export async function startRushSession(): Promise<StartSessionResponse> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to start session");
+    await parseApiError(response, "Failed to start session");
   }
 
   return response.json();
@@ -152,8 +178,7 @@ export async function finishRushSession(payload: FinishSessionPayload) {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to finish session");
+    await parseApiError(response, "Failed to finish session");
   }
 
   return response.json();
@@ -167,8 +192,7 @@ export async function fetchRushWallet(): Promise<WalletResponse> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to fetch wallet");
+    await parseApiError(response, "Failed to fetch wallet");
   }
 
   return response.json();
@@ -184,8 +208,54 @@ export async function fetchRushLeaderboard(): Promise<LeaderboardEntry[]> {
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || "Failed to fetch leaderboard");
+    await parseApiError(response, "Failed to fetch leaderboard");
+  }
+
+  const data = await response.json();
+
+  if (!Array.isArray(data)) {
+    return [];
+  }
+
+  return data.map((entry) => ({
+    rank: Number(entry.rank ?? 0),
+    username: String(entry.username ?? "Unknown"),
+    score: Number(entry.score ?? 0),
+    level: Number(entry.level ?? 1),
+  }));
+}
+
+export async function requestRushPasswordReset(
+  payload: ForgotPasswordPayload
+): Promise<ForgotPasswordResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    await parseApiError(response, "Failed to request password reset");
+  }
+
+  return response.json();
+}
+
+export async function resetRushPassword(
+  payload: ResetPasswordPayload
+): Promise<MessageResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    await parseApiError(response, "Failed to reset password");
   }
 
   return response.json();

@@ -51,6 +51,9 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
   const startTimeRef = useRef<number>(0);
   const lastTimerSecondRef = useRef<number>(0);
 
+  const pausedAtRef = useRef<number | null>(null);
+  const totalPausedDurationRef = useRef<number>(0);
+
   const playerRef = useRef<Player>({ ...INITIAL_PLAYER });
   const stateRef = useRef({ ...INITIAL_GAME_STATE });
 
@@ -65,6 +68,7 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
   });
 
   const [canvasHeight, setCanvasHeight] = useState<number>(560);
+  const [isPaused, setIsPaused] = useState(false);
 
   const gameMetrics = useMemo(
     () => ({
@@ -73,6 +77,45 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
     }),
     []
   );
+
+  const canPause = isPlaying && !stateRef.current.isGameOver;
+
+  const broadcastHudUpdate = (now: number) => {
+    const multiplierActive =
+      !!stateRef.current.multiplierActiveUntil &&
+      stateRef.current.multiplierActiveUntil > now;
+
+    window.dispatchEvent(
+      new CustomEvent("risen-rush-update", {
+        detail: {
+          score: stateRef.current.score,
+          lives: stateRef.current.lives,
+          level: stateRef.current.level,
+          elapsedSeconds: stateRef.current.elapsedSeconds,
+          comboMultiplier: stateRef.current.comboMultiplier,
+          multiplierActive,
+          isPaused,
+        },
+      })
+    );
+  };
+
+  const togglePause = () => {
+    if (!canPause) return;
+
+    setIsPaused((prev) => {
+      const next = !prev;
+
+      if (next) {
+        pausedAtRef.current = performance.now();
+      } else if (pausedAtRef.current !== null) {
+        totalPausedDurationRef.current += performance.now() - pausedAtRef.current;
+        pausedAtRef.current = null;
+      }
+
+      return next;
+    });
+  };
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -100,19 +143,33 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+      const key = event.key.toLowerCase();
+
+      if (key === "p" || event.key === "Escape") {
+        if (isPlaying && !stateRef.current.isGameOver) {
+          event.preventDefault();
+          togglePause();
+        }
+        return;
+      }
+
+      if (isPaused) return;
+
+      if (event.key === "ArrowLeft" || key === "a") {
         keyStateRef.current.left = true;
       }
-      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+      if (event.key === "ArrowRight" || key === "d") {
         keyStateRef.current.right = true;
       }
     };
 
     const onKeyUp = (event: KeyboardEvent) => {
-      if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+      const key = event.key.toLowerCase();
+
+      if (event.key === "ArrowLeft" || key === "a") {
         keyStateRef.current.left = false;
       }
-      if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+      if (event.key === "ArrowRight" || key === "d") {
         keyStateRef.current.right = false;
       }
     };
@@ -124,7 +181,7 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, []);
+  }, [isPaused, isPlaying]);
 
   useEffect(() => {
     if (!isPlaying) {
@@ -133,6 +190,9 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
       }
       itemsRef.current = [];
       hitEffectsRef.current = [];
+      pausedAtRef.current = null;
+      totalPausedDurationRef.current = 0;
+      setIsPaused(false);
       return;
     }
 
@@ -152,7 +212,10 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
     lastSpawnTimeRef.current = 0;
     startTimeRef.current = performance.now();
     lastTimerSecondRef.current = 0;
+    pausedAtRef.current = null;
+    totalPausedDurationRef.current = 0;
     screenFlashRef.current = { type: null, until: 0 };
+    setIsPaused(false);
 
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -160,7 +223,13 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
     if (!canvas || !ctx) return;
 
     const renderFrame = (now: number) => {
-      const elapsed = Math.floor((now - startTimeRef.current) / 1000);
+      const effectiveElapsedMs =
+        now -
+        startTimeRef.current -
+        totalPausedDurationRef.current -
+        (pausedAtRef.current ? now - pausedAtRef.current : 0);
+
+      const elapsed = Math.floor(effectiveElapsedMs / 1000);
 
       if (elapsed !== lastTimerSecondRef.current) {
         lastTimerSecondRef.current = elapsed;
@@ -169,103 +238,94 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
         stateRef.current.elapsedSeconds = elapsed;
       }
 
-      const direction = keyStateRef.current.left
-        ? "left"
-        : keyStateRef.current.right
-        ? "right"
-        : null;
-
-      playerRef.current = movePlayer(playerRef.current, direction);
-
-      const spawnInterval = getSpawnInterval(stateRef.current.level);
-      if (now - lastSpawnTimeRef.current >= spawnInterval) {
-        itemsRef.current.push(createFallingItem(stateRef.current.level));
-        lastSpawnTimeRef.current = now;
-      }
-
-      itemsRef.current = itemsRef.current
-        .map((item) => ({
-          ...item,
-          y: item.y + item.speed,
-          rotation: item.rotation + item.rotationSpeed,
-        }))
-        .filter((item) => item.y <= GAME_HEIGHT + 70);
-
-      const remainingItems: FallingItem[] = [];
-
-      for (const item of itemsRef.current) {
-        if (checkCollision(item, playerRef.current)) {
-          const prevScore = stateRef.current.score;
-          stateRef.current = applyCatchEffect(item.type, stateRef.current, now);
-
-          const gained = stateRef.current.score - prevScore;
-
-          if (isBadItem(item.type)) {
-            screenFlashRef.current = { type: "bad", until: now + 120 };
-          } else {
-            screenFlashRef.current = { type: "good", until: now + 90 };
-          }
-
-          if (item.type === "heavy_drop") {
-            playerRef.current = {
-              ...playerRef.current,
-              speed: Math.max(5, playerRef.current.speed - 1),
-            };
-
-            window.setTimeout(() => {
-              playerRef.current = {
-                ...playerRef.current,
-                speed: INITIAL_PLAYER.speed,
-              };
-            }, 1300);
-          }
-
-          hitEffectsRef.current.push({
-            id: crypto.randomUUID(),
-            x: item.x,
-            y: item.y,
-            text: formatHitText(item.type, gained),
-            color: getHitColor(item.type),
-            createdAt: now,
-          });
-
-          if (stateRef.current.isGameOver) {
-            break;
-          }
-        } else {
-          remainingItems.push(item);
-        }
-      }
-
-      itemsRef.current = remainingItems;
-      hitEffectsRef.current = hitEffectsRef.current.filter(
-        (effect) => now - effect.createdAt < 700
-      );
-
       const multiplierActive =
         !!stateRef.current.multiplierActiveUntil &&
         stateRef.current.multiplierActiveUntil > now;
 
-      window.dispatchEvent(
-        new CustomEvent("risen-rush-update", {
-          detail: {
-            score: stateRef.current.score,
-            lives: stateRef.current.lives,
-            level: stateRef.current.level,
-            elapsedSeconds: stateRef.current.elapsedSeconds,
-            comboMultiplier: stateRef.current.comboMultiplier,
-            multiplierActive,
-          },
-        })
-      );
-
       ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
       drawBackground(ctx, stateRef.current.level, multiplierActive);
+
+      if (!isPaused) {
+        const direction = keyStateRef.current.left
+          ? "left"
+          : keyStateRef.current.right
+          ? "right"
+          : null;
+
+        playerRef.current = movePlayer(playerRef.current, direction);
+
+        const spawnInterval = getSpawnInterval(stateRef.current.level);
+        if (now - lastSpawnTimeRef.current >= spawnInterval) {
+          itemsRef.current.push(createFallingItem(stateRef.current.level));
+          lastSpawnTimeRef.current = now;
+        }
+
+        itemsRef.current = itemsRef.current
+          .map((item) => ({
+            ...item,
+            y: item.y + item.speed,
+            rotation: item.rotation + item.rotationSpeed,
+          }))
+          .filter((item) => item.y <= GAME_HEIGHT + 70);
+
+        const remainingItems: FallingItem[] = [];
+
+        for (const item of itemsRef.current) {
+          if (checkCollision(item, playerRef.current)) {
+            const prevScore = stateRef.current.score;
+            stateRef.current = applyCatchEffect(item.type, stateRef.current, now);
+
+            const gained = stateRef.current.score - prevScore;
+
+            if (isBadItem(item.type)) {
+              screenFlashRef.current = { type: "bad", until: now + 120 };
+            } else {
+              screenFlashRef.current = { type: "good", until: now + 90 };
+            }
+
+            if (item.type === "heavy_drop") {
+              playerRef.current = {
+                ...playerRef.current,
+                speed: Math.max(5, playerRef.current.speed - 1),
+              };
+
+              window.setTimeout(() => {
+                playerRef.current = {
+                  ...playerRef.current,
+                  speed: INITIAL_PLAYER.speed,
+                };
+              }, 1300);
+            }
+
+            hitEffectsRef.current.push({
+              id: crypto.randomUUID(),
+              x: item.x,
+              y: item.y,
+              text: formatHitText(item.type, gained),
+              color: getHitColor(item.type),
+              createdAt: now,
+            });
+
+            if (stateRef.current.isGameOver) {
+              break;
+            }
+          } else {
+            remainingItems.push(item);
+          }
+        }
+
+        itemsRef.current = remainingItems;
+        hitEffectsRef.current = hitEffectsRef.current.filter(
+          (effect) => now - effect.createdAt < 700
+        );
+      }
+
       drawItems(ctx, itemsRef.current);
       drawHitEffects(ctx, hitEffectsRef.current, now);
       drawPlayerVault(ctx, playerRef.current);
 
       if (
+        !isPaused &&
         screenFlashRef.current.type === "good" &&
         screenFlashRef.current.until > now
       ) {
@@ -273,11 +333,18 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
       }
 
       if (
+        !isPaused &&
         screenFlashRef.current.type === "bad" &&
         screenFlashRef.current.until > now
       ) {
         drawScreenFlash(ctx, "rgba(239, 68, 68, 0.08)");
       }
+
+      if (isPaused) {
+        drawPausedOverlay(ctx);
+      }
+
+      broadcastHudUpdate(now);
 
       if (stateRef.current.isGameOver) {
         onGameOver({
@@ -299,9 +366,11 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isPlaying, onGameOver]);
+  }, [isPlaying, isPaused, onGameOver]);
 
   const moveBasketToClientX = (clientX: number) => {
+    if (isPaused) return;
+
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
 
@@ -318,10 +387,22 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
   return (
     <div className="rounded-[28px] border border-white/10 bg-[#030913] p-2 sm:p-3 shadow-2xl">
-      <div className="mb-2 sm:mb-3 flex items-center justify-between text-[11px] sm:text-sm text-white/65">
+      <div className="mb-2 sm:mb-3 flex items-center justify-between gap-3 text-[11px] sm:text-sm text-white/65">
         <span>Move: drag, mouse, ← →, A / D</span>
-        <span className="hidden sm:inline">Catch $RSN. Avoid destructive drops.</span>
-        <span className="sm:hidden">Drag to move basket.</span>
+        <span className="hidden sm:inline">
+          {isPaused ? "Game paused. Press P or Resume." : "Catch $RSN. Avoid destructive drops."}
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="sm:hidden">{isPaused ? "Paused" : "Drag basket"}</span>
+          <button
+            type="button"
+            onClick={togglePause}
+            disabled={!canPause}
+            className="pointer-events-auto rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isPaused ? "Resume" : "Pause"}
+          </button>
+        </div>
       </div>
 
       <div
@@ -342,9 +423,11 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
           className="w-full rounded-[22px] bg-[#06101a] touch-none"
         />
 
-        <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full border border-white/10 bg-[#04101a]/78 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-white/65 backdrop-blur sm:hidden">
-          Drag basket
-        </div>
+        {!isPaused ? (
+          <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full border border-white/10 bg-[#04101a]/78 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-white/65 backdrop-blur sm:hidden">
+            Drag basket
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -411,6 +494,25 @@ function drawBackground(
 function drawScreenFlash(ctx: CanvasRenderingContext2D, color: string) {
   ctx.fillStyle = color;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+}
+
+function drawPausedOverlay(ctx: CanvasRenderingContext2D) {
+  ctx.save();
+
+  ctx.fillStyle = "rgba(2, 7, 13, 0.45)";
+  ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+  ctx.fillStyle = "rgba(255,255,255,0.92)";
+  ctx.textAlign = "center";
+
+  ctx.font = "bold 38px Arial";
+  ctx.fillText("Paused", GAME_WIDTH / 2, GAME_HEIGHT / 2 - 10);
+
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "rgba(255,255,255,0.72)";
+  ctx.fillText("Press P or tap Resume to continue", GAME_WIDTH / 2, GAME_HEIGHT / 2 + 24);
+
+  ctx.restore();
 }
 
 function drawPlayerVault(ctx: CanvasRenderingContext2D, player: Player) {

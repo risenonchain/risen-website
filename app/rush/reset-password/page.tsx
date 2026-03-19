@@ -1,39 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
-import {
-  fetchCurrentRushUser,
-  loginRushUser,
-  saveRushAuth,
-} from "@/lib/api";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+import { resetRushPassword } from "@/lib/api";
 
-export default function RushLoginPage() {
+export default function RushResetPasswordPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [token, setToken] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const tokenFromQuery = searchParams.get("token");
+    if (tokenFromQuery) {
+      setToken(tokenFromQuery);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setError(null);
+      setSuccessMessage(null);
 
-      const loginResult = await loginRushUser({ email, password });
-      saveRushAuth(loginResult.access_token, "");
+      const result = await resetRushPassword({
+        token,
+        new_password: newPassword,
+      });
 
-      const me = await fetchCurrentRushUser();
-      saveRushAuth(loginResult.access_token, me.username);
+      setSuccessMessage(result.message);
 
-      router.push("/rush");
+      setTimeout(() => {
+        router.push("/rush/login");
+      }, 1600);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Login failed";
+      const message =
+        err instanceof Error ? err.message : "Failed to reset password";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -52,72 +68,79 @@ export default function RushLoginPage() {
               </div>
 
               <h1 className="mt-6 text-4xl font-bold leading-tight">
-                Enter the vault.
+                Set a new password.
                 <br />
-                Catch the rise.
+                Get back in the game.
               </h1>
 
               <p className="mt-5 max-w-md text-white/72 leading-7">
-                Sign in to play RISEN Rush, build your score, track your wallet
-                points, and climb future leaderboard rankings.
+                Enter your reset token and choose a new password for your RISEN
+                Rush account.
               </p>
             </div>
 
             <div className="space-y-3 text-sm text-white/68">
-              <p>• 3 daily trials</p>
-              <p>• Level-up every 30 seconds</p>
-              <p>• 100,000 points minimum future claim threshold</p>
+              <p>• Use the reset token you generated earlier</p>
+              <p>• Choose a strong password you can remember</p>
+              <p>• You’ll return to sign in after success</p>
             </div>
           </div>
 
           <div className="bg-[#07111d]/95 p-6 sm:p-8 md:p-10">
             <div className="mx-auto max-w-md">
               <div className="text-sm uppercase tracking-[0.28em] text-white/45">
-                Sign in
+                Reset password
               </div>
 
-              <h2 className="mt-3 text-3xl font-bold">Welcome back</h2>
+              <h2 className="mt-3 text-3xl font-bold">Create a new password</h2>
 
               <p className="mt-3 text-white/68">
-                Access your RISEN Rush account and continue your run.
+                Submit your reset token and your new password.
               </p>
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-white/75">
-                    Email
+                    Reset token
                   </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
+                  <textarea
+                    value={token}
+                    onChange={(event) => setToken(event.target.value)}
                     required
+                    rows={4}
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-risen-primary/50 focus:bg-white/8"
-                    placeholder="you@example.com"
+                    placeholder="Paste your reset token"
                   />
                 </div>
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-white/75">
-                    Password
+                    New password
                   </label>
                   <input
                     type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
+                    value={newPassword}
+                    onChange={(event) => setNewPassword(event.target.value)}
                     required
+                    minLength={6}
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-risen-primary/50 focus:bg-white/8"
-                    placeholder="Enter your password"
+                    placeholder="Enter new password"
                   />
                 </div>
 
-                <div className="-mt-1 flex justify-end">
-                  <Link
-                    href="/rush/forgot-password"
-                    className="text-sm font-semibold text-cyan-300 underline underline-offset-4 transition hover:text-white"
-                  >
-                    Forgot password?
-                  </Link>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-white/75">
+                    Confirm new password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-risen-primary/50 focus:bg-white/8"
+                    placeholder="Confirm new password"
+                  />
                 </div>
 
                 {error ? (
@@ -126,28 +149,34 @@ export default function RushLoginPage() {
                   </div>
                 ) : null}
 
+                {successMessage ? (
+                  <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                    {successMessage} Redirecting to login...
+                  </div>
+                ) : null}
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="inline-flex w-full items-center justify-center rounded-2xl bg-risen-primary px-5 py-3 font-semibold text-white shadow-[0_0_28px_rgba(46,219,255,0.35)] transition hover:shadow-[0_0_38px_rgba(46,219,255,0.45)] disabled:opacity-60"
                 >
-                  {isSubmitting ? "Signing in..." : "Sign In"}
+                  {isSubmitting ? "Resetting password..." : "Reset password"}
                 </button>
               </form>
 
               <p className="mt-6 text-sm text-white/60">
-                New to RISEN Rush?{" "}
+                Need a token first?{" "}
                 <Link
-                  href="/rush/register"
+                  href="/rush/forgot-password"
                   className="font-semibold text-risen-primary hover:text-white"
                 >
-                  Create account
+                  Generate reset token
                 </Link>
               </p>
 
               <p className="mt-4 text-sm text-white/50">
-                <Link href="/" className="hover:text-white">
-                  ← Back to RISEN homepage
+                <Link href="/rush/login" className="hover:text-white">
+                  ← Back to sign in
                 </Link>
               </p>
             </div>

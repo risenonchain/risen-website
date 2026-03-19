@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useMemo, useState } from "react";
 import {
   fetchCurrentRushUser,
   loginRushUser,
@@ -10,27 +10,67 @@ import {
   saveRushAuth,
 } from "@/lib/api";
 
+function normalizeUsername(value: string) {
+  return value.trim().replace(/\s+/g, "_");
+}
+
 export default function RushRegisterPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const normalizedUsername = useMemo(
+    () => normalizeUsername(username),
+    [username]
+  );
+
+  const passwordsMatch =
+    password.length > 0 &&
+    confirmPassword.length > 0 &&
+    password === confirmPassword;
+
+  const passwordsMismatch =
+    confirmPassword.length > 0 && password !== confirmPassword;
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    const finalUsername = normalizeUsername(username);
+
+    if (finalUsername.length < 3) {
+      setError("Username must be at least 3 characters");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
       setError(null);
 
-      await registerRushUser({ email, username, password });
+      await registerRushUser({
+        email: email.trim(),
+        username: finalUsername,
+        password,
+      });
 
-      const loginResult = await loginRushUser({ email, password });
-      saveRushAuth(loginResult.access_token, username);
+      const loginResult = await loginRushUser({
+        email: email.trim(),
+        password,
+      });
+      saveRushAuth(loginResult.access_token, finalUsername);
 
       const me = await fetchCurrentRushUser();
       saveRushAuth(loginResult.access_token, me.username);
@@ -115,14 +155,29 @@ export default function RushRegisterPage() {
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-risen-primary/50 focus:bg-white/8"
                     placeholder="Choose a username"
                   />
+                  <p className="mt-2 text-xs text-white/50">
+                    Spaces will be converted to underscores. Preview:{" "}
+                    <span className="font-medium text-risen-primary">
+                      {normalizedUsername || "your_username"}
+                    </span>
+                  </p>
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-white/75">
-                    Password
-                  </label>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <label className="block text-sm font-medium text-white/75">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="text-xs font-medium text-white/55 transition hover:text-white"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
@@ -130,6 +185,39 @@ export default function RushRegisterPage() {
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-risen-primary/50 focus:bg-white/8"
                     placeholder="Create a password"
                   />
+                </div>
+
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <label className="block text-sm font-medium text-white/75">
+                      Confirm Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword((prev) => !prev)}
+                      className="text-xs font-medium text-white/55 transition hover:text-white"
+                    >
+                      {showConfirmPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                    required
+                    minLength={6}
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white outline-none transition focus:border-risen-primary/50 focus:bg-white/8"
+                    placeholder="Confirm your password"
+                  />
+                  {passwordsMismatch ? (
+                    <p className="mt-2 text-xs text-red-300">
+                      Passwords do not match.
+                    </p>
+                  ) : passwordsMatch ? (
+                    <p className="mt-2 text-xs text-emerald-300">
+                      Passwords match.
+                    </p>
+                  ) : null}
                 </div>
 
                 {error ? (
@@ -140,7 +228,7 @@ export default function RushRegisterPage() {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || passwordsMismatch}
                   className="inline-flex w-full items-center justify-center rounded-2xl bg-risen-primary px-5 py-3 font-semibold text-white shadow-[0_0_28px_rgba(46,219,255,0.35)] transition hover:shadow-[0_0_38px_rgba(46,219,255,0.45)] disabled:opacity-60"
                 >
                   {isSubmitting ? "Creating account..." : "Create Account"}
