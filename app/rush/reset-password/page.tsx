@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense, useEffect, useState, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
 import { resetRushPassword } from "@/lib/api";
 
-export default function RushResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -184,5 +184,23 @@ export default function RushResetPasswordPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function RushResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#02070d] px-6 py-10 text-white">
+          <div className="mx-auto flex min-h-[80vh] max-w-6xl items-center justify-center">
+            <div className="rounded-[32px] border border-white/10 bg-white/5 px-8 py-10 text-white/70 backdrop-blur-xl">
+              Loading reset form...
+            </div>
+          </div>
+        </main>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
