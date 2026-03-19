@@ -6,8 +6,8 @@ type Props = {
   comboMultiplier: number;
   multiplierActive: boolean;
   trialsRemaining: number;
-  isPaused: boolean;
-  onTogglePause: () => void;
+  isPaused?: boolean;
+  onTogglePause?: () => void;
   canPause?: boolean;
 };
 
@@ -19,7 +19,7 @@ export default function GameHUD({
   comboMultiplier,
   multiplierActive,
   trialsRemaining,
-  isPaused,
+  isPaused = false,
   onTogglePause,
   canPause = true,
 }: Props) {
@@ -43,20 +43,22 @@ export default function GameHUD({
         />
       </div>
 
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-xs uppercase tracking-[0.18em] text-white/45">
-          Press P or tap the button to {isPaused ? "resume" : "pause"}
-        </div>
+      {onTogglePause ? (
+        <div className="flex items-center justify-between gap-3">
+          <div className="text-xs uppercase tracking-[0.18em] text-white/45">
+            Press P or tap the button to {isPaused ? "resume" : "pause"}
+          </div>
 
-        <button
-          type="button"
-          onClick={onTogglePause}
-          disabled={!canPause}
-          className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isPaused ? "Resume" : "Pause"}
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={onTogglePause}
+            disabled={!canPause}
+            className="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isPaused ? "Resume" : "Pause"}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
