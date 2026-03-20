@@ -1,35 +1,35 @@
+"use client";
+
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="relative bg-[#000814] py-20 px-6 text-gray-400">
-
       <div className="max-w-6xl mx-auto">
-
         <div className="grid md:grid-cols-3 gap-12">
-
           {/* Brand */}
           <div>
-            <div className="text-white text-xl font-bold">
-              RISEN
-            </div>
+            <div className="text-white text-xl font-bold">RISEN</div>
             <p className="mt-4 text-sm text-gray-500 max-w-xs">
-              Structured digital asset engineered for disciplined growth,
-              capital reinforcement, and long-term resilience.
+              {t("footer.brandDescription")}
             </p>
           </div>
 
           {/* Documentation */}
           <div>
             <div className="text-white font-semibold mb-4">
-              Documentation
+              {t("footer.documentationTitle")}
             </div>
-            <ul className="space-y-3 text-sm">
 
+            <ul className="space-y-3 text-sm">
               <li>
                 <a
                   href="/litepaper"
                   className="hover:text-white transition"
                 >
-                  Litepaper
+                  {t("footer.links.litepaper")}
                 </a>
               </li>
 
@@ -38,7 +38,7 @@ export default function Footer() {
                   href="/whitepaper"
                   className="hover:text-white transition"
                 >
-                  Whitepaper (Technical)
+                  {t("footer.links.whitepaper")}
                 </a>
               </li>
 
@@ -46,9 +46,10 @@ export default function Footer() {
                 <a
                   href="/whitepaper.pdf"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="hover:text-white transition"
                 >
-                  Download Whitepaper PDF
+                  {t("footer.links.downloadWhitepaper")}
                 </a>
               </li>
 
@@ -56,50 +57,59 @@ export default function Footer() {
                 <a
                   href="https://github.com/Official-Able/risen/tree/main/docs"
                   target="_blank"
+                  rel="noopener noreferrer"
                   className="hover:text-white transition"
                 >
-                  View Documentation on GitHub
+                  {t("footer.links.githubDocs")}
                 </a>
               </li>
-
             </ul>
           </div>
 
           {/* Social */}
           <div>
             <div className="text-white font-semibold mb-4">
-              Connect
+              {t("footer.connectTitle")}
             </div>
+
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="https://t.me/Risencommunity1" className="hover:text-white transition">
-                  Telegram
+                <a
+                  href="https://t.me/Risencommunity1"
+                  className="hover:text-white transition"
+                >
+                  {t("footer.social.telegram")}
                 </a>
               </li>
+
               <li>
-                <a href="https://x.com/risenonchain?s=11" className="hover:text-white transition">
-                  X (Twitter)
+                <a
+                  href="https://x.com/risenonchain?s=11"
+                  className="hover:text-white transition"
+                >
+                  {t("footer.social.x")}
                 </a>
               </li>
+
               <li>
-                <a href="#" className="hover:text-white transition">
-                  BNB Chain
+                <a
+                  href="#"
+                  className="hover:text-white transition"
+                >
+                  {t("footer.social.bnb")}
                 </a>
               </li>
             </ul>
           </div>
-
         </div>
 
         {/* Divider */}
         <div className="mt-16 border-t border-gray-800 pt-8 text-xs text-gray-600 text-center">
-          © {new Date().getFullYear()} RISEN. All rights reserved.
+          © {new Date().getFullYear()} RISEN. {t("footer.rights")}
           <br />
-          This website is for informational purposes only and does not constitute financial advice.
+          {t("footer.disclaimer")}
         </div>
-
       </div>
-
     </footer>
   );
 }

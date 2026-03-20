@@ -1,0 +1,218 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "structure": "Structure",
+    "engine": "Moteur",
+    "trust": "Confiance",
+    "utility": "Utilité",
+    "rush": "RISEN Rush",
+    "litepaper": "Litepaper",
+    "launch": "Lancement",
+    "daysShort": "J",
+    "hoursShort": "H",
+    "minutesShort": "M",
+    "secondsShort": "S",
+    "days": "Jours",
+    "hours": "Heures",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "languageLabel": "Langue"
+  },
+  "home": {
+    "heroTitleLine1": "Conçu pour la",
+    "heroTitleLine1Accent": "Force.",
+    "heroTitleLine2": "Construit pour S’élever.",
+    "heroSubtitle": "RISEN ($RSN) est une infrastructure numérique structurée, conçue pour une croissance disciplinée, le renforcement du capital et une résilience durable sur le marché.",
+    "chipRoadmap": "Feuille de route RISEN",
+    "chipVision": "Vision & Mission",
+    "chipValues": "Valeurs fondamentales",
+    "chipLitepaper": "Lire le Litepaper",
+    "telegram": "Telegram",
+    "x": "X",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "E-mail",
+    "accessBot": "Accéder au Bot",
+    "cardStructureTitle": "Structure",
+    "cardStructureBody": "Architecture du protocole conçue pour une croissance disciplinée et une résilience durable du marché.",
+    "cardEngineTitle": "Moteur",
+    "cardEngineBody": "Logique de renforcement du capital et couches d’exécution conçues pour la stabilité sous pression.",
+    "cardTrustTitle": "Confiance",
+    "cardTrustBody": "Contrôles des risques, intention de conception transparente et planification d’évolution alignés sur l’intégrité à long terme.",
+    "scroll": "Défiler"
+  },
+  "ticker": {
+    "liveUpdates": "Mises à jour en direct",
+    "playRush": "Jouer à RISEN Rush",
+    "item1": "RISEN Rush en direct",
+    "item2": "Compte à rebours du lancement actif",
+    "item3": "Couche d’infrastructure en développement",
+    "item4": "Smart contract en cours",
+    "item5": "Expansion de la communauté en cours",
+    "item6": "Bitcoin montre un comportement d’accumulation",
+    "item7": "Les frais Ethereum se stabilisent",
+    "item8": "L’activité BSC augmente",
+    "item9": "La volatilité des altcoins se compresse",
+    "item10": "Le sentiment du marché évolue vers le long terme",
+    "item11": "Les gagnants des ambassadeurs RISEN ont été annoncés",
+    "item12": "Concours RISEN (Battle of Bright Brains) à venir",
+    "item13": "Phase 1 de la feuille de route en cours",
+    "item14": "Expansion de l’écosystème en cours"
+  },
+  "footer": {
+    "brandDescription": "Actif numérique structuré, conçu pour une croissance disciplinée, le renforcement du capital et une résilience à long terme.",
+    "documentationTitle": "Documentation",
+    "connectTitle": "Connexion",
+    "links": {
+      "litepaper": "Litepaper",
+      "whitepaper": "Whitepaper (Technique)",
+      "downloadWhitepaper": "Télécharger le whitepaper PDF",
+      "githubDocs": "Voir la documentation sur GitHub"
+    },
+    "social": {
+      "telegram": "Telegram",
+      "x": "X (Twitter)",
+      "bnb": "BNB Chain"
+    },
+    "rights": "Tous droits réservés.",
+    "disclaimer": "Ce site web est fourni à titre informatif uniquement et ne constitue pas un conseil financier."
+  },
+  "structure": {
+    "title": "La structure RISEN",
+    "subtitle": "Un modèle de token discipliné conçu pour renforcer la liquidité, soutenir le développement et maintenir une participation à long terme.",
+    "cards": {
+      "buyTax": "Taxe d’achat – renforce la liquidité et la croissance de l’écosystème.",
+      "sellTax": "Taxe de vente – maintient l’équilibre structurel et la durabilité.",
+      "multiSigTitle": "Multi-Sig",
+      "multiSigBody": "Trésorerie sécurisée par une gouvernance multi-signature.",
+      "renouncedTitle": "Renoncé",
+      "renouncedBody": "La propriété du contrat est renoncée pour éliminer le risque de rug pull."
+    },
+    "allocationPreview": "Aperçu de l’allocation des taxes",
+    "allocations": {
+      "marketing": "40% Marketing",
+      "liquidity": "30% Liquidité",
+      "development": "20% Développement",
+      "operations": "10% Opérations"
+    }
+  },
+  "trustLayer": {
+    "title": "Architecture de confiance",
+    "subtitle": "Construit avec des garanties structurelles pour prioriser la transparence, la gouvernance et l’intégrité de l’écosystème à long terme.",
+    "coreSafeguardsLabel": "Garanties essentielles",
+    "core": {
+      "multiSigTitle": "Trésorerie multi-signature",
+      "multiSigBody": "Trésorerie sécurisée via une gouvernance multi-signature pour éliminer tout contrôle unilatéral.",
+      "renouncedTitle": "Contrat renoncé",
+      "renouncedBody": "La propriété du contrat est renoncée de façon permanente pour éviter le risque de rug pull.",
+      "taxLogicTitle": "Logique fiscale automatisée",
+      "taxLogicBody": "La taxe d’achat et de vente de 3% est distribuée automatiquement via le smart contract."
+    },
+    "infrastructureLabel": "Infrastructure & transparence",
+    "infrastructure": {
+      "bnbTitle": "Déploiement sur BNB Chain",
+      "bnbBody": "Déployé sur BNB Chain pour l’efficacité, l’évolutivité et la portée de l’écosystème.",
+      "launchpadTitle": "Intégration launchpad",
+      "launchpadBody": "Lancement initial via l’écosystème de launchpad DewMoonex.",
+      "auditTitle": "Feuille de route d’audit futur",
+      "auditBody": "Audit indépendant du contrat prévu pour renforcer la transparence."
+    }
+  },
+  "utilityLayer": {
+    "title": "Utilité via une infrastructure Telegram sécurisée",
+    "subtitle": "L’utilité principale de RISEN est fournie par un bot Telegram dédié, conçu pour offrir un accès contrôlé, une participation structurée et une interaction avec l’écosystème sans compromettre la sécurité du contrat.",
+    "features": {
+      "controlledAccessTitle": "Accès contrôlé",
+      "controlledAccessBody": "L’utilité basée sur le bot réduit l’exposition du contrat tout en permettant une participation structurée.",
+      "automatedLogicTitle": "Logique automatisée",
+      "automatedLogicBody": "La logique fiscale du smart contract s’intègre de manière fluide aux fonctions de l’écosystème basées sur Telegram.",
+      "securityFirstTitle": "Conception axée sur la sécurité",
+      "securityFirstBody": "La séparation entre utilité et exécution du contrat renforce la résilience structurelle."
+    },
+    "button": "Accéder au bot RISEN",
+    "visual": {
+      "title": "Nœud utilitaire Telegram",
+      "subtitle": "Sécurisé • Automatisé • Structuré"
+    }
+  },
+  "capitalEngine": {
+    "title": "Le moteur de capital",
+    "subtitle": "Chaque transaction renforce la liquidité, finance le développement et consolide la structure à long terme de l’écosystème.",
+    "flow": {
+      "transaction": "Transaction",
+      "tax": "Taxe de 3%",
+      "allocation": "Allocation"
+    },
+    "outcomes": {
+      "liquidity": "Renforcement de la liquidité",
+      "development": "Financement du développement",
+      "expansion": "Expansion de l’écosystème"
+    },
+    "thesis": "Structure renforcée → croissance durable"
+  },
+  "faq": {
+    "title": "Questions fréquentes",
+    "subtitle": "Tout ce que vous devez comprendre sur RISEN ($RSN), sa philosophie, ses utilités et la direction de son écosystème.",
+    "motto": "Conçu pour la force. Construit pour s’élever.",
+    "items": [
+      {
+        "q": "Qu’est-ce que RISEN ($RSN) ?",
+        "a": "RISEN ($RSN) est un memecoin communautaire et un token utilitaire construit sur la BNB Chain.\nIl associe une forte culture meme à des outils on-chain pratiques conçus pour offrir une vraie valeur.\n\nPlutôt que de se concentrer sur le battage médiatique à court terme, RISEN met l’accent sur la durabilité à long terme, la transparence et une croissance portée par la communauté."
+      },
+      {
+        "q": "Quand et où $RSN sera-t-il lancé ?",
+        "a": "Le lancement officiel est prévu pour le 21 mars 2026 sur une plateforme de lancement BNB Chain.\n\nPrincipes clés :\n• Pas de prévente\n• Approche centrée sur la communauté\n• Philosophie de distribution équitable\n\nL’objectif est d’assurer une base équilibrée et transparente pour l’écosystème."
+      },
+      {
+        "q": "Pourquoi la BNB Chain a-t-elle été choisie ?",
+        "a": "La BNB Chain offre des transactions rapides, des frais extrêmement bas et l’une des plus grandes bases d’utilisateurs crypto au monde.\n\nSon solide écosystème memecoin et sa liquidité profonde en font un environnement idéal pour des projets communautaires évolutifs comme RISEN."
+      },
+      {
+        "q": "Quelles utilités RISEN propose-t-il ?",
+        "a": "RISEN se concentre sur la résolution de problèmes réels de l’écosystème memecoin grâce à des outils pratiques.\n\nPont memecoin-à-memecoin :\nPermet un déplacement plus facile entre les meme tokens et améliore la circulation de la liquidité entre les communautés.\n\nDust Sweeper :\nCollecte les petits soldes de tokens inutilisés (« dust ») et les convertit en valeur exploitable."
+      },
+      {
+        "q": "Quelle est la philosophie derrière RISEN ?",
+        "a": "RISEN suit une philosophie de croissance à long terme fondée sur la transparence et l’alignement communautaire.\n\nLes principes fondamentaux incluent :\n• Expansion organique de la communauté\n• Alignement des détenteurs sur le long terme\n• Mise à l’échelle responsable de l’écosystème\n• Développement d’utilités réelles"
+      },
+      {
+        "q": "Comment puis-je rejoindre la communauté RISEN ?",
+        "a": "Vous pouvez nous rejoindre via nos plateformes officielles :\n\n• X (Twitter)\n• Communauté Telegram\n• Chaîne WhatsApp\n• Instagram\n• TikTok\n\nTous les liens officiels sont disponibles sur le site web."
+      },
+      {
+        "q": "RISEN est-il juste un autre memecoin ?",
+        "a": "Non. RISEN combine la culture meme avec de vraies utilités blockchain.\n\nLe projet vise à construire des outils pratiques tout en conservant l’énergie virale qui rend les memecoins puissants."
+      },
+      {
+        "q": "Comment rester informé ?",
+        "a": "Suivez les canaux officiels RISEN et le site web.\n\nLes annonces majeures telles que les mises à jour de lancement, les sorties de bots et les développements de l’écosystème y seront toujours publiées en premier."
+      },
+      {
+        "q": "Que signifie 'WeRise Now' ?",
+        "a": "\"WeRise Now\" représente la conviction que les communautés fortes s’élèvent ensemble grâce à la résilience et à l’élan collectif.\n\nC’est à la fois une philosophie et un appel au rassemblement pour l’écosystème RISEN."
+      }
+    ]
+  },
+  "finalCta": {
+    "titleLine1": "Conçu pour la force.",
+    "titleLine2": "Construit pour s’élever.",
+    "subtitle": "Un actif numérique structuré, conçu pour une croissance disciplinée, le renforcement du capital et une résilience durable de l’écosystème.",
+    "primaryButton": "Lancement sur DewMoonex",
+    "secondaryButton": "Accéder au bot RISEN",
+    "contractLabel": "Adresse du contrat :",
+    "contractValue": "À annoncer"
+  },
+  "ca": {
+   "title": "Adresse officielle du contrat",
+   "network": "BNB Chain • Source officielle du lancement",
+   "statusPending": "Lancement en attente",
+   "statusLive": "En ligne",
+   "label": "Adresse du contrat",
+   "placeholder": "Disponible au lancement",
+   "helper": "N’utilisez que l’adresse du contrat publiée ici au lancement. Ignorez les adresses non officielles partagées ailleurs.",
+   "copy": "Copier l’adresse",
+   "copied": "Copié",
+   "pendingButton": "Lancement en attente"
+ }
+}

@@ -1,0 +1,218 @@
+{
+  "nav": {
+    "home": "首页",
+    "structure": "结构",
+    "engine": "引擎",
+    "trust": "信任",
+    "utility": "实用性",
+    "rush": "RISEN Rush",
+    "litepaper": "白皮书摘要",
+    "launch": "上线",
+    "daysShort": "天",
+    "hoursShort": "时",
+    "minutesShort": "分",
+    "secondsShort": "秒",
+    "days": "天",
+    "hours": "小时",
+    "minutes": "分",
+    "seconds": "秒",
+    "languageLabel": "语言"
+  },
+  "home": {
+    "heroTitleLine1": "为",
+    "heroTitleLine1Accent": "强韧",
+    "heroTitleLine2": "而生，为崛起而建。",
+    "heroSubtitle": "RISEN（$RSN）是结构化数字基础设施，专为有纪律的增长、资本强化和长期市场韧性而打造。",
+    "chipRoadmap": "RISEN 路线图",
+    "chipVision": "愿景与使命",
+    "chipValues": "核心价值",
+    "chipLitepaper": "阅读 Litepaper",
+    "telegram": "Telegram",
+    "x": "X",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "邮箱",
+    "accessBot": "访问 Bot",
+    "cardStructureTitle": "结构",
+    "cardStructureBody": "为有纪律的增长和持久市场韧性而设计的协议架构。",
+    "cardEngineTitle": "引擎",
+    "cardEngineBody": "资本强化逻辑与执行层，专为高压环境下的稳定性而构建。",
+    "cardTrustTitle": "信任",
+    "cardTrustBody": "风险控制、透明设计意图与升级规划，均与长期完整性保持一致。",
+    "scroll": "下滑"
+  },
+  "ticker": {
+    "liveUpdates": "实时更新",
+    "playRush": "进入 RISEN Rush",
+    "item1": "RISEN Rush 已上线",
+    "item2": "上线倒计时进行中",
+    "item3": "基础设施层开发中",
+    "item4": "智能合约推进中",
+    "item5": "社区扩展进行中",
+    "item6": "比特币呈现积累走势",
+    "item7": "以太坊 Gas 费用趋于稳定",
+    "item8": "BSC 活跃度正在上升",
+    "item9": "山寨币波动正在收缩",
+    "item10": "市场情绪正转向长期布局",
+    "item11": "RISEN 大使获奖者已公布",
+    "item12": "RISEN 竞赛（Battle of Bright Brains）即将到来",
+    "item13": "路线图第一阶段进行中",
+    "item14": "生态扩展正在推进"
+  },
+  "footer": {
+    "brandDescription": "为有纪律的增长、资本强化和长期韧性而打造的结构化数字资产。",
+    "documentationTitle": "文档",
+    "connectTitle": "连接我们",
+    "links": {
+      "litepaper": "Litepaper",
+      "whitepaper": "白皮书（技术版）",
+      "downloadWhitepaper": "下载白皮书 PDF",
+      "githubDocs": "在 GitHub 查看文档"
+    },
+    "social": {
+      "telegram": "Telegram",
+      "x": "X（Twitter）",
+      "bnb": "BNB Chain"
+    },
+    "rights": "版权所有。",
+    "disclaimer": "本网站仅供信息参考，不构成任何金融建议。"
+  },
+  "structure": {
+    "title": "RISEN 结构",
+    "subtitle": "一种有纪律的代币模型，旨在强化流动性、支持开发并维持长期参与。",
+    "cards": {
+      "buyTax": "买入税——强化流动性和生态增长。",
+      "sellTax": "卖出税——维持结构平衡和可持续性。",
+      "multiSigTitle": "多重签名",
+      "multiSigBody": "金库通过多重签名治理进行保护。",
+      "renouncedTitle": "已放弃",
+      "renouncedBody": "合约所有权已放弃，以消除 rug 风险。"
+    },
+    "allocationPreview": "税费分配预览",
+    "allocations": {
+      "marketing": "40% 市场营销",
+      "liquidity": "30% 流动性",
+      "development": "20% 开发",
+      "operations": "10% 运营"
+    }
+  },
+  "trustLayer": {
+    "title": "信任架构",
+    "subtitle": "通过结构性保障来优先实现透明度、治理和生态系统的长期完整性。",
+    "coreSafeguardsLabel": "核心保障",
+    "core": {
+      "multiSigTitle": "多重签名金库",
+      "multiSigBody": "通过多重签名治理保护金库，消除单方面控制。",
+      "renouncedTitle": "已放弃合约",
+      "renouncedBody": "合约所有权已永久放弃，以防止 rug 风险。",
+      "taxLogicTitle": "自动税费逻辑",
+      "taxLogicBody": "3% 买入和卖出税通过智能合约自动分配。"
+    },
+    "infrastructureLabel": "基础设施与透明度",
+    "infrastructure": {
+      "bnbTitle": "BNB Chain 部署",
+      "bnbBody": "部署于 BNB Chain，以实现高效率、可扩展性和生态覆盖。",
+      "launchpadTitle": "Launchpad 集成",
+      "launchpadBody": "通过 DewMoonex launchpad 生态进行初始上线。",
+      "auditTitle": "未来审计路线图",
+      "auditBody": "计划进行独立合约审计以强化透明度。"
+    }
+  },
+  "utilityLayer": {
+    "title": "通过安全的 Telegram 基础设施提供实用功能",
+    "subtitle": "RISEN 的核心实用功能通过专用 Telegram Bot 提供，旨在实现可控访问、结构化参与和生态互动，同时不影响合约安全。",
+    "features": {
+      "controlledAccessTitle": "可控访问",
+      "controlledAccessBody": "基于 Bot 的实用功能可减少合约暴露面，同时支持结构化参与。",
+      "automatedLogicTitle": "自动化逻辑",
+      "automatedLogicBody": "智能合约税费逻辑可与基于 Telegram 的生态功能无缝集成。",
+      "securityFirstTitle": "安全优先设计",
+      "securityFirstBody": "将实用功能与合约执行分离，可增强结构韧性。"
+    },
+    "button": "访问 RISEN Bot",
+    "visual": {
+      "title": "Telegram 实用节点",
+      "subtitle": "安全 • 自动化 • 结构化"
+    }
+  },
+  "capitalEngine": {
+    "title": "资本引擎",
+    "subtitle": "每一笔交易都会强化流动性、支持开发，并增强生态系统的长期结构。",
+    "flow": {
+      "transaction": "交易",
+      "tax": "3% 税费",
+      "allocation": "分配"
+    },
+    "outcomes": {
+      "liquidity": "流动性强化",
+      "development": "开发资金",
+      "expansion": "生态扩展"
+    },
+    "thesis": "强化结构 → 持续增长"
+  },
+  "faq": {
+    "title": "常见问题",
+    "subtitle": "你需要了解关于 RISEN（$RSN）的一切，包括其理念、实用功能和生态发展方向。",
+    "motto": "为强韧而生，为崛起而建。",
+    "items": [
+      {
+        "q": "RISEN（$RSN）是什么？",
+        "a": "RISEN（$RSN）是建立在 BNB Chain 上的社区驱动型 meme 代币和实用型代币。\n它将强大的 meme 文化与旨在提供真实价值的链上实用工具结合在一起。\n\nRISEN 不追求短期炒作，而是强调长期可持续性、透明度以及社区驱动的增长。"
+      },
+      {
+        "q": "$RSN 将在何时何地上线？",
+        "a": "官方上线时间定于 2026 年 3 月 21 日，在 BNB Chain 启动平台进行。\n\n核心原则包括：\n• 无预售\n• 社区优先\n• 公平分配理念\n\n目标是为生态系统建立一个平衡且透明的基础。"
+      },
+      {
+        "q": "为什么选择 BNB Chain？",
+        "a": "BNB Chain 具有快速交易、极低手续费以及全球最大的加密用户群体之一。\n\n其强大的 memecoin 生态和深度流动性，使其成为像 RISEN 这样可扩展社区驱动项目的理想环境。"
+      },
+      {
+        "q": "RISEN 提供哪些实用功能？",
+        "a": "RISEN 专注于通过实用工具解决 memecoin 生态中的真实问题。\n\nMemecoin 到 Memecoin 桥：\n让 meme 代币之间的流转更加容易，并改善社区之间的流动性流动。\n\nDust Sweeper：\n收集小额未使用代币余额（“dust”），并将其转换为可用价值。"
+      },
+      {
+        "q": "RISEN 背后的理念是什么？",
+        "a": "RISEN 遵循基于透明度和社区一致性的长期增长理念。\n\n核心原则包括：\n• 社区自然扩展\n• 长期持有者一致性\n• 负责任的生态扩张\n• 真实实用功能开发"
+      },
+      {
+        "q": "我如何加入 RISEN 社区？",
+        "a": "你可以通过我们的官方平台加入：\n\n• X（Twitter）\n• Telegram 社区\n• WhatsApp 频道\n• Instagram\n• TikTok\n\n所有官方链接都可在网站上找到。"
+      },
+      {
+        "q": "RISEN 只是另一个 memecoin 吗？",
+        "a": "不是。RISEN 将 meme 文化与真实区块链实用功能结合起来。\n\n该项目旨在构建实用工具，同时保持 memecoin 所具有的病毒式传播活力。"
+      },
+      {
+        "q": "我如何获取最新消息？",
+        "a": "请关注 RISEN 官方频道和官方网站。\n\n诸如上线更新、机器人发布和生态发展等重大公告都会首先在那里发布。"
+      },
+      {
+        "q": "“WeRise Now” 是什么意思？",
+        "a": "“WeRise Now” 代表着这样一种信念：强大的社区通过韧性和集体动力共同崛起。\n\n它既是一种理念，也是 RISEN 生态系统的号召。"
+      }
+    ]
+  },
+  "finalCta": {
+    "titleLine1": "为强韧而建。",
+    "titleLine2": "为崛起而生。",
+    "subtitle": "一种结构化数字资产，专为有纪律的增长、资本强化和生态系统的长期韧性而打造。",
+    "primaryButton": "在 DewMoonex 上线",
+    "secondaryButton": "访问 RISEN Bot",
+    "contractLabel": "合约地址：",
+    "contractValue": "即将公布"
+  },
+  "ca": {
+   "title": "官方合约地址",
+   "network": "BNB Chain • 官方上线来源",
+   "statusPending": "等待上线",
+   "statusLive": "已上线",
+   "label": "合约地址",
+   "placeholder": "上线时公布",
+   "helper": "请仅使用在此处于上线时发布的合约地址。忽略其他地方传播的非官方地址。",
+   "copy": "复制地址",
+   "copied": "已复制",
+   "pendingButton": "等待上线"
+ }
+}

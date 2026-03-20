@@ -1,21 +1,25 @@
+"use client";
+
+import { useLanguage } from "@/context/LanguageContext";
+
 export default function CapitalEngine() {
+  const { t } = useLanguage();
+
   return (
     <section
       id="engine"
       className="relative scroll-mt-32 bg-[#010913] py-24 md:py-28 px-6 text-white overflow-hidden"
     >
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-      <div className="max-w-6xl mx-auto text-center">
 
+      <div className="max-w-6xl mx-auto text-center">
         <h2 className="text-3xl md:text-4xl font-bold">
-          The Capital Engine
+          {t("capitalEngine.title")}
         </h2>
 
         <p className="mt-6 text-gray-300 max-w-2xl mx-auto">
-          Every transaction reinforces liquidity, funds development,
-          and strengthens the long-term structure of the ecosystem.
+          {t("capitalEngine.subtitle")}
         </p>
-
       </div>
 
       {/* Ambient Glow */}
@@ -26,9 +30,8 @@ export default function CapitalEngine() {
 
       {/* Engine Flow */}
       <div className="relative mt-20 max-w-5xl mx-auto grid md:grid-cols-5 gap-6 items-center text-center">
-
         <div className="p-6 bg-risen-navy/60 backdrop-blur-md rounded-xl border border-risen-primary/20 hover:border-risen-primary hover:shadow-[0_0_30px_rgba(46,219,255,0.25)] hover:-translate-y-2 transition-all duration-300">
-          Transaction
+          {t("capitalEngine.flow.transaction")}
         </div>
 
         {/* Strengthened Flow Connector */}
@@ -40,7 +43,7 @@ export default function CapitalEngine() {
 
         {/* Active Middle Node */}
         <div className="p-6 bg-risen-navy/70 rounded-xl border border-risen-primary shadow-[0_0_25px_rgba(46,219,255,0.25)]">
-          3% Tax
+          {t("capitalEngine.flow.tax")}
         </div>
 
         {/* Strengthened Flow Connector */}
@@ -51,9 +54,8 @@ export default function CapitalEngine() {
         </div>
 
         <div className="p-6 bg-risen-navy/60 backdrop-blur-md rounded-xl border border-risen-primary/20 hover:border-risen-primary hover:shadow-[0_0_30px_rgba(46,219,255,0.25)] hover:-translate-y-2 transition-all duration-300">
-          Allocation
+          {t("capitalEngine.flow.allocation")}
         </div>
-
       </div>
 
       {/* Downward Energy Connector */}
@@ -63,26 +65,23 @@ export default function CapitalEngine() {
 
       {/* Outcome Grid */}
       <div className="relative max-w-5xl mx-auto grid md:grid-cols-3 gap-6 text-center">
-
         <div className="p-6 bg-risen-navy/60 backdrop-blur-md rounded-xl border border-risen-primary/20 hover:border-risen-primary hover:shadow-[0_0_30px_rgba(46,219,255,0.25)] hover:-translate-y-2 transition-all duration-300">
-          Liquidity Reinforcement
+          {t("capitalEngine.outcomes.liquidity")}
         </div>
 
         <div className="p-6 bg-risen-navy/60 backdrop-blur-md rounded-xl border border-risen-primary/20 hover:border-risen-primary hover:shadow-[0_0_30px_rgba(46,219,255,0.25)] hover:-translate-y-2 transition-all duration-300">
-          Development Funding
+          {t("capitalEngine.outcomes.development")}
         </div>
 
         <div className="p-6 bg-risen-navy/60 backdrop-blur-md rounded-xl border border-risen-primary/20 hover:border-risen-primary hover:shadow-[0_0_30px_rgba(46,219,255,0.25)] hover:-translate-y-2 transition-all duration-300">
-          Ecosystem Expansion
+          {t("capitalEngine.outcomes.expansion")}
         </div>
-
       </div>
 
       {/* Thesis */}
       <div className="mt-16 text-center text-risen-primary text-xl font-bold tracking-wide">
-        Reinforced Structure → Sustained Growth
+        {t("capitalEngine.thesis")}
       </div>
-
     </section>
   );
 }

@@ -1,0 +1,218 @@
+{
+  "nav": {
+    "home": "Home",
+    "structure": "Structure",
+    "engine": "Engine",
+    "trust": "Trust",
+    "utility": "Utility",
+    "rush": "RISEN Rush",
+    "litepaper": "Litepaper",
+    "launch": "Launch",
+    "daysShort": "D",
+    "hoursShort": "H",
+    "minutesShort": "M",
+    "secondsShort": "S",
+    "days": "Days",
+    "hours": "Hours",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "languageLabel": "Language"
+  },
+  "home": {
+    "heroTitleLine1": "Engineered for",
+    "heroTitleLine1Accent": "Strength.",
+    "heroTitleLine2": "Built to Rise.",
+    "heroSubtitle": "RISEN ($RSN) is structured digital infrastructure engineered for disciplined growth, capital reinforcement, and long-term market resilience.",
+    "chipRoadmap": "RISEN Roadmap",
+    "chipVision": "Vision & Mission",
+    "chipValues": "Core Values",
+    "chipLitepaper": "Read Litepaper",
+    "telegram": "Telegram",
+    "x": "X",
+    "whatsapp": "WhatsApp",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "email": "Email",
+    "accessBot": "Access Bot",
+    "cardStructureTitle": "Structure",
+    "cardStructureBody": "Protocol architecture designed for disciplined growth and durable market resilience.",
+    "cardEngineTitle": "Engine",
+    "cardEngineBody": "Capital reinforcement logic and execution layers built for stability under pressure.",
+    "cardTrustTitle": "Trust",
+    "cardTrustBody": "Risk controls, transparent design intent, and upgrade planning aligned to long-term integrity.",
+    "scroll": "Scroll"
+  },
+  "ticker": {
+    "liveUpdates": "Live Updates",
+    "playRush": "Play RISEN Rush",
+    "item1": "RISEN Rush Live",
+    "item2": "Launch Countdown Active",
+    "item3": "Infrastructure Layer in Development",
+    "item4": "Smart Contract on the GO",
+    "item5": "Community Expansion Ongoing",
+    "item6": "Bitcoin showing accumulation behavior",
+    "item7": "Ethereum gas stabilizing",
+    "item8": "BSC activity rising",
+    "item9": "Altcoin volatility compressing",
+    "item10": "Market sentiment shifting to long-term positioning",
+    "item11": "RISEN Ambassador Winners announced",
+    "item12": "RISEN Contest (Battle of Bright Brains) incoming",
+    "item13": "Roadmap Phase 1 in motion",
+    "item14": "Ecosystem expansion underway"
+  },
+  "footer": {
+    "brandDescription": "Structured digital asset engineered for disciplined growth, capital reinforcement, and long-term resilience.",
+    "documentationTitle": "Documentation",
+    "connectTitle": "Connect",
+    "links": {
+      "litepaper": "Litepaper",
+      "whitepaper": "Whitepaper (Technical)",
+      "downloadWhitepaper": "Download Whitepaper PDF",
+      "githubDocs": "View Documentation on GitHub"
+    },
+    "social": {
+      "telegram": "Telegram",
+      "x": "X (Twitter)",
+      "bnb": "BNB Chain"
+    },
+    "rights": "All rights reserved.",
+    "disclaimer": "This website is for informational purposes only and does not constitute financial advice."
+  },
+  "structure": {
+    "title": "The RISEN Structure",
+    "subtitle": "A disciplined token model designed to reinforce liquidity, support development, and sustain long-term participation.",
+    "cards": {
+      "buyTax": "Buy Tax – reinforcing liquidity and ecosystem growth.",
+      "sellTax": "Sell Tax – maintaining structural balance and sustainability.",
+      "multiSigTitle": "Multi-Sig",
+      "multiSigBody": "Treasury secured by multi-signature governance.",
+      "renouncedTitle": "Renounced",
+      "renouncedBody": "Contract ownership renounced to eliminate rug risk."
+    },
+    "allocationPreview": "Tax Allocation Preview",
+    "allocations": {
+      "marketing": "40% Marketing",
+      "liquidity": "30% Liquidity",
+      "development": "20% Development",
+      "operations": "10% Operations"
+    }
+  },
+  "trustLayer": {
+    "title": "Trust Architecture",
+    "subtitle": "Built with structural safeguards to prioritize transparency, governance, and long-term ecosystem integrity.",
+    "coreSafeguardsLabel": "Core Safeguards",
+    "core": {
+      "multiSigTitle": "Multi-Signature Treasury",
+      "multiSigBody": "Treasury secured via multi-sig governance to eliminate unilateral control.",
+      "renouncedTitle": "Renounced Contract",
+      "renouncedBody": "Contract ownership permanently renounced to prevent rug risk.",
+      "taxLogicTitle": "Automated Tax Logic",
+      "taxLogicBody": "3% buy and sell tax automatically distributed via smart contract."
+    },
+    "infrastructureLabel": "Infrastructure & Transparency",
+    "infrastructure": {
+      "bnbTitle": "BNB Chain Deployment",
+      "bnbBody": "Deployed on BNB Chain for efficiency, scalability, and ecosystem reach.",
+      "launchpadTitle": "Launchpad Integration",
+      "launchpadBody": "Initial launch via DewMoonex launchpad ecosystem.",
+      "auditTitle": "Future Audit Roadmap",
+      "auditBody": "Independent contract audit planned to reinforce transparency."
+    }
+  },
+  "utilityLayer": {
+    "title": "Utility Through Secure Telegram Infrastructure",
+    "subtitle": "RISEN’s core utility is delivered through a dedicated Telegram Bot, designed to provide controlled access, structured participation, and ecosystem interaction without compromising contract security.",
+    "features": {
+      "controlledAccessTitle": "Controlled Access",
+      "controlledAccessBody": "Bot-based utility minimizes contract surface exposure while enabling structured participation.",
+      "automatedLogicTitle": "Automated Logic",
+      "automatedLogicBody": "Smart contract tax logic integrates seamlessly with Telegram-based ecosystem functions.",
+      "securityFirstTitle": "Security-First Design",
+      "securityFirstBody": "Separation of utility and contract execution enhances structural resilience."
+    },
+    "button": "Access RISEN Bot",
+    "visual": {
+      "title": "Telegram Utility Node",
+      "subtitle": "Secure • Automated • Structured"
+    }
+  },
+  "capitalEngine": {
+    "title": "The Capital Engine",
+    "subtitle": "Every transaction reinforces liquidity, funds development, and strengthens the long-term structure of the ecosystem.",
+    "flow": {
+      "transaction": "Transaction",
+      "tax": "3% Tax",
+      "allocation": "Allocation"
+    },
+    "outcomes": {
+      "liquidity": "Liquidity Reinforcement",
+      "development": "Development Funding",
+      "expansion": "Ecosystem Expansion"
+    },
+    "thesis": "Reinforced Structure → Sustained Growth"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to understand RISEN ($RSN), its philosophy, utilities, and ecosystem direction.",
+    "motto": "Engineered for Strength. Built to Rise.",
+    "items": [
+      {
+        "q": "What is RISEN ($RSN)?",
+        "a": "RISEN ($RSN) is a community-powered memecoin and utility token built on the BNB Chain.\nIt combines strong meme culture with practical on-chain tools designed to provide real value.\n\nRather than focusing on short-term hype, RISEN emphasizes long-term sustainability, transparency, and community-driven growth."
+      },
+      {
+        "q": "When and where is $RSN launching?",
+        "a": "The official launch is scheduled for March 21, 2026 on a BNB Chain launchpad.\n\nKey principles include:\n• No presale\n• Community-first approach\n• Fair distribution philosophy\n\nThe goal is to ensure a balanced and transparent foundation for the ecosystem."
+      },
+      {
+        "q": "Why was BNB Chain chosen?",
+        "a": "BNB Chain offers fast transactions, extremely low fees, and one of the largest crypto user bases globally.\n\nIts strong memecoin ecosystem and deep liquidity make it an ideal environment for scalable community-driven projects like RISEN."
+      },
+      {
+        "q": "What utilities does RISEN provide?",
+        "a": "RISEN focuses on solving real memecoin ecosystem problems through practical tools.\n\nMemecoin-to-Memecoin Bridge:\nAllows easier movement between meme tokens and improves liquidity flow across communities.\n\nDust Sweeper:\nCollects small unused token balances (“dust”) and converts them into usable value."
+      },
+      {
+        "q": "What is the philosophy behind RISEN?",
+        "a": "RISEN follows a long-term growth philosophy built on transparency and community alignment.\n\nCore principles include:\n• Organic community expansion\n• Long-term holder alignment\n• Responsible ecosystem scaling\n• Real utility development"
+      },
+      {
+        "q": "How can I join the RISEN community?",
+        "a": "You can connect through our official platforms:\n\n• X (Twitter)\n• Telegram Community\n• WhatsApp Channel\n• Instagram\n• TikTok\n\nAll official links are available on the website."
+      },
+      {
+        "q": "Is RISEN just another memecoin?",
+        "a": "No. RISEN combines meme culture with real blockchain utilities.\n\nThe project aims to build practical tools while maintaining the viral energy that makes memecoins powerful."
+      },
+      {
+        "q": "How can I stay updated?",
+        "a": "Follow the official RISEN channels and the website.\n\nMajor announcements such as launch updates, bot releases, and ecosystem developments will always be posted there first."
+      },
+      {
+        "q": "What does 'WeRise Now' mean?",
+        "a": "\"WeRise Now\" represents the belief that strong communities rise together through resilience and collective momentum.\n\nIt is both a philosophy and a rallying call for the RISEN ecosystem."
+      }
+    ]
+  },
+  "finalCta": {
+    "titleLine1": "Built For Strength.",
+    "titleLine2": "Built To Rise.",
+    "subtitle": "A structured digital asset engineered for disciplined growth, capital reinforcement, and long-term ecosystem resilience.",
+    "primaryButton": "Launch on DewMoonex",
+    "secondaryButton": "Access RISEN Bot",
+    "contractLabel": "Contract Address:",
+    "contractValue": "To Be Announced"
+  },
+  "ca": {
+   "title": "Official Contract Address",
+   "network": "BNB Chain • Verified launch source",
+   "statusPending": "Launch Pending",
+   "statusLive": "Live",
+   "label": "Contract Address",
+   "placeholder": "Available at Launch",
+   "helper": "Only use the contract address published here at launch. Ignore unofficial addresses shared elsewhere.",
+   "copy": "Copy Address",
+   "copied": "Copied",
+   "pendingButton": "Launch Pending"
+ }
+}

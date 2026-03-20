@@ -1,5 +1,6 @@
 import "./globals.css";
 import Navbar from "../sections/Navbar";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 export const metadata = {
   title: "RISEN",
@@ -14,8 +15,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Navbar />
-        {children}
+        <LanguageProvider>
+          <Navbar />
+          {children}
+        </LanguageProvider>
       </body>
     </html>
   );
