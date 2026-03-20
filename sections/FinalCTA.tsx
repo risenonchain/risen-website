@@ -22,13 +22,27 @@ export default function FinalCTA() {
         </p>
 
         <div className="mt-12 flex flex-wrap justify-center gap-6">
-          <button className="px-10 py-4 bg-risen-primary text-white font-bold rounded-xl shadow-[0_0_30px_rgba(46,219,255,0.4)] hover:scale-105 transition-all duration-300">
+          
+          {/* PRIMARY BUTTON → DEW */}
+          <a
+            href="https://dew.meme/create-token"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-10 py-4 bg-risen-primary text-white font-bold rounded-xl shadow-[0_0_30px_rgba(46,219,255,0.4)] hover:scale-105 transition-all duration-300"
+          >
             {t("finalCta.primaryButton")}
-          </button>
+          </a>
 
-          <button className="px-10 py-4 border border-risen-primary text-risen-primary rounded-xl hover:bg-risen-primary hover:text-black transition-all duration-300">
+          {/* SECONDARY BUTTON → TELEGRAM BOT */}
+          <a
+            href="https://t.me/RisenInfrastructureBot"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-10 py-4 border border-risen-primary text-risen-primary rounded-xl hover:bg-risen-primary hover:text-black transition-all duration-300"
+          >
             {t("finalCta.secondaryButton")}
-          </button>
+          </a>
+
         </div>
 
         {/* Contract Placeholder */}
