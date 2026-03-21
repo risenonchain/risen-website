@@ -2,9 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { RISEN_BUY_LINK } from "@/lib/risenConfig";
+import { useLanguage } from "@/context/LanguageContext";
 
 type MarketSnapshotProps = {
   contractAddress: string;
+};
+
+type TxnWindow = {
+  buys?: number;
+  sells?: number;
 };
 
 type DexPair = {
@@ -18,6 +24,20 @@ type DexPair = {
   url?: string;
   dexId?: string;
   chainId?: string;
+  txns?: {
+    m5?: TxnWindow;
+    h1?: TxnWindow;
+    h6?: TxnWindow;
+    h24?: TxnWindow;
+  };
+};
+
+type StatCardProps = {
+  label: string;
+  value: string | number;
+  subLabel?: string;
+  accent?: "default" | "positive" | "negative" | "primary";
+  featured?: boolean;
 };
 
 function formatCompactCurrency(value?: number | string | null, digits = 2) {
@@ -66,11 +86,78 @@ function getBestPair(pairs: DexPair[] = []) {
   })[0];
 }
 
+function getEmbeddedChartUrl(pair: DexPair | null) {
+  if (!pair?.chainId || !pair?.pairAddress) return null;
+
+  return `https://dexscreener.com/${pair.chainId}/${pair.pairAddress}?embed=1&theme=dark&trades=0&info=0`;
+}
+
+function getTxnCount(window?: TxnWindow) {
+  return (window?.buys ?? 0) + (window?.sells ?? 0);
+}
+
+function StatCard({
+  label,
+  value,
+  subLabel,
+  accent = "default",
+  featured = false,
+}: StatCardProps) {
+  const accentClasses =
+    accent === "positive"
+      ? "text-[#7DF9C6]"
+      : accent === "negative"
+      ? "text-[#FF7A7A]"
+      : accent === "primary"
+      ? "text-[#C9F8FF]"
+      : "text-white";
+
+  const glowStyle =
+    accent === "positive"
+      ? { textShadow: "0 0 24px rgba(125,249,198,0.18)" }
+      : accent === "negative"
+      ? { textShadow: "0 0 24px rgba(255,122,122,0.18)" }
+      : accent === "primary"
+      ? { textShadow: "0 0 24px rgba(46,219,255,0.18)" }
+      : undefined;
+
+  return (
+    <div
+      className={`group relative overflow-hidden rounded-2xl border px-5 py-5 transition-all duration-300
+        ${
+          featured
+            ? "border-[#2EDBFF]/25 bg-[linear-gradient(180deg,rgba(46,219,255,0.12),rgba(7,17,31,0.94))] shadow-[0_0_28px_rgba(46,219,255,0.08)]"
+            : "border-white/10 bg-[#07111f]/85 shadow-[0_0_18px_rgba(46,219,255,0.04)]"
+        }
+        hover:border-[#2EDBFF]/30 hover:shadow-[0_0_30px_rgba(46,219,255,0.10)]`}
+    >
+      <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_top_left,rgba(46,219,255,0.10),transparent_35%)]" />
+
+      <p className="relative z-10 text-[11px] uppercase tracking-[0.18em] text-white/45">
+        {label}
+      </p>
+
+      <p
+        className={`relative z-10 mt-3 text-2xl sm:text-[1.65rem] font-semibold ${accentClasses}`}
+        style={glowStyle}
+      >
+        {value}
+      </p>
+
+      {subLabel && (
+        <p className="relative z-10 mt-2 text-xs text-white/40">{subLabel}</p>
+      )}
+    </div>
+  );
+}
+
 export default function MarketSnapshot({
   contractAddress,
 }: MarketSnapshotProps) {
+  const { t } = useLanguage();
   const [pair, setPair] = useState<DexPair | null>(null);
   const [loading, setLoading] = useState(true);
+  const [chartFailed, setChartFailed] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -96,6 +183,7 @@ export default function MarketSnapshot({
 
         if (isMounted) {
           setPair(bestPair);
+          setChartFailed(false);
         }
       } catch {
         if (isMounted) {
@@ -120,42 +208,129 @@ export default function MarketSnapshot({
   const marketCapValue = pair?.marketCap ?? pair?.fdv ?? null;
   const priceChange = Number(pair?.priceChange?.h24 ?? 0);
   const isPositiveChange = priceChange >= 0;
+  const chartUrl = getEmbeddedChartUrl(pair);
 
   const stats = useMemo(
     () => [
       {
-        label: "Price",
-        value: loading ? "Loading..." : formatPrice(pair?.priceUsd),
+        label: t("market.price"),
+        value: loading ? t("market.loading") : formatPrice(pair?.priceUsd),
+        accent: "default" as const,
+        featured: false,
       },
       {
-        label: "Liquidity",
+        label: t("market.liquidity"),
         value: loading
-          ? "Loading..."
+          ? t("market.loading")
           : formatCompactCurrency(pair?.liquidity?.usd, 2),
+        accent: "default" as const,
+        featured: false,
       },
       {
-        label: "24H Volume",
+        label: t("market.volume24h"),
         value: loading
-          ? "Loading..."
+          ? t("market.loading")
           : formatCompactCurrency(pair?.volume?.h24, 2),
+        accent: "default" as const,
+        featured: false,
       },
       {
-        label: "Market Cap",
+        label: t("market.marketCap"),
         value: loading
-          ? "Loading..."
+          ? t("market.loading")
           : formatCompactCurrency(marketCapValue, 2),
         subLabel:
           !loading && pair?.marketCap == null && pair?.fdv != null
-            ? "Using FDV"
+            ? t("market.usingFdv")
             : undefined,
+        accent: "default" as const,
+        featured: false,
       },
       {
-        label: "24H Change",
-        value: loading ? "Loading..." : formatPercent(pair?.priceChange?.h24),
-        highlight: true,
+        label: t("market.change24h"),
+        value: loading
+          ? t("market.loading")
+          : formatPercent(pair?.priceChange?.h24),
+        accent: loading
+          ? ("default" as const)
+          : isPositiveChange
+          ? ("positive" as const)
+          : ("negative" as const),
+        featured: true,
       },
     ],
-    [pair, loading, marketCapValue]
+    [pair, loading, marketCapValue, t, isPositiveChange]
+  );
+
+  const activityRows = useMemo(
+    () => [
+      {
+        label: t("market.window5m"),
+        buys: pair?.txns?.m5?.buys ?? null,
+        sells: pair?.txns?.m5?.sells ?? null,
+        total: pair?.txns?.m5 ? getTxnCount(pair.txns.m5) : null,
+      },
+      {
+        label: t("market.window1h"),
+        buys: pair?.txns?.h1?.buys ?? null,
+        sells: pair?.txns?.h1?.sells ?? null,
+        total: pair?.txns?.h1 ? getTxnCount(pair.txns.h1) : null,
+      },
+      {
+        label: t("market.window6h"),
+        buys: pair?.txns?.h6?.buys ?? null,
+        sells: pair?.txns?.h6?.sells ?? null,
+        total: pair?.txns?.h6 ? getTxnCount(pair.txns.h6) : null,
+      },
+      {
+        label: t("market.window24h"),
+        buys: pair?.txns?.h24?.buys ?? null,
+        sells: pair?.txns?.h24?.sells ?? null,
+        total: pair?.txns?.h24 ? getTxnCount(pair.txns.h24) : null,
+      },
+    ],
+    [pair, t]
+  );
+
+  const hasActivity = activityRows.some(
+    (row) => row.buys !== null || row.sells !== null || row.total !== null
+  );
+
+  const activityHighlights = useMemo(
+    () => [
+      {
+        label: t("market.activityVolume24h"),
+        value: loading
+          ? t("market.loading")
+          : formatCompactCurrency(pair?.volume?.h24, 2),
+        accent: "default" as const,
+      },
+      {
+        label: t("market.activityLiquidity"),
+        value: loading
+          ? t("market.loading")
+          : formatCompactCurrency(pair?.liquidity?.usd, 2),
+        accent: "default" as const,
+      },
+      {
+        label: t("market.activityMarketCap"),
+        value: loading
+          ? t("market.loading")
+          : formatCompactCurrency(marketCapValue, 2),
+        accent: "primary" as const,
+      },
+      {
+        label: t("market.activityDex"),
+        value: pair?.dexId?.toUpperCase() ?? "--",
+        accent: "default" as const,
+      },
+      {
+        label: t("market.activityChain"),
+        value: pair?.chainId?.toUpperCase() ?? "--",
+        accent: "default" as const,
+      },
+    ],
+    [loading, pair, marketCapValue, t]
   );
 
   if (!contractAddress?.startsWith("0x")) return null;
@@ -171,17 +346,15 @@ export default function MarketSnapshot({
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full border border-[#2EDBFF]/20 bg-[#2EDBFF]/10 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-[#A9F3FF] shadow-[0_0_18px_rgba(46,219,255,0.12)]">
                   <span className="inline-block h-2 w-2 rounded-full bg-[#2EDBFF] shadow-[0_0_12px_rgba(46,219,255,0.95)] animate-pulse" />
-                  Live Market Snapshot
+                  {t("market.badge")}
                 </div>
 
                 <h2 className="mt-3 text-2xl sm:text-3xl font-bold text-white">
-                  Market performance at a glance
+                  {t("market.title")}
                 </h2>
 
                 <p className="mt-2 max-w-2xl text-sm sm:text-base text-white/65 leading-relaxed">
-                  Real-time token metrics presented in a more complete premium
-                  layout with pricing, liquidity, volume, market cap, and 24h
-                  movement.
+                  {t("market.subtitle")}
                 </p>
               </div>
 
@@ -192,7 +365,7 @@ export default function MarketSnapshot({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-xl bg-risen-primary px-5 py-3 text-sm font-semibold text-white shadow-[0_0_24px_rgba(46,219,255,0.32)] hover:scale-[1.02] transition-all duration-300"
                 >
-                  Buy $RSN
+                  {t("market.buy")}
                 </a>
 
                 {pair?.url && (
@@ -202,76 +375,203 @@ export default function MarketSnapshot({
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-white hover:border-[#2EDBFF]/30 hover:bg-white/10 transition-all duration-300"
                   >
-                    View Live Chart
+                    {t("market.viewChart")}
                   </a>
                 )}
               </div>
             </div>
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
-              {stats.map((stat) => {
-                const isChangeCard = stat.label === "24H Change";
-
-                return (
-                  <div
-                    key={stat.label}
-                    className={`rounded-2xl border px-5 py-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)] ${
-                      isChangeCard
-                        ? "border-[#2EDBFF]/20 bg-[linear-gradient(180deg,rgba(46,219,255,0.12),rgba(7,17,31,0.94))]"
-                        : "border-white/10 bg-[#07111f]/85"
-                    }`}
-                  >
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-white/45">
-                      {stat.label}
-                    </p>
-
-                    <p
-                      className={`mt-3 text-2xl sm:text-[1.65rem] font-semibold ${
-                        isChangeCard && !loading
-                          ? isPositiveChange
-                            ? "text-[#7DF9C6]"
-                            : "text-[#FF7A7A]"
-                          : "text-white"
-                      }`}
-                      style={
-                        isChangeCard && !loading
-                          ? {
-                              textShadow: isPositiveChange
-                                ? "0 0 24px rgba(125,249,198,0.18)"
-                                : "0 0 24px rgba(255,122,122,0.18)",
-                            }
-                          : undefined
-                      }
-                    >
-                      {stat.value}
-                    </p>
-
-                    {stat.subLabel && (
-                      <p className="mt-2 text-xs text-white/40">{stat.subLabel}</p>
-                    )}
-                  </div>
-                );
-              })}
+              {stats.map((stat) => (
+                <StatCard
+                  key={stat.label}
+                  label={stat.label}
+                  value={stat.value}
+                  subLabel={stat.subLabel}
+                  accent={stat.accent}
+                  featured={stat.featured}
+                />
+              ))}
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs sm:text-sm text-white/45">
-              <span>Source: Dexscreener API</span>
-              <span>Refresh: every 30s</span>
+              <span>
+                {t("market.source")}: Dexscreener API
+              </span>
+              <span>
+                {t("market.refresh")}: {t("market.every30s")}
+              </span>
 
               {pair?.dexId && (
-                <span className="uppercase tracking-wide">DEX: {pair.dexId}</span>
+                <span className="uppercase tracking-wide">
+                  {t("market.dex")}: {pair.dexId}
+                </span>
               )}
 
               {pair?.chainId && (
                 <span className="uppercase tracking-wide">
-                  Chain: {pair.chainId}
+                  {t("market.chain")}: {pair.chainId}
                 </span>
               )}
 
               {pair?.pairAddress && (
                 <span className="truncate max-w-full">
-                  Pair: {pair.pairAddress}
+                  {t("market.pair")}: {pair.pairAddress}
                 </span>
+              )}
+            </div>
+
+            <div className="mt-8 rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4 sm:p-5 shadow-[0_0_30px_rgba(46,219,255,0.06)]">
+              <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-5">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/70">
+                    <span className="inline-block h-2 w-2 rounded-full bg-[#2EDBFF] shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
+                    {t("market.chartBadge")}
+                  </div>
+
+                  <h3 className="mt-3 text-xl sm:text-2xl font-bold text-white">
+                    {t("market.chartTitle")}
+                  </h3>
+
+                  <p className="mt-2 max-w-2xl text-sm sm:text-base text-white/60 leading-relaxed">
+                    {t("market.chartSubtitle")}
+                  </p>
+                </div>
+
+                {pair?.url && (
+                  <a
+                    href={pair.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center rounded-xl border border-[#2EDBFF]/20 bg-[#2EDBFF]/10 px-5 py-3 text-sm font-semibold text-[#C9F8FF] hover:bg-[#2EDBFF]/15 transition-all duration-300"
+                  >
+                    {t("market.openChart")}
+                  </a>
+                )}
+              </div>
+
+              <div className="relative overflow-hidden rounded-[22px] border border-white/10 bg-[#050D18] min-h-[420px] sm:min-h-[520px] shadow-[0_0_26px_rgba(46,219,255,0.05)]">
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(46,219,255,0.08),transparent_28%)]" />
+
+                {chartUrl && !chartFailed ? (
+                  <iframe
+                    src={chartUrl}
+                    title="RISEN live chart"
+                    className="relative z-10 h-[420px] sm:h-[520px] w-full"
+                    loading="lazy"
+                    onError={() => setChartFailed(true)}
+                  />
+                ) : (
+                  <div className="relative z-10 flex h-[420px] sm:h-[520px] flex-col items-center justify-center px-6 text-center">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl border border-[#2EDBFF]/20 bg-[#2EDBFF]/10 shadow-[0_0_24px_rgba(46,219,255,0.12)]">
+                      <span className="w-3 h-3 rounded-full bg-[#2EDBFF] shadow-[0_0_14px_rgba(46,219,255,0.95)]" />
+                    </div>
+
+                    <p className="mt-5 text-lg font-semibold text-white">
+                      {t("market.chartFallback")}
+                    </p>
+
+                    {pair?.url && (
+                      <a
+                        href={pair.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-5 inline-flex items-center justify-center rounded-xl bg-risen-primary px-5 py-3 text-sm font-semibold text-white shadow-[0_0_24px_rgba(46,219,255,0.24)] hover:scale-[1.02] transition-all duration-300"
+                      >
+                        {t("market.openChart")}
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-8 rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4 sm:p-5 shadow-[0_0_30px_rgba(46,219,255,0.06)]">
+              <div className="mb-5">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/70">
+                  <span className="inline-block h-2 w-2 rounded-full bg-[#2EDBFF] shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
+                  {t("market.activityBadge")}
+                </div>
+
+                <h3 className="mt-3 text-xl sm:text-2xl font-bold text-white">
+                  {t("market.activityTitle")}
+                </h3>
+
+                <p className="mt-2 max-w-2xl text-sm sm:text-base text-white/60 leading-relaxed">
+                  {t("market.activitySubtitle")}
+                </p>
+              </div>
+
+              {hasActivity ? (
+                <>
+                  <div className="overflow-hidden rounded-[22px] border border-white/10 bg-[#050D18] shadow-[0_0_26px_rgba(46,219,255,0.05)]">
+                    <div className="grid grid-cols-4 border-b border-white/10 bg-white/[0.03] text-[11px] sm:text-xs uppercase tracking-[0.18em] text-white/45">
+                      <div className="px-4 py-3">{t("market.window")}</div>
+                      <div className="px-4 py-3">{t("market.buys")}</div>
+                      <div className="px-4 py-3">{t("market.sells")}</div>
+                      <div className="px-4 py-3">{t("market.totalTxns")}</div>
+                    </div>
+
+                    {activityRows.map((row, index) => (
+                      <div
+                        key={row.label}
+                        className={`grid grid-cols-4 text-sm sm:text-base ${
+                          index !== activityRows.length - 1
+                            ? "border-b border-white/5"
+                            : ""
+                        }`}
+                      >
+                        <div className="px-4 py-4 text-white font-semibold">
+                          {row.label}
+                        </div>
+                        <div className="px-4 py-4 text-[#7DF9C6] font-medium">
+                          {row.buys ?? "--"}
+                        </div>
+                        <div className="px-4 py-4 text-[#FF7A7A] font-medium">
+                          {row.sells ?? "--"}
+                        </div>
+                        <div className="px-4 py-4 text-white/80 font-medium">
+                          {row.total ?? "--"}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-5">
+                    <div className="text-[11px] sm:text-xs uppercase tracking-[0.18em] text-white/45 mb-3">
+                      {t("market.activityMetaTitle")}
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                      {activityHighlights.map((item) => (
+                        <StatCard
+                          key={item.label}
+                          label={item.label}
+                          value={item.value}
+                          accent={item.accent}
+                          featured={item.accent === "primary"}
+                        />
+                      ))}
+                    </div>
+
+                    {pair?.pairAddress && (
+                      <div className="group relative mt-4 overflow-hidden rounded-2xl border border-white/10 bg-[#07111f]/85 px-5 py-4 shadow-[0_0_18px_rgba(46,219,255,0.04)] transition-all duration-300 hover:border-[#2EDBFF]/30 hover:shadow-[0_0_30px_rgba(46,219,255,0.10)]">
+                        <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[radial-gradient(circle_at_top_left,rgba(46,219,255,0.10),transparent_35%)]" />
+
+                        <p className="relative z-10 text-[11px] uppercase tracking-[0.18em] text-white/45">
+                          {t("market.activityPair")}
+                        </p>
+                        <p className="relative z-10 mt-2 break-all text-sm sm:text-base font-medium text-white/80">
+                          {pair.pairAddress}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-[22px] border border-white/10 bg-[#050D18] px-6 py-10 text-center shadow-[0_0_26px_rgba(46,219,255,0.05)]">
+                  <p className="text-white/75">{t("market.activityUnavailable")}</p>
+                </div>
               )}
             </div>
           </div>
