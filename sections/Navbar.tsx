@@ -220,8 +220,6 @@ export default function Navbar() {
           </div>
 
           <div className="flex md:hidden items-center gap-2 shrink-0">
-            <LanguageSwitcher className="max-w-[132px]" />
-
             <a
               href="/rush"
               className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-risen-primary/30 bg-[#06111f]/85 text-white text-[11px] font-semibold tracking-wide shadow-[0_0_18px_rgba(46,219,255,0.22)]"
@@ -303,6 +301,10 @@ export default function Navbar() {
 
         {menuOpen && (
           <div className="md:hidden mt-3 rounded-2xl border border-risen-primary/20 bg-[#06111f]/92 backdrop-blur-xl shadow-[0_0_30px_rgba(46,219,255,0.10)] p-3">
+            <div className="mb-3">
+              <LanguageSwitcher className="w-full" />
+            </div>
+
             <div className="grid gap-2">
               {sections.map((s) => (
                 <button

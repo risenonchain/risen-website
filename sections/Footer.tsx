@@ -55,7 +55,7 @@ export default function Footer() {
 
               <li>
                 <a
-                  href="https://github.com/Official-Able/risen/tree/main/docs"
+                  href="https://github.com/risenonchain/risen-docs"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white transition"

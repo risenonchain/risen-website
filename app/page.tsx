@@ -48,13 +48,13 @@ export default function Home() {
     "shadow-[0_0_30px_rgba(46,219,255,0.45)] hover:shadow-[0_0_40px_rgba(46,219,255,0.55)] transition-all duration-300";
 
   const rsnParticles = [
-    { left: "34%", delay: "0s", dur: "5.0s", size: "text-[10px]" },
-    { left: "42%", delay: "0.8s", dur: "5.6s", size: "text-[11px]" },
-    { left: "50%", delay: "1.4s", dur: "5.2s", size: "text-[10px]" },
-    { left: "58%", delay: "2.1s", dur: "5.9s", size: "text-[12px]" },
-    { left: "66%", delay: "2.7s", dur: "5.4s", size: "text-[10px]" },
-    { left: "38%", delay: "3.1s", dur: "6.2s", size: "text-[11px]" },
-    { left: "62%", delay: "3.6s", dur: "6.0s", size: "text-[10px]" },
+    { left: "16%", top: "62%", delay: "0s", dur: "5.2s", size: "text-[10px]" },
+    { left: "26%", top: "78%", delay: "0.8s", dur: "5.8s", size: "text-[11px]" },
+    { left: "38%", top: "58%", delay: "1.4s", dur: "5.0s", size: "text-[10px]" },
+    { left: "60%", top: "66%", delay: "2.1s", dur: "5.9s", size: "text-[12px]" },
+    { left: "72%", top: "76%", delay: "2.7s", dur: "5.4s", size: "text-[10px]" },
+    { left: "84%", top: "60%", delay: "3.1s", dur: "6.2s", size: "text-[11px]" },
+    { left: "50%", top: "86%", delay: "3.6s", dur: "6.0s", size: "text-[10px]" }
   ] as const;
 
   const tickerItems = useMemo(
@@ -99,7 +99,6 @@ export default function Home() {
       <ContestModal />
 
       <main className="relative min-h-screen text-white overflow-hidden pb-16">
-        {/* Background Image */}
         <div className="absolute inset-0 -z-30">
           <Image
             src="/bg.png"
@@ -112,16 +111,13 @@ export default function Home() {
           />
         </div>
 
-        {/* Dark Overlay */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-[#020B1A]/70 via-[#020B1A]/60 to-[#020B1A]/85" />
 
-        {/* Noise Layer */}
         <div
           className="absolute inset-0 -z-10 pointer-events-none opacity-[0.06] bg-[url('/noise.png')] bg-repeat"
           aria-hidden="true"
         />
 
-        {/* Atmosphere */}
         <div className="absolute inset-0 pointer-events-none z-0">
           <div className="star" style={{ top: "20%", left: "30%" }}></div>
           <div className="star" style={{ top: "40%", left: "70%" }}></div>
@@ -132,7 +128,6 @@ export default function Home() {
         <div className="wind-layer"></div>
         <div className="shimmer-layer"></div>
 
-        {/* HERO */}
         <section id="home" className="relative">
           <div className="pointer-events-none absolute inset-0 -z-0">
             <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-risen-primary/10 blur-[140px] rounded-full" />
@@ -140,8 +135,7 @@ export default function Home() {
           </div>
 
           <div className="relative max-w-[1320px] mx-auto px-5 sm:px-6 lg:px-8 pt-20 sm:pt-24 md:pt-24 pb-12 md:pb-18">
-            <div className="grid md:grid-cols-[1.1fr_0.9fr] gap-8 md:gap-10 items-start">
-              {/* LEFT */}
+            <div className="grid md:grid-cols-[1.15fr_0.85fr] gap-8 md:gap-10 items-center">
               <div className="relative z-10 md:-ml-4 lg:-ml-8">
                 <h1 className="font-extrabold tracking-tight leading-[0.96]">
                   <span className="block text-[2.9rem] sm:text-6xl md:text-7xl lg:text-[4.8rem]">
@@ -161,7 +155,6 @@ export default function Home() {
                   {t("home.heroSubtitle")}
                 </p>
 
-                {/* PROOF CHIPS */}
                 <div className="mt-5 flex flex-wrap gap-2.5">
                   <a href="/roadmap" className={chip}>
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-risen-primary shadow-[0_0_10px_rgba(46,219,255,0.9)]" />
@@ -184,7 +177,6 @@ export default function Home() {
                   </a>
                 </div>
 
-                {/* CTA Row */}
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <a
                     href="https://t.me/Risencommunity1"
@@ -279,7 +271,6 @@ export default function Home() {
                   </a>
                 </div>
 
-                {/* MICRO FEATURE CARDS */}
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                   <div className={microCard}>
                     <div className="flex items-center gap-2">
@@ -320,110 +311,104 @@ export default function Home() {
               </div>
 
               {/* RIGHT */}
-              <div className="relative flex flex-col items-center md:items-end mt-4 md:mt-0">
-                <div className="relative w-full max-w-[560px] min-h-[520px] flex flex-col items-center justify-start md:items-end">
-                  {/* Logo zone */}
-                  <div className="relative z-10 translate-y-0 sm:translate-y-2 md:translate-y-6">
-                    <div className="absolute -inset-16 rounded-full bg-risen-primary/10 blur-[60px] pulseGlow" />
-                    <div className="absolute -inset-24 rounded-full bg-risen-primary/8 blur-[110px]" />
-                    <div className="absolute -inset-32 rounded-full bg-white/5 blur-[140px]" />
+              <div className="relative flex flex-col items-center md:items-end mt-2 md:mt-0">
+                {/* CA CARD */}
+                <div className="relative z-20 mb-8 max-w-[520px] w-full mx-auto md:mx-0 md:ml-auto">
+                  <div className="absolute -inset-3 bg-risen-primary/10 blur-2xl rounded-[28px] pointer-events-none" />
+                  <div className="relative rounded-[28px] border border-risen-primary/30 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] backdrop-blur-xl shadow-[0_0_40px_rgba(46,219,255,0.16)] overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(46,219,255,0.12),transparent_40%)] pointer-events-none" />
 
-                    <Image
-                      src={logo}
-                      alt="RISEN Logo"
-                      className="w-40 sm:w-52 md:w-64 lg:w-72 relative drop-shadow-[0_0_70px_rgba(46,219,255,0.80)] mx-auto md:mx-0"
-                      priority
-                    />
-                  </div>
-
-                  {/* Floating CA panel */}
-                  <div className="relative z-20 mt-10 w-full">
-                    <div className="absolute -inset-4 bg-risen-primary/12 blur-3xl rounded-[32px] pointer-events-none" />
-                    <div className="relative rounded-[30px] border border-risen-primary/30 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.04))] backdrop-blur-xl shadow-[0_0_45px_rgba(46,219,255,0.18)] overflow-hidden">
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(46,219,255,0.14),transparent_38%)] pointer-events-none" />
-                      <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-risen-primary/8 to-transparent pointer-events-none" />
-
-                      <div className="px-5 sm:px-6 py-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="inline-block w-2.5 h-2.5 rounded-full bg-risen-primary shadow-[0_0_14px_rgba(46,219,255,0.95)] animate-pulse" />
-                            <p className="text-sm sm:text-base font-semibold text-white">
-                              {t("ca.title")}
-                            </p>
-                          </div>
-                          <p className="mt-1 text-xs sm:text-sm text-white/60">
-                            {t("ca.network")}
+                    <div className="px-5 sm:px-6 py-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="inline-block w-2.5 h-2.5 rounded-full bg-risen-primary shadow-[0_0_14px_rgba(46,219,255,0.95)] animate-pulse" />
+                          <p className="text-sm sm:text-base font-semibold text-white">
+                            {t("ca.title")}
                           </p>
                         </div>
-
-                        <div className="inline-flex items-center gap-2 self-start sm:self-auto rounded-full border border-risen-primary/30 bg-risen-primary/10 px-3 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-risen-primary">
-                          <span className="inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_10px_rgba(46,219,255,0.9)]" />
-                          {isContractLive ? t("ca.statusLive") : t("ca.statusPending")}
-                        </div>
-                      </div>
-
-                      <div className="p-5 sm:p-6">
-                        <div className="rounded-2xl border border-white/10 bg-[#07111f]/90 px-4 py-4 sm:px-5 sm:py-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]">
-                          <div className="text-[11px] sm:text-xs uppercase tracking-[0.2em] text-white/40 mb-2">
-                            {t("ca.label")}
-                          </div>
-
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <code className="flex-1 break-all text-sm sm:text-base font-medium text-white">
-                              {displayedAddress}
-                            </code>
-
-                            <button
-                              type="button"
-                              onClick={handleCopy}
-                              disabled={!isContractLive}
-                              className={`inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
-                                isContractLive
-                                  ? "bg-risen-primary text-white shadow-[0_0_24px_rgba(46,219,255,0.32)] hover:scale-[1.02]"
-                                  : "bg-white/5 text-white/40 border border-white/10 cursor-not-allowed"
-                              }`}
-                            >
-                              {isContractLive
-                                ? copied
-                                  ? t("ca.copied")
-                                  : t("ca.copy")
-                                : t("ca.pendingButton")}
-                            </button>
-                          </div>
-                        </div>
-
-                        <p className="mt-4 text-sm text-white/70 leading-relaxed">
-                          {t("ca.helper")}
+                        <p className="mt-1 text-xs sm:text-sm text-white/60">
+                          {t("ca.network")}
                         </p>
                       </div>
+
+                      <div className="inline-flex items-center gap-2 self-start sm:self-auto rounded-full border border-risen-primary/30 bg-risen-primary/10 px-3 py-1.5 text-[11px] sm:text-xs font-semibold uppercase tracking-widest text-risen-primary">
+                        <span className="inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_10px_rgba(46,219,255,0.9)]" />
+                        {isContractLive ? t("ca.statusLive") : t("ca.statusPending")}
+                      </div>
+                    </div>
+
+                    <div className="p-5 sm:p-6">
+                      <div className="rounded-2xl border border-white/10 bg-[#07111f]/90 px-4 py-4 sm:px-5 sm:py-5 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.03)]">
+                        <div className="text-[11px] sm:text-xs uppercase tracking-[0.2em] text-white/40 mb-2">
+                          {t("ca.label")}
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                          <code className="flex-1 break-all text-sm sm:text-base font-medium text-white">
+                            {displayedAddress}
+                          </code>
+
+                          <button
+                            type="button"
+                            onClick={handleCopy}
+                            disabled={!isContractLive}
+                            className={`inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-300 ${
+                              isContractLive
+                                ? "bg-risen-primary text-white shadow-[0_0_24px_rgba(46,219,255,0.32)] hover:scale-[1.02]"
+                                : "bg-white/5 text-white/40 border border-white/10 cursor-not-allowed"
+                            }`}
+                          >
+                            {isContractLive
+                              ? copied
+                                ? t("ca.copied")
+                                : t("ca.copy")
+                              : t("ca.pendingButton")}
+                          </button>
+                        </div>
+                      </div>
+
+                      <p className="mt-4 text-sm text-white/70 leading-relaxed">
+                        {t("ca.helper")}
+                      </p>
                     </div>
                   </div>
+                </div>
 
-                  {/* Ambient particles */}
-                  <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-                    {rsnParticles.map((p, i) => (
-                      <span
-                        key={`rsn-${i}`}
-                        className={`absolute ${p.size} font-semibold tracking-wide text-white/55 rsnRise`}
-                        style={{
-                          left: p.left,
-                          bottom: "12%",
-                          transform: "translateX(-50%)",
-                          textShadow: "0 0 18px rgba(46,219,255,0.35)",
-                          animationDuration: p.dur,
-                          animationDelay: p.delay,
-                        }}
-                      >
-                        $RSN
-                      </span>
-                    ))}
-                  </div>
+                {/* LOGO + $RSN ANIMATION GROUP */}
+                <div className="relative z-10 w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] md:w-[430px] md:h-[430px] flex items-center justify-center">
+                  <div className="absolute -inset-10 bg-risen-primary/10 blur-[160px] rounded-full" />
+                  <div className="absolute -inset-16 rounded-full bg-risen-primary/10 blur-[60px] pulseGlow" />
+                  <div className="absolute -inset-24 rounded-full bg-risen-primary/8 blur-[110px]" />
+                  <div className="absolute -inset-32 rounded-full bg-white/5 blur-[140px]" />
+
+                  {rsnParticles.map((p, i) => (
+                    <span
+                      key={`rsn-${i}`}
+                      className={`absolute ${p.size} font-semibold tracking-wide text-white/60 rsnRise pointer-events-none`}
+                      style={{
+                        left: p.left,
+                        top: p.top,
+                        transform: "translateX(-50%)",
+                        textShadow: "0 0 22px rgba(46,219,255,0.42)",
+                        animationDuration: p.dur,
+                        animationDelay: p.delay,
+                      }}
+                    >
+                      $RSN
+                    </span>
+                  ))}
+
+                  <Image
+                    src={logo}
+                    alt="RISEN Logo"
+                    className="w-40 sm:w-52 md:w-64 lg:w-72 relative drop-shadow-[0_0_70px_rgba(46,219,255,0.80)]"
+                    priority
+                  />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* scroll cue */}
           <div className="hidden md:flex absolute bottom-8 left-1/2 -translate-x-1/2 items-center gap-2 text-white/60 text-xs tracking-widest uppercase">
             <span className="inline-block w-6 h-px bg-white/30" />
             {t("home.scroll")}
@@ -434,7 +419,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Bottom Fade */}
         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#020B1A] to-transparent pointer-events-none"></div>
       </main>
 
@@ -446,7 +430,6 @@ export default function Home() {
       <FinalCTA />
       <Footer />
 
-      {/* LIVE PROTOCOL STATUS / TICKER */}
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-white/10 bg-[#010913]/78 backdrop-blur-xl overflow-hidden">
         <div className="relative flex items-center">
           <div className="shrink-0 px-4 sm:px-6 py-3 border-r border-white/10 flex items-center gap-2 text-white font-semibold uppercase tracking-widest text-[11px] sm:text-sm bg-[#04101a]/90">
