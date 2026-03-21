@@ -21,7 +21,7 @@ export default function Home() {
    * TOMORROW:
    * Replace "" with the real contract address.
    */
-  const contractAddress = "";
+  const contractAddress = "0x4052fba357d000c74e1e90222a3894b083993a6d";
 
   const isContractLive = contractAddress.trim().startsWith("0x");
 
