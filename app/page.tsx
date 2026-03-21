@@ -9,20 +9,17 @@ import TrustLayer from "../sections/TrustLayer";
 import CapitalEngine from "../sections/CapitalEngine";
 import Structure from "../sections/Structure";
 import ContestModal from "../components/ContestModal";
+import MarketSnapshot from "../components/MarketSnapshot";
 import Image from "next/image";
 import logo from "../public/logo.png";
 import { useLanguage } from "@/context/LanguageContext";
+import { RISEN_CONTRACT_ADDRESS } from "@/lib/risenConfig";
 
 export default function Home() {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
-  /**
-   * TOMORROW:
-   * Replace "" with the real contract address.
-   */
-  const contractAddress = "0x4052fba357d000c74e1e90222a3894b083993a6d";
-
+  const contractAddress = RISEN_CONTRACT_ADDRESS;
   const isContractLive = contractAddress.trim().startsWith("0x");
 
   const chip =
@@ -310,9 +307,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* RIGHT */}
               <div className="relative flex flex-col items-center md:items-end mt-2 md:mt-0">
-                {/* CA CARD */}
                 <div className="relative z-20 mb-8 max-w-[520px] w-full mx-auto md:mx-0 md:ml-auto">
                   <div className="absolute -inset-3 bg-risen-primary/10 blur-2xl rounded-[28px] pointer-events-none" />
                   <div className="relative rounded-[28px] border border-risen-primary/30 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] backdrop-blur-xl shadow-[0_0_40px_rgba(46,219,255,0.16)] overflow-hidden">
@@ -374,7 +369,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* LOGO + $RSN ANIMATION GROUP */}
                 <div className="relative z-10 w-[320px] h-[320px] sm:w-[380px] sm:h-[380px] md:w-[430px] md:h-[430px] flex items-center justify-center">
                   <div className="absolute -inset-10 bg-risen-primary/10 blur-[160px] rounded-full" />
                   <div className="absolute -inset-16 rounded-full bg-risen-primary/10 blur-[60px] pulseGlow" />
@@ -422,6 +416,7 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-[#020B1A] to-transparent pointer-events-none"></div>
       </main>
 
+      <MarketSnapshot contractAddress={contractAddress} />
       <Structure />
       <CapitalEngine />
       <TrustLayer />

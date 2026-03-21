@@ -4,12 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import logo from "../public/logo.png";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import LiveDateTime from "@/components/LiveDateTime";
 import { useLanguage } from "@/context/LanguageContext";
+import { RISEN_BUY_LINK, RISEN_IS_CONTRACT_LIVE } from "@/lib/risenConfig";
 
 const sectionIds = ["home", "structure", "engine", "trust", "utility"] as const;
 
 export default function Navbar() {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
 
   const sections = useMemo(
     () => [
@@ -25,12 +27,6 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>("home");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(0);
-
-  const launchDate = useMemo(
-    () => new Date("2026-03-21T00:00:00Z").getTime(),
-    []
-  );
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -63,35 +59,6 @@ export default function Navbar() {
 
     return () => observers.forEach((obs) => obs.disconnect());
   }, []);
-
-  useEffect(() => {
-    const tick = () => {
-      setTimeLeft(Math.max(0, launchDate - Date.now()));
-    };
-
-    tick();
-    const timer = setInterval(tick, 1000);
-    return () => clearInterval(timer);
-  }, [launchDate]);
-
-  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
-  const seconds = Math.floor((timeLeft / 1000) % 60);
-
-  const formattedLaunchDate = useMemo(() => {
-    const date = new Date("2026-03-21T00:00:00Z");
-
-    try {
-      return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : locale, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      }).format(date);
-    } catch {
-      return "Mar 21, 2026";
-    }
-  }, [locale]);
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id);
@@ -127,6 +94,10 @@ export default function Navbar() {
 
   const rushDot =
     "inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95),0_0_22px_rgba(46,219,255,0.55)] animate-pulse";
+
+  const buyLinkClass =
+    "inline-flex items-center gap-2 rounded-full bg-risen-primary px-4 py-2 text-sm font-semibold text-white transition-all duration-300 " +
+    "shadow-[0_0_22px_rgba(46,219,255,0.28)] hover:shadow-[0_0_30px_rgba(46,219,255,0.36)] hover:-translate-y-[1px]";
 
   return (
     <div
@@ -188,35 +159,18 @@ export default function Navbar() {
           <div
             className={`hidden md:flex items-center gap-4 px-4 py-2 ${pillBase} shrink-0`}
           >
-            <div className="flex items-center gap-2 pr-3 border-r border-white/10">
-              <span className="inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
-              <div className="leading-tight">
-                <div className="text-[11px] uppercase tracking-[0.18em] text-white/55">
-                  {t("nav.launch")}
-                </div>
-                <div className="text-sm font-semibold text-white">
-                  {formattedLaunchDate}
-                </div>
-              </div>
-            </div>
+            <LiveDateTime />
 
-            <div className="flex items-center gap-3">
-              {[
-                { value: days, label: t("nav.daysShort") },
-                { value: hours, label: t("nav.hoursShort") },
-                { value: minutes, label: t("nav.minutesShort") },
-                { value: seconds, label: t("nav.secondsShort") },
-              ].map((item) => (
-                <div key={item.label} className="text-center min-w-[32px]">
-                  <div className="text-sm font-bold text-white tabular-nums">
-                    {String(item.value).padStart(2, "0")}
-                  </div>
-                  <div className="text-[10px] text-white/45 uppercase">
-                    {item.label}
-                  </div>
-                </div>
-              ))}
-            </div>
+            {RISEN_IS_CONTRACT_LIVE && (
+              <a
+                href={RISEN_BUY_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buyLinkClass}
+              >
+                Buy $RSN
+              </a>
+            )}
           </div>
 
           <div className="flex md:hidden items-center gap-2 shrink-0">
@@ -228,14 +182,16 @@ export default function Navbar() {
               Rush
             </a>
 
-            <div className={`px-3 py-2 ${pillBase}`}>
-              <div className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
-                <span className="text-[11px] font-semibold text-white tabular-nums">
-                  {days}d {hours}h
-                </span>
-              </div>
-            </div>
+            {RISEN_IS_CONTRACT_LIVE && (
+              <a
+                href={RISEN_BUY_LINK}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-2 rounded-2xl bg-risen-primary text-white text-[11px] font-semibold tracking-wide shadow-[0_0_18px_rgba(46,219,255,0.22)]"
+              >
+                Buy
+              </a>
+            )}
 
             <button
               type="button"
@@ -324,35 +280,28 @@ export default function Navbar() {
               <a href="/litepaper" className={mobileLinkClass}>
                 {t("nav.litepaper")}
               </a>
+
+              {RISEN_IS_CONTRACT_LIVE && (
+                <a
+                  href={RISEN_BUY_LINK}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={mobileLinkClass}
+                >
+                  Buy $RSN
+                </a>
+              )}
             </div>
 
             <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
               <div className="text-[10px] uppercase tracking-[0.18em] text-white/45">
-                {t("nav.launch")}
+                Live
               </div>
               <div className="mt-1 text-sm font-semibold text-white">
-                {formattedLaunchDate}
+                Nigeria time now
               </div>
-
-              <div className="mt-3 grid grid-cols-4 gap-2 text-center">
-                {[
-                  { value: days, label: t("nav.days") },
-                  { value: hours, label: t("nav.hours") },
-                  { value: minutes, label: t("nav.minutes") },
-                  { value: seconds, label: t("nav.seconds") },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-lg bg-white/5 border border-white/10 py-2"
-                  >
-                    <div className="text-sm font-bold text-white tabular-nums">
-                      {String(item.value).padStart(2, "0")}
-                    </div>
-                    <div className="text-[10px] text-white/45 uppercase">
-                      {item.label}
-                    </div>
-                  </div>
-                ))}
+              <div className="mt-3">
+                <LiveDateTime />
               </div>
             </div>
           </div>
