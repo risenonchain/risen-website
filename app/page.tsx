@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import FAQ from "../sections/FAQ";
 import Footer from "../sections/Footer";
 import FinalCTA from "../sections/FinalCTA";
@@ -15,9 +15,12 @@ import logo from "../public/logo.png";
 import { useLanguage } from "@/context/LanguageContext";
 import { RISEN_CONTRACT_ADDRESS } from "@/lib/risenConfig";
 
+type InfoModalType = "visionMission" | "coreValues" | null;
+
 export default function Home() {
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+  const [activeModal, setActiveModal] = useState<InfoModalType>(null);
 
   const contractAddress = RISEN_CONTRACT_ADDRESS;
   const isContractLive = contractAddress.trim().startsWith("0x");
@@ -26,6 +29,9 @@ export default function Home() {
     "inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs sm:text-sm " +
     "bg-white/5 border border-white/10 backdrop-blur-md text-white/85 " +
     "hover:text-white hover:border-risen-primary/30 hover:bg-white/10 transition";
+
+  const clickableChip =
+    chip + " cursor-pointer focus:outline-none focus:ring-2 focus:ring-risen-primary/40";
 
   const microCard =
     "relative rounded-2xl p-4 sm:p-5 bg-white/5 border border-white/10 backdrop-blur-md " +
@@ -90,6 +96,26 @@ export default function Home() {
       setCopied(false);
     }
   };
+
+  const closeModal = () => setActiveModal(null);
+
+  useEffect(() => {
+    if (!activeModal) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeModal();
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [activeModal]);
 
   return (
     <>
@@ -158,15 +184,23 @@ export default function Home() {
                     {t("home.chipRoadmap")} <span className="opacity-70">↗</span>
                   </a>
 
-                  <span className={chip}>
+                  <button
+                    type="button"
+                    className={clickableChip}
+                    onClick={() => setActiveModal("visionMission")}
+                  >
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-white/50" />
                     {t("home.chipVision")}
-                  </span>
+                  </button>
 
-                  <span className={chip}>
+                  <button
+                    type="button"
+                    className={clickableChip}
+                    onClick={() => setActiveModal("coreValues")}
+                  >
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-white/50" />
                     {t("home.chipValues")}
-                  </span>
+                  </button>
 
                   <a href="/litepaper" className={chip}>
                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-white/50" />
@@ -452,6 +486,114 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {activeModal && (
+        <div
+          className="fixed inset-0 z-[90] flex items-center justify-center bg-[#010913]/75 backdrop-blur-md px-4"
+          onClick={closeModal}
+        >
+          <div
+            className="relative w-full max-w-2xl overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] backdrop-blur-xl shadow-[0_0_60px_rgba(46,219,255,0.14)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(46,219,255,0.12),transparent_35%)]" />
+
+            <div className="relative px-6 sm:px-8 py-6 border-b border-white/10 flex items-center justify-between">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-risen-primary/20 bg-risen-primary/10 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[#A9F3FF]">
+                  <span className="inline-block h-2 w-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
+                  RISEN
+                </div>
+
+                <h3 className="mt-3 text-2xl sm:text-3xl font-bold text-white">
+                  {activeModal === "visionMission" ? "Vision & Mission" : "Core Values"}
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeModal}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white/75 transition-all duration-300 hover:bg-white/10 hover:text-white"
+                aria-label="Close"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="relative px-6 sm:px-8 py-7 sm:py-8 max-h-[75vh] overflow-y-auto">
+              {activeModal === "visionMission" ? (
+                <div className="space-y-8">
+                  <div className="rounded-2xl border border-white/10 bg-[#07111f]/85 p-5 sm:p-6 shadow-[0_0_20px_rgba(46,219,255,0.05)]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🔭</span>
+                      <h4 className="text-xl font-semibold text-white">Vision</h4>
+                    </div>
+                    <p className="mt-4 text-white/75 leading-relaxed text-sm sm:text-base">
+                      To architect a resilient, intelligent on-chain ecosystem where value compounds through structure, discipline, and continuous evolution.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-white/10 bg-[#07111f]/85 p-5 sm:p-6 shadow-[0_0_20px_rgba(46,219,255,0.05)]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🎯</span>
+                      <h4 className="text-xl font-semibold text-white">Mission</h4>
+                    </div>
+                    <p className="mt-4 text-white/75 leading-relaxed text-sm sm:text-base">
+                      To design and deploy systems that transform speculative participation into structured engagement—combining utility, transparency, and disciplined growth into a unified digital economy.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-[#07111f]/85 p-5 sm:p-6 shadow-[0_0_20px_rgba(46,219,255,0.05)]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🧱</span>
+                    <h4 className="text-xl font-semibold text-white">Core Values</h4>
+                  </div>
+
+                  <div className="mt-6 space-y-6">
+                    <div>
+                      <h5 className="text-base sm:text-lg font-semibold text-white">1. Structure Over Hype</h5>
+                      <p className="mt-2 text-white/75 leading-relaxed text-sm sm:text-base">
+                        We prioritize engineered systems over short-term noise.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h5 className="text-base sm:text-lg font-semibold text-white">2. Discipline as Strategy</h5>
+                      <p className="mt-2 text-white/75 leading-relaxed text-sm sm:text-base">
+                        Growth is intentional, not reactive.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h5 className="text-base sm:text-lg font-semibold text-white">3. Utility First</h5>
+                      <p className="mt-2 text-white/75 leading-relaxed text-sm sm:text-base">
+                        Every layer must serve a purpose.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h5 className="text-base sm:text-lg font-semibold text-white">4. Transparency Always</h5>
+                      <p className="mt-2 text-white/75 leading-relaxed text-sm sm:text-base">
+                        Clarity builds trust. Trust builds longevity.
+                      </p>
+                    </div>
+
+                    <div>
+                      <h5 className="text-base sm:text-lg font-semibold text-white">5. Continuous Evolution</h5>
+                      <p className="mt-2 text-white/75 leading-relaxed text-sm sm:text-base">
+                        RISEN adapts, iterates, and improves—constantly.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
