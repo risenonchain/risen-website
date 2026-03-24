@@ -22,7 +22,7 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [activeModal, setActiveModal] = useState<InfoModalType>(null);
 
-  const contractAddress = RISEN_CONTRACT_ADDRESS;
+  const contractAddress = 0xfaae1faadc569895162c5584ffbca845f4147777;
   const isContractLive = contractAddress.trim().startsWith("0x");
 
   const chip =
