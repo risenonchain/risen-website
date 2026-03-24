@@ -25,7 +25,7 @@ export default function FinalCTA() {
           
           {/* PRIMARY BUTTON → DEW */}
           <a
-            href="https://dew.meme/create-token"
+            href="https://four.meme/create-token"
             target="_blank"
             rel="noopener noreferrer"
             className="px-10 py-4 bg-risen-primary text-white font-bold rounded-xl shadow-[0_0_30px_rgba(46,219,255,0.4)] hover:scale-105 transition-all duration-300"
