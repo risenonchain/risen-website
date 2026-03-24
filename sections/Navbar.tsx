@@ -298,7 +298,7 @@ export default function Navbar() {
                 Live
               </div>
               <div className="mt-1 text-sm font-semibold text-white">
-                Nigeria time now
+                UTC+1
               </div>
               <div className="mt-3">
                 <LiveDateTime />
