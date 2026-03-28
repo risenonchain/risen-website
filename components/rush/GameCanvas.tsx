@@ -1,6 +1,7 @@
+// GameCanvas.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   applyCatchEffect,
   checkCollision,
@@ -39,6 +40,12 @@ type HitEffect = {
   createdAt: number;
 };
 
+type CornerGain = {
+  id: string;
+  text: string;
+  tone: "good" | "bad" | "neutral";
+};
+
 export default function GameCanvas({ isPlaying, onGameOver }: Props) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -53,6 +60,10 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
   const pausedAtRef = useRef<number | null>(null);
   const totalPausedDurationRef = useRef<number>(0);
+  const isPausedRef = useRef<boolean>(false);
+  const isRunningRef = useRef<boolean>(false);
+
+  const heavyDropSlowUntilRef = useRef<number | null>(null);
 
   const playerRef = useRef<Player>({ ...INITIAL_PLAYER });
   const stateRef = useRef({ ...INITIAL_GAME_STATE });
@@ -69,6 +80,9 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
   const [canvasHeight, setCanvasHeight] = useState<number>(560);
   const [isPaused, setIsPaused] = useState(false);
+  const [cornerGain, setCornerGain] = useState<CornerGain | null>(null);
+
+  const cornerGainTimeoutRef = useRef<number | null>(null);
 
   const gameMetrics = useMemo(
     () => ({
@@ -80,7 +94,32 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
   const canPause = isPlaying && !stateRef.current.isGameOver;
 
-  const broadcastHudUpdate = (now: number) => {
+  const clearCornerGainTimer = useCallback(() => {
+    if (cornerGainTimeoutRef.current !== null) {
+      window.clearTimeout(cornerGainTimeoutRef.current);
+      cornerGainTimeoutRef.current = null;
+    }
+  }, []);
+
+  const showCornerGain = useCallback(
+    (text: string, tone: CornerGain["tone"]) => {
+      const next: CornerGain = {
+        id: crypto.randomUUID(),
+        text,
+        tone,
+      };
+
+      setCornerGain(next);
+      clearCornerGainTimer();
+
+      cornerGainTimeoutRef.current = window.setTimeout(() => {
+        setCornerGain((current) => (current?.id === next.id ? null : current));
+      }, 850);
+    },
+    [clearCornerGainTimer]
+  );
+
+  const broadcastHudUpdate = useCallback((now: number) => {
     const multiplierActive =
       !!stateRef.current.multiplierActiveUntil &&
       stateRef.current.multiplierActiveUntil > now;
@@ -94,28 +133,109 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
           elapsedSeconds: stateRef.current.elapsedSeconds,
           comboMultiplier: stateRef.current.comboMultiplier,
           multiplierActive,
-          isPaused,
+          isPaused: isPausedRef.current,
         },
       })
     );
-  };
+  }, []);
 
-  const togglePause = () => {
-    if (!canPause) return;
+  const drawCurrentFrame = useCallback((now: number) => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
 
-    setIsPaused((prev) => {
-      const next = !prev;
+    if (!canvas || !ctx) return;
 
-      if (next) {
-        pausedAtRef.current = performance.now();
-      } else if (pausedAtRef.current !== null) {
-        totalPausedDurationRef.current += performance.now() - pausedAtRef.current;
-        pausedAtRef.current = null;
-      }
+    const multiplierActive =
+      !!stateRef.current.multiplierActiveUntil &&
+      stateRef.current.multiplierActiveUntil > now;
 
-      return next;
+    ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+    drawBackground(ctx, stateRef.current.level, multiplierActive);
+    drawItems(ctx, itemsRef.current);
+    drawHitEffects(ctx, hitEffectsRef.current, now);
+    drawPlayerVault(ctx, playerRef.current);
+
+    if (
+      !isPausedRef.current &&
+      screenFlashRef.current.type === "good" &&
+      screenFlashRef.current.until > now
+    ) {
+      drawScreenFlash(ctx, "rgba(250, 204, 21, 0.06)");
+    }
+
+    if (
+      !isPausedRef.current &&
+      screenFlashRef.current.type === "bad" &&
+      screenFlashRef.current.until > now
+    ) {
+      drawScreenFlash(ctx, "rgba(239, 68, 68, 0.08)");
+    }
+
+    if (isPausedRef.current) {
+      drawPausedOverlay(ctx);
+    }
+  }, []);
+
+  const stopLoop = useCallback(() => {
+    isRunningRef.current = false;
+
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+  }, []);
+
+  const scheduleNextFrame = useCallback(() => {
+    if (!isPlaying || isPausedRef.current || stateRef.current.isGameOver) {
+      stopLoop();
+      return;
+    }
+
+    isRunningRef.current = true;
+    animationFrameRef.current = requestAnimationFrame((now) => {
+      gameLoopRef.current(now);
     });
-  };
+  }, [isPlaying, stopLoop]);
+
+  const pauseGame = useCallback(() => {
+    if (!isPlaying || stateRef.current.isGameOver || isPausedRef.current) return;
+
+    isPausedRef.current = true;
+    setIsPaused(true);
+    pausedAtRef.current = performance.now();
+
+    stopLoop();
+    drawCurrentFrame(pausedAtRef.current);
+    broadcastHudUpdate(pausedAtRef.current);
+  }, [broadcastHudUpdate, drawCurrentFrame, isPlaying, stopLoop]);
+
+  const resumeGame = useCallback(() => {
+    if (!isPlaying || stateRef.current.isGameOver || !isPausedRef.current) return;
+
+    const now = performance.now();
+
+    if (pausedAtRef.current !== null) {
+      totalPausedDurationRef.current += now - pausedAtRef.current;
+      pausedAtRef.current = null;
+    }
+
+    isPausedRef.current = false;
+    setIsPaused(false);
+    lastSpawnTimeRef.current = now;
+
+    broadcastHudUpdate(now);
+    scheduleNextFrame();
+  }, [broadcastHudUpdate, isPlaying, scheduleNextFrame]);
+
+  const togglePause = useCallback(() => {
+    if (!isPlaying || stateRef.current.isGameOver) return;
+
+    if (isPausedRef.current) {
+      resumeGame();
+    } else {
+      pauseGame();
+    }
+  }, [isPlaying, pauseGame, resumeGame]);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -124,8 +244,7 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
     const updateResponsiveHeight = () => {
       const width = wrapper.clientWidth;
       const ratio = GAME_HEIGHT / GAME_WIDTH;
-      const nextHeight = width * ratio;
-      setCanvasHeight(nextHeight);
+      setCanvasHeight(width * ratio);
     };
 
     updateResponsiveHeight();
@@ -153,7 +272,7 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
         return;
       }
 
-      if (isPaused) return;
+      if (isPausedRef.current) return;
 
       if (event.key === "ArrowLeft" || key === "a") {
         keyStateRef.current.left = true;
@@ -181,18 +300,145 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [isPaused, isPlaying]);
+  }, [isPlaying, togglePause]);
+
+  const gameLoopRef = useRef<(now: number) => void>(() => {});
+
+  gameLoopRef.current = (now: number) => {
+    if (!isPlaying || isPausedRef.current) {
+      stopLoop();
+      return;
+    }
+
+    const effectiveElapsedMs =
+      now - startTimeRef.current - totalPausedDurationRef.current;
+
+    const elapsed = Math.floor(effectiveElapsedMs / 1000);
+
+    if (elapsed !== lastTimerSecondRef.current) {
+      lastTimerSecondRef.current = elapsed;
+      const currentLevel = getLevelFromElapsed(elapsed);
+      stateRef.current.level = currentLevel;
+      stateRef.current.elapsedSeconds = elapsed;
+    }
+
+    if (
+      heavyDropSlowUntilRef.current !== null &&
+      now >= heavyDropSlowUntilRef.current
+    ) {
+      playerRef.current = {
+        ...playerRef.current,
+        speed: INITIAL_PLAYER.speed,
+      };
+      heavyDropSlowUntilRef.current = null;
+    }
+
+    const direction = keyStateRef.current.left
+      ? "left"
+      : keyStateRef.current.right
+      ? "right"
+      : null;
+
+    playerRef.current = movePlayer(playerRef.current, direction);
+
+    const spawnInterval = getSpawnInterval(stateRef.current.level);
+    if (now - lastSpawnTimeRef.current >= spawnInterval) {
+      itemsRef.current.push(createFallingItem(stateRef.current.level));
+      lastSpawnTimeRef.current = now;
+    }
+
+    itemsRef.current = itemsRef.current
+      .map((item) => ({
+        ...item,
+        y: item.y + item.speed,
+        rotation: item.rotation + item.rotationSpeed,
+      }))
+      .filter((item) => item.y <= GAME_HEIGHT + 70);
+
+    const remainingItems: FallingItem[] = [];
+
+    for (const item of itemsRef.current) {
+      if (checkCollision(item, playerRef.current)) {
+        const prevScore = stateRef.current.score;
+        stateRef.current = applyCatchEffect(item.type, stateRef.current, now);
+
+        const gained = stateRef.current.score - prevScore;
+        const hitText = formatHitText(item.type, gained);
+
+        if (isBadItem(item.type)) {
+          screenFlashRef.current = { type: "bad", until: now + 120 };
+        } else {
+          screenFlashRef.current = { type: "good", until: now + 90 };
+        }
+
+        if (item.type === "heavy_drop") {
+          playerRef.current = {
+            ...playerRef.current,
+            speed: Math.max(5, playerRef.current.speed - 1),
+          };
+          heavyDropSlowUntilRef.current = now + 1300;
+        }
+
+        hitEffectsRef.current.push({
+          id: crypto.randomUUID(),
+          x: item.x,
+          y: item.y,
+          text: hitText,
+          color: getHitColor(item.type),
+          createdAt: now,
+        });
+
+        if (shouldShowCornerGain(item.type, gained)) {
+          showCornerGain(
+            hitText,
+            gained > 0 ? "good" : gained < 0 ? "bad" : "neutral"
+          );
+        }
+
+        if (stateRef.current.isGameOver) {
+          break;
+        }
+      } else {
+        remainingItems.push(item);
+      }
+    }
+
+    itemsRef.current = remainingItems;
+    hitEffectsRef.current = hitEffectsRef.current.filter(
+      (effect) => now - effect.createdAt < 700
+    );
+
+    drawCurrentFrame(now);
+    broadcastHudUpdate(now);
+
+    if (stateRef.current.isGameOver) {
+      stopLoop();
+      onGameOver({
+        finalScore: stateRef.current.score,
+        durationSeconds: stateRef.current.elapsedSeconds,
+        levelReached: stateRef.current.level,
+        livesRemaining: stateRef.current.lives,
+      });
+      return;
+    }
+
+    scheduleNextFrame();
+  };
 
   useEffect(() => {
     if (!isPlaying) {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      stopLoop();
       itemsRef.current = [];
       hitEffectsRef.current = [];
       pausedAtRef.current = null;
       totalPausedDurationRef.current = 0;
+      heavyDropSlowUntilRef.current = null;
+      keyStateRef.current = { left: false, right: false };
+      screenFlashRef.current = { type: null, until: 0 };
+      isPausedRef.current = false;
       setIsPaused(false);
+      clearCornerGainTimer();
+      setCornerGain(null);
       return;
     }
 
@@ -214,162 +460,33 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
     lastTimerSecondRef.current = 0;
     pausedAtRef.current = null;
     totalPausedDurationRef.current = 0;
+    heavyDropSlowUntilRef.current = null;
     screenFlashRef.current = { type: null, until: 0 };
+    keyStateRef.current = { left: false, right: false };
+    isPausedRef.current = false;
     setIsPaused(false);
+    clearCornerGainTimer();
+    setCornerGain(null);
 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-
-    if (!canvas || !ctx) return;
-
-    const renderFrame = (now: number) => {
-      const effectiveElapsedMs =
-        now -
-        startTimeRef.current -
-        totalPausedDurationRef.current -
-        (pausedAtRef.current ? now - pausedAtRef.current : 0);
-
-      const elapsed = Math.floor(effectiveElapsedMs / 1000);
-
-      if (elapsed !== lastTimerSecondRef.current) {
-        lastTimerSecondRef.current = elapsed;
-        const currentLevel = getLevelFromElapsed(elapsed);
-        stateRef.current.level = currentLevel;
-        stateRef.current.elapsedSeconds = elapsed;
-      }
-
-      const multiplierActive =
-        !!stateRef.current.multiplierActiveUntil &&
-        stateRef.current.multiplierActiveUntil > now;
-
-      ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-      drawBackground(ctx, stateRef.current.level, multiplierActive);
-
-      if (!isPaused) {
-        const direction = keyStateRef.current.left
-          ? "left"
-          : keyStateRef.current.right
-          ? "right"
-          : null;
-
-        playerRef.current = movePlayer(playerRef.current, direction);
-
-        const spawnInterval = getSpawnInterval(stateRef.current.level);
-        if (now - lastSpawnTimeRef.current >= spawnInterval) {
-          itemsRef.current.push(createFallingItem(stateRef.current.level));
-          lastSpawnTimeRef.current = now;
-        }
-
-        itemsRef.current = itemsRef.current
-          .map((item) => ({
-            ...item,
-            y: item.y + item.speed,
-            rotation: item.rotation + item.rotationSpeed,
-          }))
-          .filter((item) => item.y <= GAME_HEIGHT + 70);
-
-        const remainingItems: FallingItem[] = [];
-
-        for (const item of itemsRef.current) {
-          if (checkCollision(item, playerRef.current)) {
-            const prevScore = stateRef.current.score;
-            stateRef.current = applyCatchEffect(item.type, stateRef.current, now);
-
-            const gained = stateRef.current.score - prevScore;
-
-            if (isBadItem(item.type)) {
-              screenFlashRef.current = { type: "bad", until: now + 120 };
-            } else {
-              screenFlashRef.current = { type: "good", until: now + 90 };
-            }
-
-            if (item.type === "heavy_drop") {
-              playerRef.current = {
-                ...playerRef.current,
-                speed: Math.max(5, playerRef.current.speed - 1),
-              };
-
-              window.setTimeout(() => {
-                playerRef.current = {
-                  ...playerRef.current,
-                  speed: INITIAL_PLAYER.speed,
-                };
-              }, 1300);
-            }
-
-            hitEffectsRef.current.push({
-              id: crypto.randomUUID(),
-              x: item.x,
-              y: item.y,
-              text: formatHitText(item.type, gained),
-              color: getHitColor(item.type),
-              createdAt: now,
-            });
-
-            if (stateRef.current.isGameOver) {
-              break;
-            }
-          } else {
-            remainingItems.push(item);
-          }
-        }
-
-        itemsRef.current = remainingItems;
-        hitEffectsRef.current = hitEffectsRef.current.filter(
-          (effect) => now - effect.createdAt < 700
-        );
-      }
-
-      drawItems(ctx, itemsRef.current);
-      drawHitEffects(ctx, hitEffectsRef.current, now);
-      drawPlayerVault(ctx, playerRef.current);
-
-      if (
-        !isPaused &&
-        screenFlashRef.current.type === "good" &&
-        screenFlashRef.current.until > now
-      ) {
-        drawScreenFlash(ctx, "rgba(250, 204, 21, 0.06)");
-      }
-
-      if (
-        !isPaused &&
-        screenFlashRef.current.type === "bad" &&
-        screenFlashRef.current.until > now
-      ) {
-        drawScreenFlash(ctx, "rgba(239, 68, 68, 0.08)");
-      }
-
-      if (isPaused) {
-        drawPausedOverlay(ctx);
-      }
-
-      broadcastHudUpdate(now);
-
-      if (stateRef.current.isGameOver) {
-        onGameOver({
-          finalScore: stateRef.current.score,
-          durationSeconds: stateRef.current.elapsedSeconds,
-          levelReached: stateRef.current.level,
-          livesRemaining: stateRef.current.lives,
-        });
-        return;
-      }
-
-      animationFrameRef.current = requestAnimationFrame(renderFrame);
-    };
-
-    animationFrameRef.current = requestAnimationFrame(renderFrame);
+    drawCurrentFrame(startTimeRef.current);
+    broadcastHudUpdate(startTimeRef.current);
+    scheduleNextFrame();
 
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      stopLoop();
+      clearCornerGainTimer();
     };
-  }, [isPlaying, isPaused, onGameOver]);
+  }, [
+    broadcastHudUpdate,
+    clearCornerGainTimer,
+    drawCurrentFrame,
+    isPlaying,
+    scheduleNextFrame,
+    stopLoop,
+  ]);
 
   const moveBasketToClientX = (clientX: number) => {
-    if (isPaused) return;
+    if (isPausedRef.current) return;
 
     const wrapper = wrapperRef.current;
     if (!wrapper) return;
@@ -390,7 +507,9 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
       <div className="mb-2 sm:mb-3 flex items-center justify-between gap-3 text-[11px] sm:text-sm text-white/65">
         <span>Move: drag, mouse, ← →, A / D</span>
         <span className="hidden sm:inline">
-          {isPaused ? "Game paused. Press P or Resume." : "Catch $RSN. Avoid destructive drops."}
+          {isPaused
+            ? "Game paused. Press P or Resume."
+            : "Catch $RSN. Avoid destructive drops."}
         </span>
         <div className="flex items-center gap-2">
           <span className="sm:hidden">{isPaused ? "Paused" : "Drag basket"}</span>
@@ -423,24 +542,64 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
           className="w-full rounded-[22px] bg-[#06101a] touch-none"
         />
 
+        <div className="pointer-events-none absolute right-3 top-3 z-20 flex min-h-[42px] items-start justify-end">
+          {cornerGain ? (
+            <div
+              key={cornerGain.id}
+              className={
+                "animate-[fadeCornerGain_0.85s_ease-out_forwards] rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] shadow-lg backdrop-blur-md " +
+                (cornerGain.tone === "good"
+                  ? "border-amber-300/40 bg-amber-300/12 text-amber-100"
+                  : cornerGain.tone === "bad"
+                  ? "border-red-300/35 bg-red-400/12 text-red-100"
+                  : "border-cyan-300/35 bg-cyan-300/10 text-cyan-100")
+              }
+            >
+              {cornerGain.text}
+            </div>
+          ) : null}
+        </div>
+
         {!isPaused ? (
           <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full border border-white/10 bg-[#04101a]/78 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-white/65 backdrop-blur sm:hidden">
             Drag basket
           </div>
         ) : null}
+
+        <style jsx>{`
+          @keyframes fadeCornerGain {
+            0% {
+              opacity: 0;
+              transform: translateY(-8px) scale(0.96);
+            }
+            12% {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+            100% {
+              opacity: 0;
+              transform: translateY(-14px) scale(1.02);
+            }
+          }
+        `}</style>
       </div>
     </div>
   );
 }
 
+function shouldShowCornerGain(type: FallingItemType, gained: number) {
+  if (type === "multiplier" || type === "streak") return true;
+  return gained !== 0;
+}
+
 function formatHitText(type: FallingItemType, gained: number) {
-  if (type === "normal_rsn") return `+${Math.max(gained, 50)}`;
-  if (type === "golden_rsn") return `+${Math.max(gained, 200)}`;
+  if (type === "normal_rsn") return `+${Math.max(gained, 5)}`;
+  if (type === "golden_rsn") return `+${Math.max(gained, 20)}`;
   if (type === "multiplier") return "2X";
   if (type === "streak") return "STREAK";
-  if (type === "red_crash_orb") return "-120";
-  if (type === "heavy_drop") return "-80";
-  return "-100";
+  if (type === "red_crash_orb") return `${Math.min(gained, -120)}`;
+  if (type === "heavy_drop") return `${Math.min(gained, -80)}`;
+  return `${Math.min(gained, -100)}`;
 }
 
 function getHitColor(type: FallingItemType) {
@@ -510,7 +669,11 @@ function drawPausedOverlay(ctx: CanvasRenderingContext2D) {
 
   ctx.font = "16px Arial";
   ctx.fillStyle = "rgba(255,255,255,0.72)";
-  ctx.fillText("Press P or tap Resume to continue", GAME_WIDTH / 2, GAME_HEIGHT / 2 + 24);
+  ctx.fillText(
+    "Press P or tap Resume to continue",
+    GAME_WIDTH / 2,
+    GAME_HEIGHT / 2 + 24
+  );
 
   ctx.restore();
 }
