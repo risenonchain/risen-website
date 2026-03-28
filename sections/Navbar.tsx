@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "../public/logo.png";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -12,6 +13,8 @@ const sectionIds = ["home", "structure", "engine", "trust", "utility"] as const;
 
 export default function Navbar() {
   const { t } = useLanguage();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const sections = useMemo(
     () => [
@@ -37,6 +40,8 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
+    if (pathname !== "/") return;
+
     const observers: IntersectionObserver[] = [];
 
     sectionIds.forEach((sectionId) => {
@@ -58,9 +63,33 @@ export default function Navbar() {
     });
 
     return () => observers.forEach((obs) => obs.disconnect());
-  }, []);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (pathname !== "/") return;
+
+    const applyHashActive = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (hash && sectionIds.includes(hash as (typeof sectionIds)[number])) {
+        setActive(hash);
+      } else {
+        setActive("home");
+      }
+    };
+
+    applyHashActive();
+    window.addEventListener("hashchange", applyHashActive);
+
+    return () => window.removeEventListener("hashchange", applyHashActive);
+  }, [pathname]);
 
   const scrollTo = (id: string) => {
+    if (pathname !== "/") {
+      setMenuOpen(false);
+      router.push(`/#${id}`);
+      return;
+    }
+
     const el = document.getElementById(id);
     if (!el) return;
 
@@ -70,6 +99,10 @@ export default function Navbar() {
     window.scrollTo({ top, behavior: "smooth" });
     setActive(id);
     setMenuOpen(false);
+
+    if (window.location.hash !== `#${id}`) {
+      window.history.replaceState(null, "", `/#${id}`);
+    }
   };
 
   const navItemClass = (id?: string) =>
@@ -297,9 +330,7 @@ export default function Navbar() {
               <div className="text-[10px] uppercase tracking-[0.18em] text-white/45">
                 Live
               </div>
-              <div className="mt-1 text-sm font-semibold text-white">
-                UTC+1
-              </div>
+              <div className="mt-1 text-sm font-semibold text-white">UTC+1</div>
               <div className="mt-3">
                 <LiveDateTime />
               </div>
