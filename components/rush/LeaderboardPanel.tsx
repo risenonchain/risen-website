@@ -11,6 +11,9 @@ type Props = {
   loading?: boolean;
   error?: string | null;
   onRetry?: () => void;
+  title?: string;
+  subtitle?: string;
+  mode?: "score" | "level";
 };
 
 export default function LeaderboardPanel({
@@ -19,19 +22,21 @@ export default function LeaderboardPanel({
   loading = false,
   error = null,
   onRetry,
+  title = "Top Players",
+  subtitle = "Rush Leaderboard",
+  mode = "score",
 }: Props) {
   const normalizedCurrentUsername = (currentUsername || "").trim().toLowerCase();
+  const metricLabel = mode === "level" ? "level" : "points";
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
         <div>
           <div className="text-sm uppercase tracking-[0.25em] text-white/55">
-            Rush Leaderboard
+            {subtitle}
           </div>
-          <div className="mt-1 text-lg font-semibold text-white">
-            Top Players
-          </div>
+          <div className="mt-1 text-lg font-semibold text-white">{title}</div>
         </div>
 
         {onRetry ? (
@@ -84,9 +89,17 @@ export default function LeaderboardPanel({
             const isCurrentUser =
               entry.username.trim().toLowerCase() === normalizedCurrentUsername;
 
+            const primaryValue =
+              mode === "level" ? entry.level.toLocaleString() : entry.score.toLocaleString();
+
+            const secondaryLine =
+              mode === "level"
+                ? `Score ${entry.score.toLocaleString()}${isCurrentUser ? " • You" : ""}`
+                : `Level ${entry.level}${isCurrentUser ? " • You" : ""}`;
+
             return (
               <div
-                key={`${entry.rank}-${entry.username}`}
+                key={`${mode}-${entry.rank}-${entry.username}`}
                 className={[
                   "grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-2xl border px-4 py-3 transition",
                   isCurrentUser
@@ -110,17 +123,14 @@ export default function LeaderboardPanel({
                     {entry.username}
                   </div>
                   <div className="text-xs uppercase tracking-[0.18em] text-white/45">
-                    Level {entry.level}
-                    {isCurrentUser ? " • You" : ""}
+                    {secondaryLine}
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <div className="text-sm font-semibold text-white">
-                    {entry.score.toLocaleString()}
-                  </div>
+                  <div className="text-sm font-semibold text-white">{primaryValue}</div>
                   <div className="text-xs uppercase tracking-[0.18em] text-white/45">
-                    points
+                    {metricLabel}
                   </div>
                 </div>
               </div>

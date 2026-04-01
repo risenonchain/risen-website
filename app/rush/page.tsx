@@ -1,21 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GameCanvas from "@/components/rush/GameCanvas";
 import GameHUD from "@/components/rush/GameHUD";
 import GameOverModal from "@/components/rush/GameOverModal";
-import LeaderboardPanel from "@/components/rush/LeaderboardPanel";
 import RewardMeter from "@/components/rush/RewardMeter";
 import StartModal from "@/components/rush/StartModal";
 import {
   clearRushAuth,
   fetchCurrentRushUser,
-  fetchRushLeaderboard,
   fetchRushWallet,
   finishRushSession,
   hasRushToken,
-  LeaderboardEntry,
   MeResponse,
   startRushSession,
   WalletResponse,
@@ -48,7 +46,10 @@ export default function RushPage() {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [sessionId, setSessionId] = useState<number | null>(null);
+
   const [trialsRemaining, setTrialsRemaining] = useState(3);
+  const [dailyTrialsRemaining, setDailyTrialsRemaining] = useState(3);
+  const [vaultTrialsRemaining, setVaultTrialsRemaining] = useState(0);
 
   const [liveScore, setLiveScore] = useState(0);
   const [liveLives, setLiveLives] = useState(3);
@@ -61,26 +62,16 @@ export default function RushPage() {
   const [finalLevel, setFinalLevel] = useState(1);
   const [finalElapsedSeconds, setFinalElapsedSeconds] = useState(0);
 
-  const [leaderboardEntries, setLeaderboardEntries] = useState<LeaderboardEntry[]>([]);
-
   const loadWallet = useCallback(async () => {
     try {
       setWalletError(null);
       const result = await fetchRushWallet();
       setWallet(result);
+      setVaultTrialsRemaining(result.vault_trials ?? 0);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to load wallet";
       setWalletError(message);
-    }
-  }, []);
-
-  const loadLeaderboard = useCallback(async () => {
-    try {
-      const result = await fetchRushLeaderboard();
-      setLeaderboardEntries(result);
-    } catch (error) {
-      console.error("Leaderboard load failed", error);
     }
   }, []);
 
@@ -96,7 +87,6 @@ export default function RushPage() {
         setCurrentUser(me);
         localStorage.setItem("risen_rush_username", me.username);
         await loadWallet();
-        await loadLeaderboard();
       } catch {
         clearRushAuth();
         router.replace("/rush/login");
@@ -107,7 +97,7 @@ export default function RushPage() {
     };
 
     bootstrap();
-  }, [loadLeaderboard, loadWallet, router]);
+  }, [loadWallet, router]);
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -145,6 +135,8 @@ export default function RushPage() {
 
       setSessionId(result.session_id);
       setTrialsRemaining(result.trials_remaining);
+      setDailyTrialsRemaining(result.daily_trials_remaining ?? 0);
+      setVaultTrialsRemaining(result.vault_trials_remaining ?? 0);
 
       setLiveScore(0);
       setLiveLives(result.starting_lives);
@@ -189,7 +181,6 @@ export default function RushPage() {
         });
 
         await loadWallet();
-        await loadLeaderboard();
       } catch (error) {
         const message =
           error instanceof Error ? error.message : "Failed to save session";
@@ -198,7 +189,7 @@ export default function RushPage() {
         setIsSubmitting(false);
       }
     },
-    [loadLeaderboard, loadWallet, sessionId]
+    [loadWallet, sessionId]
   );
 
   const handlePlayAgain = () => {
@@ -253,6 +244,20 @@ export default function RushPage() {
                 </span>
               </div>
 
+              <Link
+                href="/rush/profile"
+                className="rounded-2xl border border-risen-primary/25 bg-risen-primary/10 px-3 py-2 text-xs font-semibold text-white transition hover:bg-risen-primary/20 sm:px-4 sm:py-3 sm:text-sm"
+              >
+                Profile
+              </Link>
+
+              <Link
+                href="/rush/leaderboard"
+                className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10 sm:px-4 sm:py-3 sm:text-sm"
+              >
+                Leaderboard
+              </Link>
+
               <button
                 onClick={handleLogout}
                 className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white transition hover:bg-white/10 sm:px-4 sm:py-3 sm:text-sm"
@@ -262,7 +267,13 @@ export default function RushPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:gap-6 xl:grid-cols-[1.3fr_0.7fr]">
+          <div className="mb-4 grid gap-3 sm:mb-6 md:grid-cols-3">
+            <TopStatCard label="Daily Trials Left" value={dailyTrialsRemaining} />
+            <TopStatCard label="Vault Trials" value={vaultTrialsRemaining} />
+            <TopStatCard label="Total Playable" value={trialsRemaining} />
+          </div>
+
+          <div className="grid gap-4 sm:gap-6 xl:grid-cols-[1.35fr_0.65fr]">
             <div className="relative">
               <GameHUD
                 score={liveScore}
@@ -300,20 +311,57 @@ export default function RushPage() {
             <div className="space-y-4 sm:space-y-5">
               <RewardMeter availablePoints={wallet?.available_points ?? 0} />
 
-              <LeaderboardPanel entries={leaderboardEntries} />
+              <div className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                <div className="text-xs sm:text-sm uppercase tracking-[0.25em] text-white/55">
+                  Quick Actions
+                </div>
+
+                <div className="mt-4 grid gap-3">
+                  <Link
+                    href="/rush/profile"
+                    className="rounded-2xl border border-risen-primary/25 bg-risen-primary/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-risen-primary/20"
+                  >
+                    Open Profile
+                  </Link>
+
+                  <Link
+                    href="/rush/leaderboard"
+                    className="rounded-2xl border border-white/10 bg-[#07111d] px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
+                  >
+                    View Leaderboards
+                  </Link>
+                </div>
+              </div>
 
               <div className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
                 <div className="text-xs sm:text-sm uppercase tracking-[0.25em] text-white/55">
-                  Session Rules
+                  Game Rules
                 </div>
 
-                <div className="mt-4 space-y-3 text-xs sm:text-sm text-white/75">
-                  <p>Level increases every 30 seconds if you still have lives.</p>
-                  <p>Normal RSN = 5 points.</p>
-                  <p>Golden RSN = 20 points.</p>
-                  <p>Multiplier grants 2x scoring for 5 seconds.</p>
-                  <p>Bad drops reduce both points and lives.</p>
-                  <p>Minimum future claim threshold = 100,000 points.</p>
+                <div className="mt-4 space-y-3 text-sm text-white/75">
+                  <RuleItem title="Catch to score">
+                    Normal RSN gives 5 points. Golden RSN gives 20 points.
+                  </RuleItem>
+
+                  <RuleItem title="Survive longer">
+                    Level increases every 30 seconds while you still have lives.
+                  </RuleItem>
+
+                  <RuleItem title="Use multipliers">
+                    Multiplier pickups grant 2x scoring for 5 seconds.
+                  </RuleItem>
+
+                  <RuleItem title="Avoid bad drops">
+                    Crash orbs, heavy drops, and glitch blocks reduce score and lives.
+                  </RuleItem>
+
+                  <RuleItem title="Referral rewards">
+                    Referral bonuses are stored as vault trials.
+                  </RuleItem>
+
+                  <RuleItem title="Claim threshold">
+                    Minimum future redemption threshold is 100,000 points.
+                  </RuleItem>
                 </div>
               </div>
 
@@ -324,16 +372,12 @@ export default function RushPage() {
 
                 <div className="mt-4 grid grid-cols-1 gap-3">
                   <WalletStat
-                    label="Total Earned"
-                    value={wallet?.total_points_earned ?? 0}
-                  />
-                  <WalletStat
                     label="Available Points"
                     value={wallet?.available_points ?? 0}
                   />
                   <WalletStat
-                    label="Claimed Points"
-                    value={wallet?.claimed_points ?? 0}
+                    label="Vault Trials"
+                    value={wallet?.vault_trials ?? 0}
                   />
                 </div>
 
@@ -360,6 +404,34 @@ function WalletStat({ label, value }: { label: string; value: number }) {
       <div className="mt-1 text-lg font-semibold text-white">
         {value.toLocaleString()}
       </div>
+    </div>
+  );
+}
+
+function TopStatCard({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur-md">
+      <div className="text-[11px] uppercase tracking-[0.2em] text-white/50">
+        {label}
+      </div>
+      <div className="mt-1 text-xl font-semibold text-white">
+        {value.toLocaleString()}
+      </div>
+    </div>
+  );
+}
+
+function RuleItem({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/10 bg-[#07111d] px-4 py-3">
+      <div className="text-sm font-semibold text-white">{title}</div>
+      <div className="mt-1 text-xs leading-6 text-white/65">{children}</div>
     </div>
   );
 }

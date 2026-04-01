@@ -1,14 +1,33 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchCurrentRushUser,
+  getTurnstileSiteKey,
   loginRushUser,
   registerRushUser,
   saveRushAuth,
 } from "@/lib/api";
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        container: string | HTMLElement,
+        options: {
+          sitekey: string;
+          callback?: (token: string) => void;
+          "expired-callback"?: () => void;
+          "error-callback"?: () => void;
+          theme?: "light" | "dark" | "auto";
+        }
+      ) => string;
+      reset: (widgetId?: string) => void;
+    };
+  }
+}
 
 function normalizeUsername(value: string) {
   return value.trim().replace(/\s+/g, "_");
@@ -16,17 +35,26 @@ function normalizeUsername(value: string) {
 
 export default function RushRegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const referralCodeFromUrl = searchParams.get("ref")?.trim() || "";
+
+  const widgetRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
 
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const turnstileEnabled = !!getTurnstileSiteKey();
 
   const normalizedUsername = useMemo(
     () => normalizeUsername(username),
@@ -40,6 +68,45 @@ export default function RushRegisterPage() {
 
   const passwordsMismatch =
     confirmPassword.length > 0 && password !== confirmPassword;
+
+  useEffect(() => {
+    if (!turnstileEnabled) return;
+    if (!widgetRef.current) return;
+
+    const existingScript = document.querySelector(
+      'script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
+    );
+
+    const renderWidget = () => {
+      if (!window.turnstile || !widgetRef.current || widgetIdRef.current) return;
+
+      widgetIdRef.current = window.turnstile.render(widgetRef.current, {
+        sitekey: getTurnstileSiteKey(),
+        theme: "dark",
+        callback: (token: string) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(null),
+        "error-callback": () => setTurnstileToken(null),
+      });
+    };
+
+    if (existingScript) {
+      const waitForTurnstile = window.setInterval(() => {
+        if (window.turnstile) {
+          window.clearInterval(waitForTurnstile);
+          renderWidget();
+        }
+      }, 200);
+
+      return () => window.clearInterval(waitForTurnstile);
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.defer = true;
+    script.onload = renderWidget;
+    document.body.appendChild(script);
+  }, [turnstileEnabled]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -56,20 +123,32 @@ export default function RushRegisterPage() {
       return;
     }
 
+    if (turnstileEnabled && !turnstileToken) {
+      setError("Please complete the verification challenge.");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       setError(null);
 
-      await registerRushUser({
-        email: email.trim(),
-        username: finalUsername,
-        password,
-      });
+      await registerRushUser(
+        {
+          email: email.trim(),
+          username: finalUsername,
+          password,
+          referral_code: referralCodeFromUrl || undefined,
+        },
+        turnstileToken
+      );
 
-      const loginResult = await loginRushUser({
-        email: email.trim(),
-        password,
-      });
+      const loginResult = await loginRushUser(
+        {
+          email: email.trim(),
+          password,
+        },
+        turnstileToken
+      );
       saveRushAuth(loginResult.access_token, finalUsername);
 
       const me = await fetchCurrentRushUser();
@@ -80,6 +159,11 @@ export default function RushRegisterPage() {
       const message =
         err instanceof Error ? err.message : "Registration failed";
       setError(message);
+
+      if (turnstileEnabled && window.turnstile && widgetIdRef.current) {
+        window.turnstile.reset(widgetIdRef.current);
+        setTurnstileToken(null);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -109,9 +193,9 @@ export default function RushRegisterPage() {
             </div>
 
             <div className="space-y-3 text-sm text-white/68">
-              <p>• 10,000 points = 1 RSN</p>
+              <p>• 3 daily trials + vault rewards</p>
               <p>• 100,000 points minimum threshold</p>
-              <p>• Bad drops reduce both score and lives</p>
+              <p>• Referrals unlock extra vault trials</p>
             </div>
           </div>
 
@@ -126,6 +210,15 @@ export default function RushRegisterPage() {
               <p className="mt-3 text-white/68">
                 Set up your RISEN Rush identity and enter the game.
               </p>
+
+              {referralCodeFromUrl ? (
+                <div className="mt-5 rounded-2xl border border-risen-primary/30 bg-risen-primary/10 px-4 py-3 text-sm text-cyan-100">
+                  Referral code detected:{" "}
+                  <span className="font-semibold text-white">
+                    {referralCodeFromUrl}
+                  </span>
+                </div>
+              ) : null}
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 <div>
@@ -219,6 +312,12 @@ export default function RushRegisterPage() {
                     </p>
                   ) : null}
                 </div>
+
+                {turnstileEnabled ? (
+                  <div>
+                    <div ref={widgetRef} className="min-h-[65px]" />
+                  </div>
+                ) : null}
 
                 {error ? (
                   <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">

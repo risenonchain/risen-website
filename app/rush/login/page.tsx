@@ -2,30 +2,102 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import {
   fetchCurrentRushUser,
+  getTurnstileSiteKey,
   loginRushUser,
   saveRushAuth,
 } from "@/lib/api";
 
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        container: string | HTMLElement,
+        options: {
+          sitekey: string;
+          callback?: (token: string) => void;
+          "expired-callback"?: () => void;
+          "error-callback"?: () => void;
+          theme?: "light" | "dark" | "auto";
+        }
+      ) => string;
+      reset: (widgetId?: string) => void;
+    };
+  }
+}
+
 export default function RushLoginPage() {
   const router = useRouter();
+  const widgetRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const turnstileEnabled = !!getTurnstileSiteKey();
+
+  useEffect(() => {
+    if (!turnstileEnabled) return;
+    if (!widgetRef.current) return;
+
+    const existingScript = document.querySelector(
+      'script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
+    );
+
+    const renderWidget = () => {
+      if (!window.turnstile || !widgetRef.current || widgetIdRef.current) return;
+
+      widgetIdRef.current = window.turnstile.render(widgetRef.current, {
+        sitekey: getTurnstileSiteKey(),
+        theme: "dark",
+        callback: (token: string) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(null),
+        "error-callback": () => setTurnstileToken(null),
+      });
+    };
+
+    if (existingScript) {
+      const waitForTurnstile = window.setInterval(() => {
+        if (window.turnstile) {
+          window.clearInterval(waitForTurnstile);
+          renderWidget();
+        }
+      }, 200);
+
+      return () => window.clearInterval(waitForTurnstile);
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.defer = true;
+    script.onload = renderWidget;
+    document.body.appendChild(script);
+  }, [turnstileEnabled]);
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
+    if (turnstileEnabled && !turnstileToken) {
+      setError("Please complete the verification challenge.");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
       setError(null);
 
-      const loginResult = await loginRushUser({ email, password });
+      const loginResult = await loginRushUser(
+        { email, password },
+        turnstileToken
+      );
       saveRushAuth(loginResult.access_token, "");
 
       const me = await fetchCurrentRushUser();
@@ -35,6 +107,11 @@ export default function RushLoginPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);
+
+      if (turnstileEnabled && window.turnstile && widgetIdRef.current) {
+        window.turnstile.reset(widgetIdRef.current);
+        setTurnstileToken(null);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -110,6 +187,12 @@ export default function RushLoginPage() {
                     placeholder="Enter your password"
                   />
                 </div>
+
+                {turnstileEnabled ? (
+                  <div>
+                    <div ref={widgetRef} className="min-h-[65px]" />
+                  </div>
+                ) : null}
 
                 <div className="-mt-1 flex justify-end">
                   <Link
