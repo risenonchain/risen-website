@@ -53,7 +53,7 @@ export default function StartModal({
             <div className="mb-3 text-xs uppercase tracking-[0.22em] text-white/50">
               Verification Required
             </div>
-            <div ref={turnstileRef} className="min-h-[65px]" />
+            <div ref={turnstileRef} className="min-h-[70px]" />
           </div>
         ) : null}
 
