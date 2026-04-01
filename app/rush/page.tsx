@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GameCanvas from "@/components/rush/GameCanvas";
@@ -13,11 +13,30 @@ import {
   fetchCurrentRushUser,
   fetchRushWallet,
   finishRushSession,
+  getTurnstileSiteKey,
   hasRushToken,
   MeResponse,
   startRushSession,
   WalletResponse,
 } from "@/lib/api";
+
+declare global {
+  interface Window {
+    turnstile?: {
+      render: (
+        container: string | HTMLElement,
+        options: {
+          sitekey: string;
+          callback?: (token: string) => void;
+          "expired-callback"?: () => void;
+          "error-callback"?: () => void;
+          theme?: "light" | "dark" | "auto";
+        }
+      ) => string;
+      reset: (widgetId?: string) => void;
+    };
+  }
+}
 
 type FinishData = {
   finalScore: number;
@@ -28,6 +47,9 @@ type FinishData = {
 
 export default function RushPage() {
   const router = useRouter();
+
+  const widgetRef = useRef<HTMLDivElement | null>(null);
+  const widgetIdRef = useRef<string | null>(null);
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentUser, setCurrentUser] = useState<MeResponse | null>(null);
@@ -61,6 +83,10 @@ export default function RushPage() {
   const [finalScore, setFinalScore] = useState(0);
   const [finalLevel, setFinalLevel] = useState(1);
   const [finalElapsedSeconds, setFinalElapsedSeconds] = useState(0);
+
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
+  const turnstileEnabled = !!getTurnstileSiteKey();
 
   const loadWallet = useCallback(async () => {
     try {
@@ -125,13 +151,65 @@ export default function RushPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!turnstileEnabled) return;
+    if (!widgetRef.current) return;
+
+    const renderWidget = () => {
+      if (!window.turnstile || !widgetRef.current || widgetIdRef.current) return;
+
+      widgetIdRef.current = window.turnstile.render(widgetRef.current, {
+        sitekey: getTurnstileSiteKey(),
+        theme: "dark",
+        callback: (token: string) => setTurnstileToken(token),
+        "expired-callback": () => setTurnstileToken(null),
+        "error-callback": () => setTurnstileToken(null),
+      });
+    };
+
+    const existingScript = document.querySelector(
+      'script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
+    );
+
+    if (existingScript) {
+      const interval = window.setInterval(() => {
+        if (window.turnstile) {
+          window.clearInterval(interval);
+          renderWidget();
+        }
+      }, 200);
+
+      return () => window.clearInterval(interval);
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    script.defer = true;
+    script.onload = renderWidget;
+    document.body.appendChild(script);
+  }, [turnstileEnabled]);
+
+  const resetTurnstileWidget = () => {
+    setTurnstileToken(null);
+
+    if (turnstileEnabled && window.turnstile && widgetIdRef.current) {
+      window.turnstile.reset(widgetIdRef.current);
+    }
+  };
+
   const handleStart = async () => {
     try {
       setIsStarting(true);
       setStartError(null);
       setSubmitError(null);
 
-      const result = await startRushSession();
+      if (turnstileEnabled && !turnstileToken) {
+        setStartError("Please complete the verification challenge.");
+        return;
+      }
+
+      const result = await startRushSession(turnstileToken);
 
       setSessionId(result.session_id);
       setTrialsRemaining(result.trials_remaining);
@@ -148,10 +226,13 @@ export default function RushPage() {
       setShowStartModal(false);
       setShowGameOverModal(false);
       setIsPlaying(true);
+
+      resetTurnstileWidget();
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unable to start game";
       setStartError(message);
+      resetTurnstileWidget();
     } finally {
       setIsStarting(false);
     }
@@ -196,6 +277,7 @@ export default function RushPage() {
     setShowGameOverModal(false);
     setShowStartModal(true);
     setSessionId(null);
+    resetTurnstileWidget();
   };
 
   const handleLogout = () => {
@@ -310,6 +392,20 @@ export default function RushPage() {
 
             <div className="space-y-4 sm:space-y-5">
               <RewardMeter availablePoints={wallet?.available_points ?? 0} />
+
+              {turnstileEnabled ? (
+                <div className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                  <div className="text-xs sm:text-sm uppercase tracking-[0.25em] text-white/55">
+                    Session Verification
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-white/70">
+                    Complete verification before starting a Rush session.
+                  </p>
+                  <div className="mt-4">
+                    <div ref={widgetRef} className="min-h-[65px]" />
+                  </div>
+                </div>
+              ) : null}
 
               <div className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
                 <div className="text-xs sm:text-sm uppercase tracking-[0.25em] text-white/55">
