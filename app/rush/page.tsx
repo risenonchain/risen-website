@@ -153,7 +153,9 @@ export default function RushPage() {
 
   useEffect(() => {
     if (!turnstileEnabled) return;
+    if (!showStartModal) return;
     if (!widgetRef.current) return;
+    if (widgetIdRef.current) return;
 
     const renderWidget = () => {
       if (!window.turnstile || !widgetRef.current || widgetIdRef.current) return;
@@ -188,7 +190,7 @@ export default function RushPage() {
     script.defer = true;
     script.onload = renderWidget;
     document.body.appendChild(script);
-  }, [turnstileEnabled]);
+  }, [turnstileEnabled, showStartModal]);
 
   const resetTurnstileWidget = () => {
     setTurnstileToken(null);
@@ -277,6 +279,7 @@ export default function RushPage() {
     setShowGameOverModal(false);
     setShowStartModal(true);
     setSessionId(null);
+    setStartError(null);
     resetTurnstileWidget();
   };
 
@@ -375,6 +378,8 @@ export default function RushPage() {
                   onStart={handleStart}
                   isLoading={isStarting}
                   error={startError}
+                  turnstileRef={widgetRef}
+                  turnstileEnabled={turnstileEnabled}
                 />
 
                 <GameOverModal
@@ -392,20 +397,6 @@ export default function RushPage() {
 
             <div className="space-y-4 sm:space-y-5">
               <RewardMeter availablePoints={wallet?.available_points ?? 0} />
-
-              {turnstileEnabled ? (
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
-                  <div className="text-xs sm:text-sm uppercase tracking-[0.25em] text-white/55">
-                    Session Verification
-                  </div>
-                  <p className="mt-3 text-sm leading-6 text-white/70">
-                    Complete verification before starting a Rush session.
-                  </p>
-                  <div className="mt-4">
-                    <div ref={widgetRef} className="min-h-[65px]" />
-                  </div>
-                </div>
-              ) : null}
 
               <div className="rounded-3xl border border-white/10 bg-white/5 p-4 sm:p-5">
                 <div className="text-xs sm:text-sm uppercase tracking-[0.25em] text-white/55">
