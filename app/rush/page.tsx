@@ -152,44 +152,66 @@ export default function RushPage() {
   }, []);
 
   useEffect(() => {
-    if (!turnstileEnabled) return;
-    if (!showStartModal) return;
-    if (!widgetRef.current) return;
-    if (widgetIdRef.current) return;
+    if (!turnstileEnabled || !showStartModal) return;
+
+    let intervalId: number | null = null;
 
     const renderWidget = () => {
-      if (!window.turnstile || !widgetRef.current || widgetIdRef.current) return;
+      if (!window.turnstile) return;
+      if (!widgetRef.current) return;
+      if (widgetIdRef.current) return;
 
       widgetIdRef.current = window.turnstile.render(widgetRef.current, {
         sitekey: getTurnstileSiteKey(),
         theme: "dark",
-        callback: (token: string) => setTurnstileToken(token),
-        "expired-callback": () => setTurnstileToken(null),
-        "error-callback": () => setTurnstileToken(null),
+        callback: (token: string) => {
+          setTurnstileToken(token);
+          setStartError((prev) =>
+            prev === "Please complete the verification challenge." ? null : prev
+          );
+        },
+        "expired-callback": () => {
+          setTurnstileToken(null);
+        },
+        "error-callback": () => {
+          setTurnstileToken(null);
+        },
       });
     };
 
-    const existingScript = document.querySelector(
-      'script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
-    );
+    const ensureScript = () => {
+      const existingScript = document.querySelector(
+        'script[src^="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
+      );
 
-    if (existingScript) {
-      const interval = window.setInterval(() => {
-        if (window.turnstile) {
-          window.clearInterval(interval);
-          renderWidget();
+      if (existingScript) return;
+
+      const script = document.createElement("script");
+      script.src =
+        "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      document.body.appendChild(script);
+    };
+
+    ensureScript();
+    renderWidget();
+
+    if (!widgetIdRef.current) {
+      intervalId = window.setInterval(() => {
+        renderWidget();
+
+        if (widgetIdRef.current && intervalId) {
+          window.clearInterval(intervalId);
         }
-      }, 200);
-
-      return () => window.clearInterval(interval);
+      }, 300);
     }
 
-    const script = document.createElement("script");
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    script.async = true;
-    script.defer = true;
-    script.onload = renderWidget;
-    document.body.appendChild(script);
+    return () => {
+      if (intervalId) {
+        window.clearInterval(intervalId);
+      }
+    };
   }, [turnstileEnabled, showStartModal]);
 
   const resetTurnstileWidget = () => {
