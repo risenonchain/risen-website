@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense, useEffect, useMemo, useRef, useState, FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchCurrentRushUser,
   getTurnstileSiteKey,
@@ -33,7 +33,7 @@ function normalizeUsername(value: string) {
   return value.trim().replace(/\s+/g, "_");
 }
 
-export default function RushRegisterPage() {
+function RegisterContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const referralCodeFromUrl = searchParams.get("ref")?.trim() || "";
@@ -354,5 +354,21 @@ export default function RushRegisterPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function RushRegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#02070d] text-white">
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white/70">
+            Loading register page...
+          </div>
+        </main>
+      }
+    >
+      <RegisterContent />
+    </Suspense>
   );
 }
