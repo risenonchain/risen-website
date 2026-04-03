@@ -277,10 +277,14 @@ export default function RushProfilePage() {
         }),
       });
 
+
+
       const data: ScorecardApiResponse = await res.json();
 
       if (!res.ok) {
-        throw new Error("Failed to generate scorecard");
+        const text = await res.text();
+        console.error("Scorecard error:", text);
+        throw new Error("Scorecard failed");
       }
 
       if (!data.image_url) {
