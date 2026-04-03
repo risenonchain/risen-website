@@ -4,9 +4,13 @@ import AIChat from "@/components/ai/AIChat";
 
 export default function AIPage() {
   const triggerAI = (message: string) => {
+    // 🔥 Send message to AI
     window.dispatchEvent(
       new CustomEvent("ai-preset", { detail: message })
     );
+
+    // 🔥 Open global AI drawer
+    window.dispatchEvent(new Event("open-ai"));
   };
 
   return (
