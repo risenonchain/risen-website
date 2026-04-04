@@ -20,6 +20,7 @@ export default function AIChat({
 
   const API_URL =
     process.env.NEXT_PUBLIC_API_BASE_URL;
+  console.log("API URL:", API_URL);
 
   // =========================
   // 🔽 AUTO SCROLL
