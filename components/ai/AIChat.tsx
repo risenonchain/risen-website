@@ -18,8 +18,7 @@ export default function AIChat({
   const [messages, setMessages] = useState<Message[]>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const API_URL =
-    process.env.NEXT_PUBLIC_AI_API_URL!;
+  const API_URL = process.env.NEXT_PUBLIC_AI_API_URL!;
   console.log("API URL:", API_URL);
 
   // =========================
@@ -39,7 +38,7 @@ export default function AIChat({
   }, [presetMessage]);
 
   // =========================
-  // 🔥 GLOBAL PRESET EVENT (NEW)
+  // 🔥 GLOBAL PRESET EVENT
   // =========================
   useEffect(() => {
     const handler = (e: any) => {
@@ -63,7 +62,12 @@ export default function AIChat({
     const token = localStorage.getItem("risen_rush_token");
     const username = localStorage.getItem("risen_rush_username");
 
+    console.log("TOKEN:", token);
+
     try {
+      // -------------------------
+      // 🔹 FIRST CALL (INTENT)
+      // -------------------------
       const res = await fetch(`${API_URL}/ai/chat`, {
         method: "POST",
         headers: {
@@ -80,10 +84,46 @@ export default function AIChat({
         }),
       });
 
-      const data = await res.json();
-      console.log("TOKEN:", token);
+      const text = await res.text();
 
-      // 🖼 IMAGE
+      // ❌ HANDLE ERROR FIRST
+      if (!res.ok) {
+        console.error("AI ERROR:", text);
+
+        if (res.status === 401) {
+          localStorage.removeItem("risen_rush_token");
+
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: "assistant",
+              content: "🔒 Session expired. Please login again.",
+            },
+          ]);
+          return;
+        }
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: "⚠️ AI request failed. Try again.",
+          },
+        ]);
+        return;
+      }
+
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Invalid JSON:", text);
+        return;
+      }
+
+      // -------------------------
+      // 🖼 IMAGE RESPONSE
+      // -------------------------
       if (data.type === "image") {
         setMessages((prev) => [
           ...prev,
@@ -95,10 +135,12 @@ export default function AIChat({
         return;
       }
 
-      // 💬 STREAM
+      // -------------------------
+      // 💬 STREAM RESPONSE
+      // -------------------------
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "typing" },
+        { role: "assistant", content: "typing..." },
       ]);
 
       const streamRes = await fetch(`${API_URL}/ai/chat/stream`, {
@@ -117,6 +159,20 @@ export default function AIChat({
         }),
       });
 
+      if (!streamRes.ok) {
+        console.error("Stream failed");
+
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: "⚠️ Streaming failed.",
+          };
+          return updated;
+        });
+        return;
+      }
+
       const reader = streamRes.body?.getReader();
       const decoder = new TextDecoder();
 
@@ -133,7 +189,7 @@ export default function AIChat({
           const updated = [...prev];
           updated[updated.length - 1] = {
             role: "assistant",
-            content: result || "typing",
+            content: result || "typing...",
           };
           return updated;
         });
@@ -157,7 +213,7 @@ export default function AIChat({
   const handleUpload = async (file: File) => {
     setMessages((prev) => [
       ...prev,
-      { role: "assistant", content: "typing" },
+      { role: "assistant", content: "typing..." },
     ]);
 
     const formData = new FormData();
@@ -174,7 +230,23 @@ export default function AIChat({
         body: formData,
       });
 
-      const data = await res.json();
+      const text = await res.text();
+
+      if (!res.ok) {
+        console.error("Upload error:", text);
+
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: "⚠️ Image upload failed.",
+          };
+          return updated;
+        });
+        return;
+      }
+
+      const data = JSON.parse(text);
 
       setMessages((prev) => {
         const updated = [...prev];
