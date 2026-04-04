@@ -1,32 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 export default function AIButton() {
-  const [trigger, setTrigger] = useState(false);
-
-  useEffect(() => {
-    if (trigger) {
-      window.dispatchEvent(new Event("open-ai"));
-      setTrigger(false); // prevent repeated firing
-    }
-  }, [trigger]);
+  const handleClick = () => {
+    // 👉 Navigate to AI page instead of opening drawer
+    window.location.href = "/ai";
+  };
 
   return (
     <button
-      onClick={() => setTrigger(true)}
+      onClick={handleClick}
       className="fixed bottom-6 right-6 z-50 group"
     >
-      {/* glow */}
-      <div className="absolute inset-0 rounded-full bg-risen-primary blur-xl opacity-60 group-hover:opacity-90 transition" />
+      {/* 🔥 glow */}
+      <div className="absolute inset-0 rounded-full bg-risen-primary blur-xl opacity-60 group-hover:opacity-90 transition duration-300" />
 
-      {/* core */}
+      {/* 🔥 core */}
       <div
         className="relative w-14 h-14 rounded-full 
         bg-gradient-to-br from-risen-primary to-cyan-400
         flex items-center justify-center
         text-white font-bold shadow-[0_0_30px_rgba(46,219,255,0.6)]
-        animate-pulse"
+        transition duration-300
+        group-hover:scale-110
+      "
       >
         AI
       </div>
