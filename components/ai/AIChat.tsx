@@ -10,260 +10,145 @@ type Message = {
   image?: string;
 };
 
-export default function AIChat({
-  presetMessage,
-}: {
-  presetMessage?: string | null;
-}) {
+export default function AIChat() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  const API_URL = process.env.NEXT_PUBLIC_AI_API_URL!;
-  console.log("API URL:", API_URL);
-
-  // =========================
-  // 🔽 AUTO SCROLL
-  // =========================
+  // 🔥 AUTO SCROLL
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // =========================
-  // 🔥 PRESET FROM PROP
-  // =========================
-  useEffect(() => {
-    if (presetMessage) {
-      sendMessage(presetMessage);
-    }
-  }, [presetMessage]);
-
-  // =========================
-  // 🔥 GLOBAL PRESET EVENT
-  // =========================
+  // 🔥 PRESET LISTENER
   useEffect(() => {
     const handler = (e: any) => {
-      const msg = e.detail;
-      if (msg) sendMessage(msg);
+      sendMessage(e.detail);
     };
 
     window.addEventListener("ai-preset", handler);
-
-    return () => {
-      window.removeEventListener("ai-preset", handler);
-    };
+    return () => window.removeEventListener("ai-preset", handler);
   }, []);
 
-  // =========================
-  // 💬 SEND MESSAGE
-  // =========================
-  const sendMessage = async (input: string) => {
-    setMessages((prev) => [...prev, { role: "user", content: input }]);
+  const streamText = async (text: string, index: number) => {
+    let current = "";
 
-    const token = localStorage.getItem("risen_rush_token");
-    const username = localStorage.getItem("risen_rush_username");
+    for (let i = 0; i < text.length; i++) {
+      current += text[i];
 
-    console.log("TOKEN:", token);
-
-    try {
-      // -------------------------
-      // 🔹 FIRST CALL (INTENT)
-      // -------------------------
-      const res = await fetch(`${API_URL}/ai/chat`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({
-          message: input,
-          session_id: "fallback",
-          context: {
-            page: window.location.pathname,
-            username,
-          },
-        }),
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[index] = { role: "assistant", content: current };
+        return updated;
       });
 
-      const text = await res.text();
-
-      // ❌ HANDLE ERROR FIRST
-      if (!res.ok) {
-        console.error("AI ERROR:", text);
-
-        if (res.status === 401) {
-          localStorage.removeItem("risen_rush_token");
-
-          setMessages((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content: "🔒 Session expired. Please login again.",
-            },
-          ]);
-          return;
-        }
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: "⚠️ AI request failed. Try again.",
-          },
-        ]);
-        return;
-      }
-
-      let data: any;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        console.error("Invalid JSON:", text);
-        return;
-      }
-
-      // -------------------------
-      // 🖼 IMAGE RESPONSE
-      // -------------------------
-      if (data.type === "image") {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            image: data.data.image_url,
-          },
-        ]);
-        return;
-      }
-
-      // -------------------------
-      // 💬 STREAM RESPONSE
-      // -------------------------
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: "typing..." },
-      ]);
-
-      const streamRes = await fetch(`${API_URL}/ai/chat/stream`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: JSON.stringify({
-          message: input,
-          session_id: "fallback",
-          context: {
-            page: window.location.pathname,
-            username,
-          },
-        }),
-      });
-
-      if (!streamRes.ok) {
-        console.error("Stream failed");
-
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: "assistant",
-            content: "⚠️ Streaming failed.",
-          };
-          return updated;
-        });
-        return;
-      }
-
-      const reader = streamRes.body?.getReader();
-      const decoder = new TextDecoder();
-
-      let result = "";
-
-      while (true) {
-        const { done, value } = await reader!.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        result += chunk;
-
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: "assistant",
-            content: result || "typing...",
-          };
-          return updated;
-        });
-      }
-    } catch (error) {
-      console.error("AI chat error:", error);
-
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "⚠️ Something went wrong. Try again.",
-        },
-      ]);
+      await new Promise((res) => setTimeout(res, 10)); // speed
     }
   };
 
-  // =========================
-  // 📎 HANDLE IMAGE UPLOAD
-  // =========================
-  const handleUpload = async (file: File) => {
+  const sendMessage = async (text: string) => {
+    if (!text) return;
+
     setMessages((prev) => [
       ...prev,
+      { role: "user", content: text },
       { role: "assistant", content: "typing..." },
     ]);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const token = localStorage.getItem("risen_rush_token");
+    setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/ai/upload-avatar`, {
-        method: "POST",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
-        body: formData,
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_AI_API_URL}/ai/chat`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: text,
+            session_id: "default",
+            context: {},
+          }),
+        }
+      );
 
-      const text = await res.text();
+      const data = await res.json();
 
-      if (!res.ok) {
-        console.error("Upload error:", text);
+      // 🔥 HANDLE IMAGE RESPONSE
+      if (data.type === "image") {
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            image: data.data.image_url,
+          };
+          return updated;
+        });
+      } else {
+        const index = messages.length + 1;
 
         setMessages((prev) => {
           const updated = [...prev];
           updated[updated.length - 1] = {
             role: "assistant",
-            content: "⚠️ Image upload failed.",
+            content: "",
           };
           return updated;
         });
-        return;
+
+        await streamText(data, index);
       }
-
-      const data = JSON.parse(text);
-
+    } catch (err) {
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = {
           role: "assistant",
-          image: data.image_url,
+          content: "⚠️ AI request failed. Try again.",
         };
         return updated;
       });
-    } catch (error) {
-      console.error("Upload error:", error);
+    }
+
+    setLoading(false);
+  };
+
+  const handleUpload = async (file: File) => {
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", content: `Uploaded: ${file.name}` },
+      { role: "assistant", content: "typing..." },
+    ]);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_AI_API_URL}/ai/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const data = await res.json();
 
       setMessages((prev) => {
         const updated = [...prev];
         updated[updated.length - 1] = {
           role: "assistant",
-          content: "⚠️ Image upload failed.",
+          content: data.response || "Processed.",
+        };
+        return updated;
+      });
+    } catch {
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          role: "assistant",
+          content: "Upload failed.",
         };
         return updated;
       });
@@ -272,18 +157,17 @@ export default function AIChat({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto pr-2">
+
+      {/* 💬 MESSAGES */}
+      <div className="flex-1 overflow-y-auto pr-1">
         {messages.map((msg, i) => (
-          <AIMessage
-            key={i}
-            role={msg.role}
-            content={msg.content}
-            image={msg.image}
-          />
+          <AIMessage key={i} {...msg} />
         ))}
+
         <div ref={bottomRef} />
       </div>
 
+      {/* INPUT */}
       <AIInput onSend={sendMessage} onUpload={handleUpload} />
     </div>
   );
