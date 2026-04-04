@@ -162,7 +162,7 @@ export default function AIChat({
     const formData = new FormData();
     formData.append("file", file);
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("risen_rush_token");
 
     try {
       const res = await fetch(`${API_URL}/ai/upload-avatar`, {
