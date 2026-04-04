@@ -262,7 +262,7 @@ export default function RushProfilePage() {
       setLoading(true);
       setScorecardError(null);
 
-      const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL!;
+      const API_URL = process.env.NEXT_PUBLIC_AI_API_URL!;
 
       const res = await fetch(`${API_URL}/ai/generate-scorecard`, {
         method: "POST",
