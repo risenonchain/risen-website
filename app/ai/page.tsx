@@ -1,32 +1,41 @@
 "use client";
 
+import AIChat from "@/components/ai/AIChat";
+
 export default function AIPage() {
-  const triggerAI = (message: string) => {
-    window.dispatchEvent(
-      new CustomEvent("ai-preset", { detail: message })
-    );
+  const triggerAI = (message?: string) => {
+    if (message) {
+      window.dispatchEvent(
+        new CustomEvent("ai-preset", { detail: message })
+      );
+    }
 
     window.dispatchEvent(new Event("open-ai"));
   };
 
   return (
-    <div className="min-h-screen bg-[#010913] text-white px-6 pt-28 pb-10 relative overflow-hidden">
+    <div className="min-h-screen bg-[#010913] text-white px-6 pt-28 pb-16">
 
-      {/* 🔥 Background glow */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,255,255,0.08),transparent_40%),radial-gradient(circle_at_80%_70%,rgba(0,120,255,0.08),transparent_40%)]" />
-
-      {/* Header */}
-      <div className="max-w-5xl mx-auto mb-12 relative z-10">
-        <h1 className="text-3xl font-bold tracking-tight">
+      {/* HEADER */}
+      <div className="max-w-5xl mx-auto mb-12">
+        <h1 className="text-4xl font-bold tracking-tight">
           RISEN AI
         </h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-gray-400 mt-3 text-sm">
           Intelligence Layer for Web3 & DeFi
         </p>
       </div>
 
-      {/* Cards */}
-      <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2 relative z-10">
+      {/* GRID */}
+      <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2">
+
+        {/* 🔥 PRIMARY — OPEN ENTRY */}
+        <FeatureCard
+          title="Enter Intelligence"
+          description="Engage RISEN directly — ask anything, explore freely"
+          highlight
+          onClick={() => triggerAI()}
+        />
 
         <FeatureCard
           title="Market Insight"
@@ -36,11 +45,12 @@ export default function AIPage() {
           }
         />
 
+        {/* 🔵 TOOLS */}
         <FeatureCard
           title="Generate Avatar"
           description="Create futuristic crypto identity"
           onClick={() =>
-            triggerAI("Generate a futuristic crypto avatar")
+            triggerAI("Generate a futuristic crypto avatar and return the image only")
           }
         />
 
@@ -53,13 +63,14 @@ export default function AIPage() {
         />
 
         <FeatureCard
-          title="RISEN Knowledge"
-          description="Understand the ecosystem deeply"
+          title="Meme Generator"
+          description="Create crypto memes with edge"
           onClick={() =>
-            triggerAI("Explain RISEN ecosystem clearly")
+            triggerAI("Generate a sharp crypto meme idea about the current market")
           }
         />
 
+        {/* 🟣 LEARNING */}
         <FeatureCard
           title="Learn Crypto"
           description="Structured learning from basics to advanced"
@@ -69,10 +80,10 @@ export default function AIPage() {
         />
 
         <FeatureCard
-          title="Meme Generator"
-          description="Create crypto memes with edge"
+          title="RISEN Knowledge"
+          description="Understand the ecosystem deeply"
           onClick={() =>
-            triggerAI("Generate a crypto meme idea about the current market")
+            triggerAI("Explain RISEN ecosystem clearly and structurally")
           }
         />
 
@@ -85,49 +96,55 @@ function FeatureCard({
   title,
   description,
   onClick,
+  highlight = false,
 }: {
   title: string;
   description: string;
   onClick: () => void;
+  highlight?: boolean;
 }) {
   return (
     <div
       onClick={onClick}
-      className="
-        group relative p-5 rounded-2xl cursor-pointer
-        border border-white/10
-        bg-[#06111f]/70 backdrop-blur-md
+      className={`relative p-5 rounded-2xl border cursor-pointer
+      transition-all duration-300 group overflow-hidden
 
-        transition-all duration-300
-        hover:scale-[1.03]
-        hover:border-cyan-400/40
-      "
+      ${
+        highlight
+          ? "border-risen-primary/40 bg-[#06111f]"
+          : "border-risen-primary/20 bg-[#06111f]"
+      }
+
+      hover:bg-[#08182a]
+      hover:scale-[1.02]
+      `}
     >
-      {/* Glow effect */}
-      <div className="
-        absolute inset-0 rounded-2xl opacity-0
-        group-hover:opacity-100
-        transition duration-500
-        bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-transparent
-      " />
+      {/* 🔥 BREATHING GLOW */}
+      <div
+        className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-500
+        ${
+          highlight
+            ? "bg-risen-primary/10 blur-xl"
+            : "bg-cyan-400/5 blur-xl"
+        }`}
+      />
 
-      {/* Animated border glow */}
-      <div className="
-        absolute inset-0 rounded-2xl
-        opacity-0 group-hover:opacity-100
-        blur-xl
-        bg-cyan-500/10
-      " />
-
-      {/* Content */}
+      {/* CONTENT */}
       <div className="relative z-10">
-        <h3 className="text-sm font-semibold tracking-wide">
+        <h3
+          className={`text-sm font-semibold mb-1
+          ${highlight ? "text-risen-primary" : "text-white"}`}
+        >
           {title}
         </h3>
-        <p className="text-xs text-gray-400 mt-2 leading-relaxed">
+
+        <p className="text-xs text-gray-400 leading-relaxed">
           {description}
         </p>
       </div>
+
+      {/* 🔥 EDGE LIGHT */}
+      <div className="absolute inset-0 rounded-2xl border border-transparent group-hover:border-risen-primary/30 transition" />
     </div>
   );
 }
