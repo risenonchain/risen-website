@@ -6,10 +6,8 @@ import AIChat from "./AIChat";
 export default function AIDrawer() {
   const [open, setOpen] = useState(false);
 
-  // 🔥 LISTEN FOR GLOBAL EVENT
   useEffect(() => {
     const openHandler = () => setOpen(true);
-
     window.addEventListener("open-ai", openHandler);
 
     return () => {
@@ -23,7 +21,7 @@ export default function AIDrawer() {
       {open && (
         <div
           onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity"
         />
       )}
 
