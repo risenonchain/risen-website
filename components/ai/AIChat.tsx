@@ -60,7 +60,7 @@ export default function AIChat({
   const sendMessage = async (input: string) => {
     setMessages((prev) => [...prev, { role: "user", content: input }]);
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("risen_rush_token");
     const username = localStorage.getItem("risen_rush_username");
 
     try {
