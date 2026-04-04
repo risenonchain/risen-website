@@ -164,6 +164,10 @@ localStorage.setItem("risen_rush_device_fingerprint", fingerprint);
 return fingerprint;
 }
 
+export function getTurnstileSiteKey() {
+return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+}
+
 function getAuthHeaders(extraHeaders?: HeadersInit): HeadersInit {
 const token = getStoredToken();
 
@@ -193,12 +197,14 @@ level: Number((entry as any).level ?? 1),
 }
 
 export async function registerRushUser(
-payload: RegisterPayload
+payload: RegisterPayload,
+turnstileToken?: string | null
 ) {
 const response = await fetch(`${API_BASE_URL}/auth/register`, {
 method: "POST",
 headers: {
 "Content-Type": "application/json",
+...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
 },
 body: JSON.stringify(payload),
 });
@@ -211,7 +217,8 @@ return response.json();
 }
 
 export async function loginRushUser(
-payload: LoginPayload
+payload: LoginPayload,
+turnstileToken?: string | null
 ) {
 const formData = new URLSearchParams();
 formData.append("username", payload.email);
@@ -221,6 +228,7 @@ const response = await fetch(`${API_BASE_URL}/auth/login`, {
 method: "POST",
 headers: {
 "Content-Type": "application/x-www-form-urlencoded",
+...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
 },
 body: formData.toString(),
 });
