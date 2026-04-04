@@ -35,6 +35,12 @@ export default function AIInput({ onSend, onUpload }: Props) {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="Ask RISEN AI..."
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            handleSend();
+          }
+        }}
         className="flex-1 px-4 py-3 rounded-xl bg-[#020B1A] text-white text-sm
         border border-risen-primary/20 outline-none"
       />
