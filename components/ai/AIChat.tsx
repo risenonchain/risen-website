@@ -81,6 +81,7 @@ export default function AIChat({
       });
 
       const data = await res.json();
+      console.log("TOKEN:", token);
 
       // 🖼 IMAGE
       if (data.type === "image") {
