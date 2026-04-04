@@ -19,7 +19,7 @@ export default function AIChat({
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   const API_URL =
-    process.env.NEXT_PUBLIC_API_BASE_URL;
+    process.env.NEXT_PUBLIC_AI_API_URL!;
   console.log("API URL:", API_URL);
 
   // =========================
