@@ -431,3 +431,72 @@ export async function fetchMyRedemptionRequests(): Promise<
   }
   return response.json();
 }
+
+
+/* ======================================================
+   EXTRA: LEADERBOARD VARIANTS
+====================================================== */
+
+export async function fetchRushTopScoreLeaderboard(): Promise<LeaderboardEntry[]> {
+  const response = await fetch(`${API_BASE_URL}/leaderboard/top-score`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    await parseApiError(response, "Failed to fetch top score leaderboard");
+  }
+
+  return mapLeaderboardEntries(await response.json());
+}
+
+export async function fetchRushTopLevelLeaderboard(): Promise<LeaderboardEntry[]> {
+  const response = await fetch(`${API_BASE_URL}/leaderboard/top-level`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    await parseApiError(response, "Failed to fetch top level leaderboard");
+  }
+
+  return mapLeaderboardEntries(await response.json());
+}
+
+/* ======================================================
+   EXTRA: PASSWORD RESET FLOW
+====================================================== */
+
+export async function requestRushPasswordReset(
+  payload: ForgotPasswordPayload
+): Promise<ForgotPasswordResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    await parseApiError(response, "Failed to request password reset");
+  }
+
+  return response.json();
+}
+
+export async function resetRushPassword(
+  payload: ResetPasswordPayload
+): Promise<MessageResponse> {
+  const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    await parseApiError(response, "Failed to reset password");
+  }
+
+  return response.json();
+}
