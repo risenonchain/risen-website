@@ -1,6 +1,10 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_RUSH_API_URL || "http://127.0.0.1:8000";
 
+/* ======================================================
+   TYPES
+====================================================== */
+
 export type StartSessionResponse = {
   session_id: number;
   session_token: string;
@@ -128,6 +132,10 @@ export type ChangePasswordPayload = {
   new_password: string;
 };
 
+/* ======================================================
+   STORAGE HELPERS
+====================================================== */
+
 function getStoredToken() {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("risen_rush_token");
@@ -167,10 +175,13 @@ export function getOrCreateDeviceFingerprint() {
   return fingerprint;
 }
 
-/* ✅ KEEP THIS — used by login/register */
 export function getTurnstileSiteKey() {
   return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 }
+
+/* ======================================================
+   HELPERS
+====================================================== */
 
 function getAuthHeaders(extraHeaders?: HeadersInit): HeadersInit {
   const token = getStoredToken();
@@ -198,7 +209,10 @@ function mapLeaderboardEntries(data: unknown): LeaderboardEntry[] {
   }));
 }
 
-/* ✅ Turnstile still used here */
+/* ======================================================
+   AUTH
+====================================================== */
+
 export async function registerRushUser(
   payload: RegisterPayload,
   turnstileToken?: string | null
@@ -219,7 +233,6 @@ export async function registerRushUser(
   return response.json();
 }
 
-/* ✅ Turnstile still used here */
 export async function loginRushUser(
   payload: LoginPayload,
   turnstileToken?: string | null
@@ -241,10 +254,7 @@ export async function loginRushUser(
     await parseApiError(response, "Login failed");
   }
 
-  return response.json() as Promise<{
-    access_token: string;
-    token_type: string;
-  }>;
+  return response.json();
 }
 
 export async function fetchCurrentRushUser(): Promise<MeResponse> {
@@ -277,7 +287,10 @@ export function hasRushToken() {
   return !!getStoredToken();
 }
 
-/* ❌ NO Turnstile here (game) */
+/* ======================================================
+   GAME
+====================================================== */
+
 export async function startRushSession(): Promise<StartSessionResponse> {
   const response = await fetch(`${API_BASE_URL}/rush/session/start`, {
     method: "POST",
@@ -311,6 +324,10 @@ export async function finishRushSession(payload: FinishSessionPayload) {
   return response.json();
 }
 
+/* ======================================================
+   WALLET
+====================================================== */
+
 export async function fetchRushWallet(): Promise<WalletResponse> {
   const response = await fetch(`${API_BASE_URL}/rush/wallet`, {
     method: "GET",
@@ -322,5 +339,95 @@ export async function fetchRushWallet(): Promise<WalletResponse> {
     await parseApiError(response, "Failed to fetch wallet");
   }
 
+  return response.json();
+}
+
+/* ======================================================
+   LEADERBOARD
+====================================================== */
+
+export async function fetchRushLeaderboard(): Promise<LeaderboardEntry[]> {
+  const response = await fetch(`${API_BASE_URL}/leaderboard/global`);
+  if (!response.ok) {
+    await parseApiError(response, "Failed leaderboard");
+  }
+  return mapLeaderboardEntries(await response.json());
+}
+
+/* ======================================================
+   PROFILE + EXTRA FEATURES
+====================================================== */
+
+export async function fetchRushProfileStats(): Promise<ProfileStatsResponse> {
+  const response = await fetch(`${API_BASE_URL}/profile/stats`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    await parseApiError(response, "Failed profile stats");
+  }
+  return response.json();
+}
+
+export async function fetchRushReferralInfo(): Promise<ReferralInfoResponse> {
+  const response = await fetch(`${API_BASE_URL}/profile/referral`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    await parseApiError(response, "Failed referral info");
+  }
+  return response.json();
+}
+
+export async function updateRushProfile(
+  payload: UpdateProfilePayload
+): Promise<MeResponse> {
+  const response = await fetch(`${API_BASE_URL}/profile/me`, {
+    method: "PATCH",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    await parseApiError(response, "Failed update profile");
+  }
+  return response.json();
+}
+
+export async function changeRushPassword(
+  payload: ChangePasswordPayload
+): Promise<MessageResponse> {
+  const response = await fetch(`${API_BASE_URL}/profile/change-password`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    await parseApiError(response, "Failed change password");
+  }
+  return response.json();
+}
+
+export async function createRedemptionRequest(
+  payload: RedemptionRequestPayload
+): Promise<RedemptionRequestResponse> {
+  const response = await fetch(`${API_BASE_URL}/profile/redemptions/request`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) {
+    await parseApiError(response, "Failed redemption");
+  }
+  return response.json();
+}
+
+export async function fetchMyRedemptionRequests(): Promise<
+  RedemptionRequestResponse[]
+> {
+  const response = await fetch(`${API_BASE_URL}/profile/redemptions`, {
+    headers: getAuthHeaders(),
+  });
+  if (!response.ok) {
+    await parseApiError(response, "Failed redemption list");
+  }
   return response.json();
 }
