@@ -1,12 +1,10 @@
-import type { RefObject } from "react";
+"use client";
 
 type Props = {
   isOpen: boolean;
   onStart: () => void;
   isLoading: boolean;
   error: string | null;
-  turnstileRef?: RefObject<HTMLDivElement | null>;
-  turnstileEnabled?: boolean;
 };
 
 export default function StartModal({
@@ -14,8 +12,6 @@ export default function StartModal({
   onStart,
   isLoading,
   error,
-  turnstileRef,
-  turnstileEnabled = false,
 }: Props) {
   if (!isOpen) return null;
 
@@ -47,15 +43,6 @@ export default function StartModal({
             You get 3 trials per day
           </div>
         </div>
-
-        {turnstileEnabled && turnstileRef ? (
-          <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
-            <div className="mb-3 text-xs uppercase tracking-[0.22em] text-white/50">
-              Verification Required
-            </div>
-            <div ref={turnstileRef} className="min-h-[70px]" />
-          </div>
-        ) : null}
 
         {error ? (
           <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
