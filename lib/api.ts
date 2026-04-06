@@ -258,9 +258,7 @@ export async function changeRushPassword(payload: ChangePasswordPayload) {
 export async function startRushSession(): Promise<StartRushSessionResponse> {
   return request("/rush/session/start", {
     method: "POST",
-    body: JSON.stringify({
-      device_fingerprint: getOrCreateDeviceFingerprint(),
-    }),
+    body: JSON.stringify({}),
   });
 }
 
@@ -273,10 +271,7 @@ export async function finishRushSession(payload: {
 }): Promise<FinishRushSessionResponse> {
   return request("/rush/session/finish", {
     method: "POST",
-    body: JSON.stringify({
-      ...payload,
-      device_fingerprint: getOrCreateDeviceFingerprint(),
-    }),
+    body: JSON.stringify(payload),
   });
 }
 
