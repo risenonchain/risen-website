@@ -21,7 +21,6 @@ export type LeaderboardEntry = {
 };
 
 export type ProfileStatsResponse = {
-  total_games?: number;
   best_score?: number;
   best_level?: number;
   vault_trials?: number;
@@ -29,20 +28,22 @@ export type ProfileStatsResponse = {
   total_sessions?: number;
   total_points_earned?: number;
   claimed_points?: number;
-
   wallet_address?: string;
   avatar_url?: string;
   generated_avatar_url?: string;
-
   username?: string;
   email?: string;
 };
 
 export type RedemptionRequestResponse = {
   id: string;
+  username_snapshot?: string;
+  email_snapshot?: string;
+  wallet_address_snapshot?: string;
   points_requested: number;
   status: string;
   created_at: string;
+  reviewed_at?: string | null;
 };
 
 export type ReferralInfoResponse = {
@@ -156,9 +157,7 @@ function getOrCreateDeviceFingerprint(): string {
   const key = "risen_rush_device_fingerprint";
   const existing = localStorage.getItem(key);
 
-  if (existing) {
-    return existing;
-  }
+  if (existing) return existing;
 
   const fingerprint =
     typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -182,7 +181,7 @@ export async function registerRushUser(
   },
   turnstileToken?: string | null
 ) {
-  return request("/auth/register/", {
+  return request("/auth/register", {
     method: "POST",
     headers: {
       ...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
@@ -202,7 +201,7 @@ export async function loginRushUser(
   formData.append("username", data.email);
   formData.append("password", data.password);
 
-  const res = await fetch(`${BASE_URL}/auth/login/`, {
+  const res = await fetch(`${BASE_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -219,7 +218,7 @@ export async function loginRushUser(
 }
 
 export async function fetchCurrentRushUser(): Promise<MeResponse> {
-  return request("/auth/me/");
+  return request("/auth/me");
 }
 
 /* =========================
@@ -229,7 +228,7 @@ export async function fetchCurrentRushUser(): Promise<MeResponse> {
 export async function requestRushPasswordReset(
   payload: { email: string }
 ): Promise<ForgotPasswordResponse> {
-  return request("/auth/password/reset/", {
+  return request("/auth/forgot-password", {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -239,14 +238,14 @@ export async function resetRushPassword(data: {
   token: string;
   new_password: string;
 }) {
-  return request("/auth/password/reset/confirm/", {
+  return request("/auth/reset-password", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
 export async function changeRushPassword(payload: ChangePasswordPayload) {
-  return request("/auth/password/change/", {
+  return request("/profile/change-password", {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -299,23 +298,23 @@ export async function updateRushProfile(data: {
   avatar_url?: string | null;
   generated_avatar_url?: string | null;
 }) {
-  return request("/profile/update/", {
+  return request("/profile/me", {
     method: "PATCH",
     body: JSON.stringify(data),
   });
 }
 
 export async function fetchRushProfileStats(): Promise<ProfileStatsResponse> {
-  const data = await request("/profile/stats/");
+  const data = await request("/profile/stats");
 
   return {
     ...data,
-    best_score: data.best_score ?? data.high_score ?? 0,
+    best_score: data.best_score ?? 0,
   };
 }
 
 export async function fetchRushReferralInfo(): Promise<ReferralInfoResponse> {
-  return request("/profile/referral/");
+  return request("/profile/referral");
 }
 
 /* =========================
@@ -326,7 +325,7 @@ export async function createRedemptionRequest(data: {
   wallet_address: string;
   points_requested: number;
 }) {
-  return request("/wallet/redeem/", {
+  return request("/profile/redemptions/request", {
     method: "POST",
     body: JSON.stringify(data),
   });
@@ -335,7 +334,7 @@ export async function createRedemptionRequest(data: {
 export async function fetchMyRedemptionRequests(): Promise<
   RedemptionRequestResponse[]
 > {
-  return request("/wallet/redemptions/");
+  return request("/profile/redemptions");
 }
 
 /* =========================
@@ -343,21 +342,21 @@ export async function fetchMyRedemptionRequests(): Promise<
 ========================= */
 
 export async function fetchRushLeaderboard(): Promise<LeaderboardEntry[]> {
-  const data = await request("/leaderboard/");
+  const data = await request("/leaderboard/global");
   return mapLeaderboard(data);
 }
 
 export async function fetchRushTopScoreLeaderboard(): Promise<
   LeaderboardEntry[]
 > {
-  const data = await request("/leaderboard/top-score/");
+  const data = await request("/leaderboard/top-score");
   return mapLeaderboard(data);
 }
 
 export async function fetchRushTopLevelLeaderboard(): Promise<
   LeaderboardEntry[]
 > {
-  const data = await request("/leaderboard/top-level/");
+  const data = await request("/leaderboard/top-level");
   return mapLeaderboard(data);
 }
 
