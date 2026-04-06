@@ -1,5 +1,3 @@
-// lib/api.ts
-
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 /* =========================
@@ -13,9 +11,10 @@ export type MeResponse = {
 };
 
 export type LeaderboardEntry = {
-  user: string;
+  rank: number;
+  username: string;
   score: number;
-  level?: number;
+  level: number;
 };
 
 export type ProfileStatsResponse = {
@@ -39,6 +38,12 @@ export type ReferralInfoResponse = {
 export type ChangePasswordPayload = {
   old_password: string;
   new_password: string;
+};
+
+export type ForgotPasswordResponse = {
+  message: string;
+  reset_token?: string | null;
+  expires_at?: string | null;
 };
 
 /* =========================
@@ -74,7 +79,7 @@ async function request(endpoint: string, options: RequestInit = {}) {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(token && { Authorization: `Bearer ${token}` }),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });
@@ -84,6 +89,19 @@ async function request(endpoint: string, options: RequestInit = {}) {
   }
 
   return res.json();
+}
+
+/* =========================
+   HELPERS
+========================= */
+
+function mapLeaderboard(data: any[]): LeaderboardEntry[] {
+  return data.map((item, index) => ({
+    rank: item.rank ?? index + 1,
+    username: item.username ?? item.user ?? "Unknown",
+    score: item.score ?? 0,
+    level: item.level ?? 1,
+  }));
 }
 
 /* =========================
@@ -118,12 +136,6 @@ export async function fetchCurrentRushUser(): Promise<MeResponse> {
 /* =========================
    PASSWORD
 ========================= */
-
-export type ForgotPasswordResponse = {
-  message: string;
-  reset_token?: string | null;
-  expires_at?: string | null;
-};
 
 export async function requestRushPasswordReset(
   payload: { email: string }
@@ -218,15 +230,18 @@ export async function fetchMyRedemptionRequests(): Promise<RedemptionRequestResp
 ========================= */
 
 export async function fetchRushLeaderboard(): Promise<LeaderboardEntry[]> {
-  return request("/leaderboard/");
+  const data = await request("/leaderboard/");
+  return mapLeaderboard(data);
 }
 
 export async function fetchRushTopScoreLeaderboard(): Promise<LeaderboardEntry[]> {
-  return request("/leaderboard/top-score/");
+  const data = await request("/leaderboard/top-score/");
+  return mapLeaderboard(data);
 }
 
 export async function fetchRushTopLevelLeaderboard(): Promise<LeaderboardEntry[]> {
-  return request("/leaderboard/top-level/");
+  const data = await request("/leaderboard/top-level/");
+  return mapLeaderboard(data);
 }
 
 /* =========================
