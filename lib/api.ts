@@ -119,14 +119,33 @@ export async function registerRushUser(data: {
   });
 }
 
-export async function loginRushUser(data: {
-  email: string;
-  password: string;
-}) {
-  return request("/auth/login/", {
+export async function loginRushUser(
+  data: {
+    email: string;
+    password: string;
+  },
+  turnstileToken?: string | null
+) {
+  const formData = new URLSearchParams();
+  formData.append("username", data.email);
+  formData.append("password", data.password);
+
+  const res = await fetch(`${BASE_URL}/auth/login/`, {
     method: "POST",
-    body: JSON.stringify(data),
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      ...(turnstileToken
+        ? { "X-Turnstile-Token": turnstileToken }
+        : {}),
+    },
+    body: formData.toString(),
   });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
+  return res.json();
 }
 
 export async function fetchCurrentRushUser(): Promise<MeResponse> {
