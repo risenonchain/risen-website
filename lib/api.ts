@@ -52,8 +52,12 @@ export type ForgotPasswordResponse = {
 
 const TOKEN_KEY = "rush_token";
 
-export function saveRushAuth(token: string) {
+export function saveRushAuth(token: string, username?: string) {
   localStorage.setItem(TOKEN_KEY, token);
+
+  if (typeof window !== "undefined" && username) {
+    localStorage.setItem("risen_rush_username", username);
+  }
 }
 
 export function clearRushAuth() {
