@@ -1,13 +1,13 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_RUSH_API_URL || "http://127.0.0.1:8000";
 
-<<<<<<< HEAD
+
 /* ======================================================
    TYPES
 ====================================================== */
 =======
 // -------------------- TYPES --------------------
->>>>>>> 7ce9def (page update)
+
 
 export type StartSessionResponse = {
   session_id: number;
@@ -136,13 +136,13 @@ export type ChangePasswordPayload = {
   new_password: string;
 };
 
-<<<<<<< HEAD
+
 /* ======================================================
    STORAGE HELPERS
 ====================================================== */
 =======
 // -------------------- AUTH HELPERS --------------------
->>>>>>> 7ce9def (page update)
+
 
 function getStoredToken() {
   if (typeof window === "undefined") return null;
@@ -154,7 +154,7 @@ export function getStoredRushUsername() {
   return localStorage.getItem("risen_rush_username");
 }
 
-<<<<<<< HEAD
+
 export function getStoredDeviceFingerprint() {
   if (typeof window === "undefined") return null;
   return localStorage.getItem("risen_rush_device_fingerprint");
@@ -184,8 +184,6 @@ export function getOrCreateDeviceFingerprint() {
   return fingerprint;
 }
 
-=======
->>>>>>> 7ce9def (page update)
 export function getTurnstileSiteKey() {
   return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
 }
@@ -220,13 +218,13 @@ function mapLeaderboardEntries(data: unknown): LeaderboardEntry[] {
   }));
 }
 
-<<<<<<< HEAD
+
 /* ======================================================
    AUTH
 ====================================================== */
 =======
 // -------------------- AUTH --------------------
->>>>>>> 7ce9def (page update)
+
 
 export async function registerRushUser(
   payload: RegisterPayload,
@@ -302,25 +300,25 @@ export function hasRushToken() {
   return !!getStoredToken();
 }
 
-<<<<<<< HEAD
+
 /* ======================================================
    GAME
 ====================================================== */
 =======
 // -------------------- GAMEPLAY (UPDATED) --------------------
->>>>>>> 7ce9def (page update)
+
 
 export async function startRushSession(): Promise<StartSessionResponse> {
   const response = await fetch(`${API_BASE_URL}/rush/session/start`, {
     method: "POST",
     headers: getAuthHeaders(),
-<<<<<<< HEAD
+
     body: JSON.stringify({
       device_fingerprint: getOrCreateDeviceFingerprint(),
     }),
-=======
+
     body: JSON.stringify({}), // ✅ removed fingerprint
->>>>>>> 7ce9def (page update)
+
   });
 
   if (!response.ok) {
@@ -344,13 +342,13 @@ export async function finishRushSession(payload: FinishSessionPayload) {
   return response.json();
 }
 
-<<<<<<< HEAD
+
 /* ======================================================
    WALLET
 ====================================================== */
 =======
 // -------------------- REST (UNCHANGED) --------------------
->>>>>>> 7ce9def (page update)
+
 
 export async function fetchRushWallet(): Promise<WalletResponse> {
   const response = await fetch(`${API_BASE_URL}/rush/wallet`, {
@@ -366,7 +364,7 @@ export async function fetchRushWallet(): Promise<WalletResponse> {
   return response.json();
 }
 
-<<<<<<< HEAD
+
 /* ======================================================
    LEADERBOARD
 ====================================================== */
@@ -525,6 +523,6 @@ export async function resetRushPassword(
 
   return response.json();
 }
-=======
-// (everything else remains EXACTLY the same)
->>>>>>> 7ce9def (page update)
+
+
+
