@@ -36,7 +36,7 @@ export type ReferralInfoResponse = {
 };
 
 export type ChangePasswordPayload = {
-  old_password: string;
+  current_password: string;
   new_password: string;
 };
 
