@@ -63,6 +63,29 @@ export type ForgotPasswordResponse = {
   expires_at?: string | null;
 };
 
+export type WalletResponse = {
+  total_points_earned: number;
+  available_points: number;
+  claimed_points: number;
+  vault_trials: number;
+};
+
+export type StartRushSessionResponse = {
+  session_id: number;
+  session_token: string;
+  trials_remaining: number;
+  daily_trials_remaining?: number;
+  vault_trials_remaining?: number;
+  starting_lives: number;
+  trial_source?: string;
+};
+
+export type FinishRushSessionResponse = {
+  message: string;
+  points_added: number;
+  wallet_points: number;
+};
+
 /* =========================
    AUTH STORAGE
 ========================= */
@@ -125,6 +148,27 @@ function mapLeaderboard(data: any[]): LeaderboardEntry[] {
   }));
 }
 
+function getOrCreateDeviceFingerprint(): string {
+  if (typeof window === "undefined") {
+    return "server-render";
+  }
+
+  const key = "risen_rush_device_fingerprint";
+  const existing = localStorage.getItem(key);
+
+  if (existing) {
+    return existing;
+  }
+
+  const fingerprint =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `rush_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
+
+  localStorage.setItem(key, fingerprint);
+  return fingerprint;
+}
+
 /* =========================
    AUTH
 ========================= */
@@ -141,9 +185,7 @@ export async function registerRushUser(
   return request("/auth/register/", {
     method: "POST",
     headers: {
-      ...(turnstileToken
-        ? { "X-Turnstile-Token": turnstileToken }
-        : {}),
+      ...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
     },
     body: JSON.stringify(data),
   });
@@ -164,9 +206,7 @@ export async function loginRushUser(
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      ...(turnstileToken
-        ? { "X-Turnstile-Token": turnstileToken }
-        : {}),
+      ...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
     },
     body: formData.toString(),
   });
@@ -216,9 +256,12 @@ export async function changeRushPassword(payload: ChangePasswordPayload) {
    GAME
 ========================= */
 
-export async function startRushSession() {
+export async function startRushSession(): Promise<StartRushSessionResponse> {
   return request("/rush/session/start", {
     method: "POST",
+    body: JSON.stringify({
+      device_fingerprint: getOrCreateDeviceFingerprint(),
+    }),
   });
 }
 
@@ -228,10 +271,13 @@ export async function finishRushSession(payload: {
   duration_seconds: number;
   level_reached: number;
   lives_remaining: number;
-}) {
+}): Promise<FinishRushSessionResponse> {
   return request("/rush/session/finish", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      ...payload,
+      device_fingerprint: getOrCreateDeviceFingerprint(),
+    }),
   });
 }
 
@@ -239,8 +285,8 @@ export async function finishRushSession(payload: {
    WALLET
 ========================= */
 
-export async function fetchRushWallet() {
-  return request("/wallet/");
+export async function fetchRushWallet(): Promise<WalletResponse> {
+  return request("/rush/wallet");
 }
 
 /* =========================
@@ -286,7 +332,9 @@ export async function createRedemptionRequest(data: {
   });
 }
 
-export async function fetchMyRedemptionRequests(): Promise<RedemptionRequestResponse[]> {
+export async function fetchMyRedemptionRequests(): Promise<
+  RedemptionRequestResponse[]
+> {
   return request("/wallet/redemptions/");
 }
 
@@ -299,12 +347,16 @@ export async function fetchRushLeaderboard(): Promise<LeaderboardEntry[]> {
   return mapLeaderboard(data);
 }
 
-export async function fetchRushTopScoreLeaderboard(): Promise<LeaderboardEntry[]> {
+export async function fetchRushTopScoreLeaderboard(): Promise<
+  LeaderboardEntry[]
+> {
   const data = await request("/leaderboard/top-score/");
   return mapLeaderboard(data);
 }
 
-export async function fetchRushTopLevelLeaderboard(): Promise<LeaderboardEntry[]> {
+export async function fetchRushTopLevelLeaderboard(): Promise<
+  LeaderboardEntry[]
+> {
   const data = await request("/leaderboard/top-level/");
   return mapLeaderboard(data);
 }
