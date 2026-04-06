@@ -119,10 +119,18 @@ export async function fetchCurrentRushUser(): Promise<MeResponse> {
    PASSWORD
 ========================= */
 
-export async function requestRushPasswordReset(email: string) {
+export type ForgotPasswordResponse = {
+  message: string;
+  reset_token?: string | null;
+  expires_at?: string | null;
+};
+
+export async function requestRushPasswordReset(
+  payload: { email: string }
+): Promise<ForgotPasswordResponse> {
   return request("/auth/password/reset/", {
     method: "POST",
-    body: JSON.stringify({ email }),
+    body: JSON.stringify(payload),
   });
 }
 
