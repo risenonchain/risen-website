@@ -217,7 +217,9 @@ export async function changeRushPassword(payload: ChangePasswordPayload) {
 ========================= */
 
 export async function startRushSession() {
-  return request("/game/start/", { method: "POST" });
+  return request("/rush/session/start", {
+    method: "POST",
+  });
 }
 
 export async function finishRushSession(payload: {
@@ -227,7 +229,7 @@ export async function finishRushSession(payload: {
   level_reached: number;
   lives_remaining: number;
 }) {
-  return request("/game/finish/", {
+  return request("/rush/session/finish", {
     method: "POST",
     body: JSON.stringify(payload),
   });
