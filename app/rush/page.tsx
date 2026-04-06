@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import GameCanvas from "@/components/rush/GameCanvas";
 import GameHUD from "@/components/rush/GameHUD";
@@ -28,10 +27,7 @@ export default function RushPage() {
   const router = useRouter();
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-
   const [wallet, setWallet] = useState<any>(null);
-  const [walletError, setWalletError] = useState<string | null>(null);
 
   const [showStartModal, setShowStartModal] = useState(true);
   const [showGameOverModal, setShowGameOverModal] = useState(false);
@@ -64,8 +60,8 @@ export default function RushPage() {
       const result = await fetchRushWallet();
       setWallet(result);
       setVaultTrialsRemaining(result.vault_trials ?? 0);
-    } catch (error) {
-      setWalletError("Failed to load wallet");
+    } catch {
+      setSubmitError("Failed to load wallet");
     }
   }, []);
 
@@ -77,8 +73,7 @@ export default function RushPage() {
       }
 
       try {
-        const me = await fetchCurrentRushUser();
-        setCurrentUser(me);
+        await fetchCurrentRushUser();
         await loadWallet();
       } catch {
         clearRushAuth();
@@ -118,15 +113,8 @@ export default function RushPage() {
 
       setShowStartModal(false);
       setIsPlaying(true);
-<<<<<<< HEAD
     } catch (error: any) {
       setStartError(error.message || "Unable to start game");
-=======
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to start game";
-      setStartError(message);
->>>>>>> 7ce9def (page update)
     } finally {
       setIsStarting(false);
     }
@@ -143,6 +131,8 @@ export default function RushPage() {
     if (!sessionId) return;
 
     try {
+      setIsSubmitting(true);
+
       await finishRushSession({
         session_id: sessionId,
         final_score: data.finalScore,
@@ -151,43 +141,12 @@ export default function RushPage() {
         lives_remaining: data.livesRemaining,
       });
 
-<<<<<<< HEAD
       await loadWallet();
     } catch {
       setSubmitError("Failed to save session");
+    } finally {
+      setIsSubmitting(false);
     }
-=======
-        await finishRushSession({
-          session_id: sessionId,
-          final_score: data.finalScore,
-          duration_seconds: data.durationSeconds,
-          level_reached: data.levelReached,
-          lives_remaining: data.livesRemaining,
-        });
-
-        await loadWallet();
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to save session";
-        setSubmitError(message);
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [loadWallet, sessionId]
-  );
-
-  const handlePlayAgain = () => {
-    setShowGameOverModal(false);
-    setShowStartModal(true);
-    setSessionId(null);
-    setStartError(null);
-  };
-
-  const handleLogout = () => {
-    clearRushAuth();
-    router.push("/rush/login");
->>>>>>> 7ce9def (page update)
   };
 
   if (isCheckingAuth) {
@@ -196,7 +155,6 @@ export default function RushPage() {
 
   return (
     <main className="min-h-screen bg-[#02070d] text-white">
-<<<<<<< HEAD
       <GameHUD
         score={liveScore}
         lives={liveLives}
@@ -223,7 +181,7 @@ export default function RushPage() {
         elapsedSeconds={finalElapsedSeconds}
         walletPoints={wallet?.available_points ?? null}
         onPlayAgain={() => setShowStartModal(true)}
-        isSubmitting={false}
+        isSubmitting={isSubmitting}
         submitError={submitError}
       />
 
@@ -231,54 +189,3 @@ export default function RushPage() {
     </main>
   );
 }
-=======
-      <section className="relative overflow-hidden px-3 py-4 sm:px-6 sm:py-8 md:px-10">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-4 flex justify-between">
-            <div>
-              <h1 className="text-3xl font-bold">RISEN Rush</h1>
-              <p className="text-white/70 text-sm">
-                Catch RSN. Survive. Climb levels.
-              </p>
-            </div>
-
-            <button onClick={handleLogout}>Logout</button>
-          </div>
-
-          <GameHUD
-            score={liveScore}
-            lives={liveLives}
-            level={liveLevel}
-            elapsedSeconds={liveElapsedSeconds}
-            comboMultiplier={liveComboMultiplier}
-            multiplierActive={liveMultiplierActive}
-            trialsRemaining={trialsRemaining}
-          />
-
-          <GameCanvas isPlaying={isPlaying} onGameOver={handleGameOver} />
-
-          <StartModal
-            isOpen={showStartModal}
-            onStart={handleStart}
-            isLoading={isStarting}
-            error={startError}
-          />
-
-          <GameOverModal
-            isOpen={showGameOverModal}
-            score={finalScore}
-            level={finalLevel}
-            elapsedSeconds={finalElapsedSeconds}
-            walletPoints={wallet?.available_points ?? null}
-            onPlayAgain={handlePlayAgain}
-            isSubmitting={isSubmitting}
-            submitError={submitError}
-          />
-
-          <RewardMeter availablePoints={wallet?.available_points ?? 0} />
-        </div>
-      </section>
-    </main>
-  );
-}
->>>>>>> 7ce9def (page update)
