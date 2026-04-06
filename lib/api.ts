@@ -194,13 +194,20 @@ export async function startRushSession() {
   return request("/game/start/", { method: "POST" });
 }
 
-export async function finishRushSession(data: {
-  score: number;
-  level: number;
-}) {
+export type FinishSessionPayload = {
+  session_id: number;
+  final_score: number;
+  duration_seconds: number;
+  level_reached: number;
+  lives_remaining: number;
+};
+
+export async function finishRushSession(
+  payload: FinishSessionPayload
+) {
   return request("/game/finish/", {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 }
 
