@@ -1,7 +1,7 @@
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_RUSH_API_URL || "http://127.0.0.1:8000";
 
-/* ========================= TYPES ========================= */
+/* ================= TYPES ================= */
 
 export type StartSessionResponse = {
   session_id: number;
@@ -31,11 +31,25 @@ export type RegisterPayload = {
   email: string;
   username: string;
   password: string;
+  referral_code?: string | null;
 };
 
 export type LoginPayload = {
   email: string;
   password: string;
+};
+
+export type ForgotPasswordPayload = {
+  email: string;
+};
+
+export type ResetPasswordPayload = {
+  token: string;
+  new_password: string;
+};
+
+export type MessageResponse = {
+  message: string;
 };
 
 export type MeResponse = {
@@ -44,7 +58,29 @@ export type MeResponse = {
   username: string;
 };
 
-/* ========================= HELPERS ========================= */
+export type LeaderboardEntry = {
+  rank: number;
+  username: string;
+  score: number;
+  level: number;
+};
+
+export type RedemptionRequestPayload = {
+  wallet_address: string;
+  points_requested: number;
+};
+
+export type RedemptionRequestResponse = {
+  id: number;
+  username_snapshot: string;
+  email_snapshot: string;
+  wallet_address_snapshot: string;
+  points_requested: number;
+  status: string;
+  created_at: string;
+};
+
+/* ================= HELPERS ================= */
 
 function getStoredToken() {
   if (typeof window === "undefined") return null;
@@ -65,18 +101,27 @@ function getAuthHeaders(extraHeaders?: HeadersInit): HeadersInit {
   };
 }
 
-async function parseApiError(response: Response, fallback: string) {
-  const error = await response.json().catch(() => ({}));
-  throw new Error(error.detail || fallback);
+async function parseApiError(res: Response, fallback: string) {
+  const err = await res.json().catch(() => ({}));
+  throw new Error(err.detail || fallback);
 }
 
-/* ========================= AUTH ========================= */
+function mapLeaderboardEntries(data: any[]): LeaderboardEntry[] {
+  return data.map((e) => ({
+    rank: e.rank ?? 0,
+    username: e.username ?? "Unknown",
+    score: e.score ?? 0,
+    level: e.level ?? 1,
+  }));
+}
+
+/* ================= AUTH ================= */
 
 export async function registerRushUser(
   payload: RegisterPayload,
   turnstileToken?: string | null
 ) {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+  const res = await fetch(`${API_BASE_URL}/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -85,51 +130,41 @@ export async function registerRushUser(
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    await parseApiError(response, "Registration failed");
-  }
-
-  return response.json();
+  if (!res.ok) await parseApiError(res, "Registration failed");
+  return res.json();
 }
 
 export async function loginRushUser(
   payload: LoginPayload,
   turnstileToken?: string | null
 ) {
-  const formData = new URLSearchParams();
-  formData.append("username", payload.email);
-  formData.append("password", payload.password);
+  const form = new URLSearchParams();
+  form.append("username", payload.email);
+  form.append("password", payload.password);
 
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
+  const res = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       ...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
     },
-    body: formData.toString(),
+    body: form.toString(),
   });
 
-  if (!response.ok) {
-    await parseApiError(response, "Login failed");
-  }
-
-  return response.json();
+  if (!res.ok) await parseApiError(res, "Login failed");
+  return res.json();
 }
 
 export async function fetchCurrentRushUser(): Promise<MeResponse> {
-  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+  const res = await fetch(`${API_BASE_URL}/auth/me`, {
     headers: getAuthHeaders(),
   });
 
-  if (!response.ok) {
-    await parseApiError(response, "Failed to fetch user");
-  }
-
-  return response.json();
+  if (!res.ok) await parseApiError(res, "Fetch user failed");
+  return res.json();
 }
 
 export function clearRushAuth() {
-  if (typeof window === "undefined") return;
   localStorage.removeItem("risen_rush_token");
 }
 
@@ -137,46 +172,81 @@ export function hasRushToken() {
   return !!getStoredToken();
 }
 
-/* ========================= GAME ========================= */
+/* ================= GAME ================= */
 
 export async function startRushSession(): Promise<StartSessionResponse> {
-  const response = await fetch(`${API_BASE_URL}/rush/session/start`, {
+  const res = await fetch(`${API_BASE_URL}/rush/session/start`, {
     method: "POST",
     headers: getAuthHeaders(),
-    body: JSON.stringify({}), // ✅ clean
+    body: JSON.stringify({}),
   });
 
-  if (!response.ok) {
-    await parseApiError(response, "Failed to start session");
-  }
-
-  return response.json();
+  if (!res.ok) await parseApiError(res, "Start failed");
+  return res.json();
 }
 
 export async function finishRushSession(payload: FinishSessionPayload) {
-  const response = await fetch(`${API_BASE_URL}/rush/session/finish`, {
+  const res = await fetch(`${API_BASE_URL}/rush/session/finish`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    await parseApiError(response, "Failed to finish session");
-  }
-
-  return response.json();
+  if (!res.ok) await parseApiError(res, "Finish failed");
+  return res.json();
 }
 
-/* ========================= WALLET ========================= */
+/* ================= WALLET ================= */
 
 export async function fetchRushWallet(): Promise<WalletResponse> {
-  const response = await fetch(`${API_BASE_URL}/rush/wallet`, {
+  const res = await fetch(`${API_BASE_URL}/rush/wallet`, {
     headers: getAuthHeaders(),
   });
 
-  if (!response.ok) {
-    await parseApiError(response, "Failed wallet");
-  }
+  if (!res.ok) await parseApiError(res, "Wallet failed");
+  return res.json();
+}
 
-  return response.json();
+/* ================= LEADERBOARD ================= */
+
+export async function fetchRushLeaderboard(): Promise<LeaderboardEntry[]> {
+  const res = await fetch(`${API_BASE_URL}/leaderboard/global`);
+  if (!res.ok) await parseApiError(res, "Leaderboard failed");
+  return mapLeaderboardEntries(await res.json());
+}
+
+export async function fetchRushTopScoreLeaderboard(): Promise<LeaderboardEntry[]> {
+  const res = await fetch(`${API_BASE_URL}/leaderboard/top-score`);
+  if (!res.ok) await parseApiError(res, "Top score failed");
+  return mapLeaderboardEntries(await res.json());
+}
+
+export async function fetchRushTopLevelLeaderboard(): Promise<LeaderboardEntry[]> {
+  const res = await fetch(`${API_BASE_URL}/leaderboard/top-level`);
+  if (!res.ok) await parseApiError(res, "Top level failed");
+  return mapLeaderboardEntries(await res.json());
+}
+
+/* ================= PROFILE ================= */
+
+export async function createRedemptionRequest(
+  payload: RedemptionRequestPayload
+) {
+  const res = await fetch(`${API_BASE_URL}/profile/redemptions/request`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) await parseApiError(res, "Redemption failed");
+  return res.json();
+}
+
+export async function fetchMyRedemptionRequests() {
+  const res = await fetch(`${API_BASE_URL}/profile/redemptions`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) await parseApiError(res, "Fetch redemptions failed");
+  return res.json();
 }
