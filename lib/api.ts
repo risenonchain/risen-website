@@ -19,7 +19,7 @@ export type LeaderboardEntry = {
 
 export type ProfileStatsResponse = {
   total_games: number;
-  high_score: number;
+  best_score: number;
   total_points: number;
 };
 
