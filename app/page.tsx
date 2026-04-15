@@ -8,7 +8,7 @@ import UtilityLayer from "../sections/UtilityLayer";
 import TrustLayer from "../sections/TrustLayer";
 import CapitalEngine from "../sections/CapitalEngine";
 import Structure from "../sections/Structure";
-import ContestModal from "../components/ContestModal";
+
 import MarketSnapshot from "../components/MarketSnapshot";
 import Image from "next/image";
 import logo from "../public/logo.png";
@@ -119,7 +119,7 @@ export default function Home() {
 
   return (
     <>
-      <ContestModal />
+
 
       <main className="relative min-h-screen text-white overflow-hidden pb-16">
         <div className="absolute inset-0 -z-30">
