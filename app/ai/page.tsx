@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { hasRushToken } from "@/lib/api";
 
 
 export default function AIPage() {
@@ -11,8 +10,8 @@ export default function AIPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !hasRushToken()) {
-      router.replace("/rush/login?redirect=/ai");
+    if (typeof window !== "undefined" && !localStorage.getItem("risen_ai_token")) {
+      router.replace("/ai/login");
     }
   }, [router]);
 

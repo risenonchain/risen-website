@@ -277,15 +277,13 @@ export default function RushProfilePage() {
         }),
       });
 
-
-
-      const data: ScorecardApiResponse = await res.json();
-
       if (!res.ok) {
         const text = await res.text();
         console.error("Scorecard error:", text);
         throw new Error("Scorecard failed");
       }
+
+      const data: ScorecardApiResponse = await res.json();
 
       if (!data.image_url) {
         throw new Error("AI did not return a scorecard image");
