@@ -54,17 +54,18 @@ export default function AIMessage({ content, image, role }: Props) {
           )}
 
           {content === "typing..." ? (
-            <div className="flex gap-1">
-              <span className="w-2 h-2 bg-risen-primary rounded-full animate-bounce" />
-              <span className="w-2 h-2 bg-risen-primary rounded-full animate-bounce delay-100" />
-              <span className="w-2 h-2 bg-risen-primary rounded-full animate-bounce delay-200" />
+            <div className="flex gap-1 items-center h-6">
+              <span className="block w-2 h-2 bg-risen-primary rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+              <span className="block w-2 h-2 bg-risen-primary rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+              <span className="block w-2 h-2 bg-risen-primary rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+              <span className="ml-2 text-xs text-risen-primary font-semibold animate-pulse">RISEN is thinking…</span>
             </div>
           ) : (
-            <div
-              dangerouslySetInnerHTML={{
-                __html: formatMessage(content || ""),
-              }}
+            <span
+              className="inline-block"
+              dangerouslySetInnerHTML={{ __html: formatMessage(content || "") }}
             />
+          )}
           )}
         </div>
 

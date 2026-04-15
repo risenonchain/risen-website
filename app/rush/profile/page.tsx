@@ -264,7 +264,7 @@ export default function RushProfilePage() {
 
       const API_URL = process.env.NEXT_PUBLIC_AI_API_URL!;
 
-      const res = await fetch(`${API_URL}/ai/generate-scorecard`, {
+      const res = await fetch(`${API_URL}/media/generate-scorecard`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -272,7 +272,7 @@ export default function RushProfilePage() {
         body: JSON.stringify({
           username: currentUser.username,
           score: profileStats.best_score,
-          rank: currentRank ?? "Unranked",
+          rank: currentRank ?? 0,
           avatar_path: activeAvatar,
         }),
       });

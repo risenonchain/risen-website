@@ -1,10 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { hasRushToken } from "@/lib/api";
+
 
 export default function AIPage() {
   const [active, setActive] = useState(false);
   const [input, setInput] = useState("");
+  const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !hasRushToken()) {
+      router.replace("/rush/login?redirect=/ai");
+    }
+  }, [router]);
 
   const openAI = (message?: string) => {
     if (message) {
