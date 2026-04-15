@@ -66,7 +66,7 @@ export default function AIMessage({ content, image, role }: Props) {
               dangerouslySetInnerHTML={{ __html: formatMessage(content || "") }}
             />
           )}
-          )}
+
         </div>
 
         {/* COPY BUTTON */}
