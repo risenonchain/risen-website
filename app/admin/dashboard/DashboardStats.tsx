@@ -18,12 +18,31 @@ const defaultStats = {
   ],
 };
 
+
 export default function DashboardStats() {
   const [stats, setStats] = useState(defaultStats);
-
-  // In production, fetch stats from backend here
   useEffect(() => {
-    // fetch stats and setStats
+    async function fetchStats() {
+      try {
+        const [overviewRes, engagementRes] = await Promise.all([
+          fetch("/stats/overview"),
+          fetch("/stats/engagement")
+        ]);
+        if (!overviewRes.ok || !engagementRes.ok) throw new Error("API error");
+        const overview = await overviewRes.json();
+        const chartData = await engagementRes.json();
+        setStats({
+          totalPlayers: overview.totalPlayers,
+          websiteVisitors: overview.websiteVisitors,
+          aiUsage: overview.aiUsage,
+          chartData,
+        });
+      } catch (e) {
+        // fallback to dummy data
+        setStats(defaultStats);
+      }
+    }
+    fetchStats();
   }, []);
 
   return (
