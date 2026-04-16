@@ -17,6 +17,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const timer = useRef<NodeJS.Timeout | null>(null);
   const warningTimer = useRef<NodeJS.Timeout | null>(null);
   const [showWarning, setShowWarning] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Auth guard: redirect to login if not authenticated
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const token = localStorage.getItem("risen_admin_token");
+      if (!token) {
+        router.replace("/admin/login");
+      } else {
+        setAuthChecked(true);
+      }
+    }
+  }, [router, pathname]);
 
   const SIDEBAR_LINKS = [
     { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -58,6 +71,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       window.removeEventListener("touchstart", resetTimer);
     };
   }, [router]);
+
+  if (!authChecked) {
+    // Prevent rendering until auth is checked
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex bg-[#020B1A] text-white">
