@@ -92,18 +92,18 @@ export default function AdminRedemptions() {
                   else statusColor = "text-yellow-300 bg-yellow-900/20 border-yellow-400/10";
                   return (
                     <tr key={r.id} className="border-t border-white/10">
-                      <td className="py-1 px-2 font-semibold text-white">{r.username}</td>
-                      <td className="py-1 px-2">{r.wallet_address}</td>
-                      <td className="py-1 px-2">{r.points_requested}</td>
-                      <td className="py-1 px-2 text-cyan-300 font-semibold">{(r.points_requested * 0.01).toFixed(2)} RSN</td>
-                      <td className="py-1 px-2">
+                      <td className="py-2 px-2 font-semibold text-white">{r.username}</td>
+                      <td className="py-2 px-2 text-white/80 break-all">{r.wallet_address}</td>
+                      <td className="py-2 px-2 text-white/90">{r.points_requested}</td>
+                      <td className="py-2 px-2 text-cyan-300 font-semibold">{(r.points_requested / 10000).toFixed(2)} RSN</td>
+                      <td className="py-2 px-2">
                         <span className={`inline-block rounded-full border px-3 py-1 font-semibold text-xs uppercase tracking-wider ${statusColor}`}>
                           {r.status}
                         </span>
                       </td>
-                      <td className="py-1 px-2 whitespace-nowrap">{r.created_at ? new Date(r.created_at).toLocaleString() : "-"}</td>
-                      <td className="py-1 px-2 whitespace-nowrap">{r.reviewed_at ? new Date(r.reviewed_at).toLocaleString() : "-"}</td>
-                      <td className="py-1 px-2 space-x-2">
+                      <td className="py-2 px-2 whitespace-nowrap text-white/70">{r.created_at ? new Date(r.created_at).toLocaleString() : "-"}</td>
+                      <td className="py-2 px-2 whitespace-nowrap text-white/70">{r.reviewed_at ? new Date(r.reviewed_at).toLocaleString() : "-"}</td>
+                      <td className="py-2 px-2 space-x-2">
                         {r.status === "pending" && (
                           <>
                             <button
