@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           `}</style>
         </div>
       )}
-      <AdminDashboard>{children}</AdminDashboard>
+      {children}
     </>
   );
 }
