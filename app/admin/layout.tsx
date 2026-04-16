@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AdminDashboard from "./dashboard";
 
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const timer = useRef<NodeJS.Timeout | null>(null);
   const warningTimer = useRef<NodeJS.Timeout | null>(null);
