@@ -1,6 +1,6 @@
 import "./globals.css";
-import Navbar from "../sections/Navbar";
-import NewsTicker from "@/components/NewsTicker";
+// import Navbar from "../sections/Navbar";
+// import NewsTicker from "@/components/NewsTicker";
 import { LanguageProvider } from "@/context/LanguageContext";
 import AIButton from "@/components/ai/AIButton";
 import AIDrawer from "@/components/ai/AIDrawer";
@@ -19,8 +19,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <LanguageProvider>
-          <Navbar />
-          <NewsTicker />
+
 
           {/* 🔥 AI GLOBAL LAYER */}
           <AIButton />

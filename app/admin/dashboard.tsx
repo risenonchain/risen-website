@@ -43,9 +43,10 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen flex bg-[#020B1A] text-white">
-      {/* Sidebar */}
-      <aside className="w-64 flex flex-col gap-2 bg-[#07111d] border-r border-white/10 py-8 px-4 fixed h-full z-20
-        max-md:relative max-md:w-full max-md:h-auto max-md:flex-row max-md:items-center max-md:justify-between max-md:py-2 max-md:px-2">
+      {/* Sidebar - always visible, responsive */}
+      <aside className="w-64 flex flex-col gap-2 bg-[#07111d] border-r border-white/10 py-8 px-4 h-full z-20
+        md:fixed md:h-full md:left-0 md:top-0 md:bottom-0
+        max-md:w-full max-md:h-auto max-md:relative max-md:flex-row max-md:items-center max-md:justify-between max-md:py-2 max-md:px-2">
         <div className="flex items-center gap-3 mb-8 pl-2 max-md:mb-0 max-md:pl-0">
           <Image src="/logo.png" alt="RISEN Logo" width={36} height={36} />
           <span className="text-xl font-extrabold tracking-tight text-cyan-300">RISEN Admin</span>
@@ -82,8 +83,8 @@ export default function AdminDashboard() {
         <div className="mt-auto pt-8 pl-2 text-xs text-white/40 max-md:hidden">RISEN Platform Admin</div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 ml-64 p-10 max-md:ml-0 max-md:p-2">
+      {/* Main Content - responsive margin for sidebar */}
+      <main className="flex-1 p-10 md:ml-64 max-md:ml-0 max-md:p-2">
         {/* Routed content will appear here via Next.js routing */}
       </main>
     </div>
