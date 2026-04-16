@@ -1,6 +1,13 @@
 
 "use client";
 import { useState } from "react";
+import {
+  LayoutDashboard,
+  BadgeDollarSign,
+  Newspaper,
+  Calendar,
+  ScrollText
+} from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
@@ -14,11 +21,11 @@ import {
 } from "@/lib/admin";
 
 const SIDEBAR_LINKS = [
-  { label: "Dashboard", icon: "🏠", href: "/admin" },
-  { label: "Redemptions", icon: "💸", href: "/admin/redemptions" },
-  { label: "News", icon: "📰", href: "/admin/news" },
-  { label: "Modal Management", icon: "🗓️", href: "/admin/modals" },
-  { label: "Audit Logs", icon: "📜", href: "/admin/audit" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
+  { label: "Redemptions", icon: BadgeDollarSign, href: "/admin/redemptions" },
+  { label: "News", icon: Newspaper, href: "/admin/news" },
+  { label: "Modal Management", icon: Calendar, href: "/admin/modals" },
+  { label: "Audit Logs", icon: ScrollText, href: "/admin/audit" },
 ];
 
 export default function AdminDashboard() {
@@ -40,18 +47,19 @@ export default function AdminDashboard() {
       <aside className="w-64 flex flex-col gap-2 bg-[#07111d] border-r border-white/10 py-8 px-4 fixed h-full z-20">
         <div className="flex items-center gap-3 mb-8 pl-2">
           <Image src="/logo.png" alt="RISEN Logo" width={36} height={36} />
-          <span className="text-xl font-extrabold tracking-tight text-risen-primary">RISEN Admin</span>
+          <span className="text-xl font-extrabold tracking-tight text-cyan-300">RISEN Admin</span>
         </div>
         <nav className="flex flex-col gap-1">
           {SIDEBAR_LINKS.map((link) => {
             const isActive = pathname === link.href;
+            const Icon = link.icon;
             return (
               <button
                 key={link.label}
                 onClick={() => handleNav(link.href)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg font-semibold text-base transition border border-transparent hover:bg-risen-primary/10 hover:text-risen-primary ${isActive ? "bg-risen-primary/20 text-risen-primary border-risen-primary/40" : ""}`}
               >
-                <span className="text-lg">{link.icon}</span>
+                <Icon className="w-5 h-5" />
                 {link.label}
               </button>
             );
