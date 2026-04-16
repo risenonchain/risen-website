@@ -585,33 +585,56 @@ export default function RushProfilePage() {
                 </form>
 
                 <div className="mt-6">
-                  <div className="text-sm font-semibold text-white">Recent Requests</div>
-
-                  <div className="mt-3 space-y-3">
-                    {redemptions.length > 0 ? (
-                      redemptions.map((item) => (
-                        <div
-                          key={item.id}
-                          className="rounded-2xl border border-white/10 bg-[#07111d] px-4 py-3"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="text-sm font-semibold text-white">
-                              #{item.id} • {Number(item.points_requested).toLocaleString()} pts
-                            </div>
-                            <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-white/70">
-                              {item.status}
-                            </div>
-                          </div>
-                          <div className="mt-2 text-xs text-white/50">
-                            {new Date(item.created_at).toLocaleString()}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="rounded-2xl border border-white/10 bg-[#07111d] px-4 py-4 text-sm text-white/60">
-                        No redemption requests yet.
-                      </div>
-                    )}
+                  <div className="text-sm font-semibold text-white mb-2">Redemption Request History</div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-separate border-spacing-y-2">
+                      <thead>
+                        <tr className="text-white/70">
+                          <th className="text-left px-2">#</th>
+                          <th className="text-left px-2">Points</th>
+                          <th className="text-left px-2">Status</th>
+                          <th className="text-left px-2">Requested</th>
+                          <th className="text-left px-2">Reviewed</th>
+                          <th className="text-left px-2">Reason</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {redemptions.length > 0 ? (
+                          redemptions.map((item) => {
+                            let statusColor = "";
+                            if (item.status === "approved") statusColor = "text-green-400 bg-green-900/30 border-green-400/20";
+                            else if (item.status === "rejected") statusColor = "text-red-400 bg-red-900/30 border-red-400/20";
+                            else statusColor = "text-yellow-300 bg-yellow-900/20 border-yellow-400/10";
+                            return (
+                              <tr key={item.id} className="">
+                                <td className="px-2 py-1 font-semibold text-white">#{item.id}</td>
+                                <td className="px-2 py-1">{Number(item.points_requested).toLocaleString()}</td>
+                                <td className="px-2 py-1">
+                                  <span className={`inline-block rounded-full border px-3 py-1 font-semibold text-xs uppercase tracking-wider ${statusColor}`}>
+                                    {item.status}
+                                  </span>
+                                </td>
+                                <td className="px-2 py-1 whitespace-nowrap">{item.created_at ? new Date(item.created_at).toLocaleString() : "-"}</td>
+                                <td className="px-2 py-1 whitespace-nowrap">{item.reviewed_at ? new Date(item.reviewed_at).toLocaleString() : "-"}</td>
+                                <td className="px-2 py-1">
+                                  {item.status === "rejected" && item.reason ? (
+                                    <span className="text-red-300">{item.reason}</span>
+                                  ) : item.status === "approved" ? (
+                                    <span className="text-green-300">Approved! Wallet will be credited within 24 hours.</span>
+                                  ) : (
+                                    <span className="text-yellow-200">-</span>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan={6} className="text-center text-white/60 py-4">No redemption requests found.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </Card>

@@ -46,7 +46,7 @@ export default function AILoginPage() {
         className="relative z-10 bg-[#101828]/90 p-10 rounded-3xl shadow-2xl w-full max-w-md border border-risen-primary/20 backdrop-blur-xl flex flex-col items-center"
       >
         <Image src="/logo.png" alt="RISEN Logo" width={64} height={64} className="mb-4" />
-        <h2 className="text-3xl font-extrabold text-risen-primary mb-2 text-center tracking-tight drop-shadow">RISEN AI Portal</h2>
+        <h2 className="text-3xl font-extrabold text-white mb-2 text-center tracking-tight drop-shadow">RISEN AI Portal</h2>
         <div className="text-white/80 mb-6 text-center text-base font-medium">
           Secure access to the RISEN AI ecosystem.<br />
           <span className="text-risen-primary">Authenticate to unlock advanced AI features and personalized insights.</span>
