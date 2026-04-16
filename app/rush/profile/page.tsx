@@ -617,8 +617,8 @@ export default function RushProfilePage() {
                                 <td className="px-2 py-1 whitespace-nowrap">{item.created_at ? new Date(item.created_at).toLocaleString() : "-"}</td>
                                 <td className="px-2 py-1 whitespace-nowrap">{item.reviewed_at ? new Date(item.reviewed_at).toLocaleString() : "-"}</td>
                                 <td className="px-2 py-1">
-                                  {item.status === "rejected" && item.reason ? (
-                                    <span className="text-red-300">{item.reason}</span>
+                                  {item.status === "rejected" ? (
+                                    <span className="text-red-300">Rejected</span>
                                   ) : item.status === "approved" ? (
                                     <span className="text-green-300">Approved! Wallet will be credited within 24 hours.</span>
                                   ) : (
