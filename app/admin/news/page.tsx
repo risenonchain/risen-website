@@ -1,5 +1,4 @@
-import dynamic from "next/dynamic";
-const NewsTable = dynamic(() => import("./NewsTable"), { ssr: false });
+import NewsTable from "./NewsTable";
 
 export default function AdminNewsPage() {
   return <NewsTable />;

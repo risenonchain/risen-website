@@ -1,7 +1,6 @@
 import "./globals.css";
 import Navbar from "../sections/Navbar";
-import dynamic from "next/dynamic";
-const NewsTicker = dynamic(() => import("@/components/NewsTicker"), { ssr: false });
+import NewsTicker from "@/components/NewsTicker";
 import { LanguageProvider } from "@/context/LanguageContext";
 import AIButton from "@/components/ai/AIButton";
 import AIDrawer from "@/components/ai/AIDrawer";
