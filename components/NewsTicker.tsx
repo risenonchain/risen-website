@@ -1,3 +1,4 @@
+
 "use client";
 import { useEffect, useRef, useState } from "react";
 
@@ -10,6 +11,7 @@ interface NewsItem {
   is_active: boolean;
 }
 
+export default function NewsTicker() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [selected, setSelected] = useState<NewsItem | null>(null);
   const [paused, setPaused] = useState(false);
