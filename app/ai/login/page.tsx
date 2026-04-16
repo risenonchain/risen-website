@@ -83,14 +83,3 @@ export default function AILoginPage() {
     </div>
   );
 }
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 rounded bg-risen-primary text-white font-semibold hover:bg-cyan-500 transition disabled:opacity-60"
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
-    </div>
-  );
-}
