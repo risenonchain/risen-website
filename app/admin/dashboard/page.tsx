@@ -1,3 +1,4 @@
+"use client";
 import { BadgeDollarSign, Calendar, ScrollText } from "lucide-react";
 import { useRouter } from "next/navigation";
 
