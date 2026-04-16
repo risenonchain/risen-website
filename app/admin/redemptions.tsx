@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Copy } from "lucide-react";
 import {
   fetchRedemptionRequests,
   updateRedemptionRequestStatus,
@@ -93,7 +94,19 @@ export default function AdminRedemptions() {
                   return (
                     <tr key={r.id} className="border-t border-white/10">
                       <td className="py-2 px-2 font-semibold text-white">{r.username}</td>
-                      <td className="py-2 px-2 text-white/80 break-all">{r.wallet_address}</td>
+                      <td className="py-2 px-2 text-white/80 break-all flex items-center gap-2">
+                        <span>{r.wallet_address}</span>
+                        <button
+                          className="p-1 rounded hover:bg-white/10 focus:outline-none"
+                          title="Copy wallet address"
+                          onClick={() => {
+                            navigator.clipboard.writeText(r.wallet_address);
+                            setToast({ type: "success", message: "Wallet address copied!" });
+                          }}
+                        >
+                          <Copy className="w-4 h-4 text-cyan-300" />
+                        </button>
+                      </td>
                       <td className="py-2 px-2 text-white/90">{r.points_requested}</td>
                       <td className="py-2 px-2 text-cyan-300 font-semibold">{(r.points_requested / 10000).toFixed(2)} RSN</td>
                       <td className="py-2 px-2">
