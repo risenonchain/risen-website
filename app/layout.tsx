@@ -1,6 +1,5 @@
-import "./globals.css";
-
 "use client";
+import "./globals.css";
 import { usePathname } from "next/navigation";
 import ClientNavbarWrapper from "@/components/ClientNavbarWrapper";
 import { LanguageProvider } from "@/context/LanguageContext";

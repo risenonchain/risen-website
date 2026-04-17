@@ -19,25 +19,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (!token) {
           router.replace("/admin/login");
         } else {
-          "use client";
-
-          import { useEffect, useState } from "react";
-          import { useRouter, usePathname } from "next/navigation";
-          import SimpleBackToSiteLayout from "@/components/SimpleBackToSiteLayout";
-
-          export default function AdminLayout({ children }: { children: React.ReactNode }) {
-            const router = useRouter();
-            const pathname = usePathname();
-
-            const [authChecked, setAuthChecked] = useState(false);
-            const [loading, setLoading] = useState(true);
-
-            const isLoginPage = pathname === "/admin/login";
-
-            useEffect(() => {
-              try {
-                if (typeof window !== "undefined") {
-                  const token = localStorage.getItem("risen_admin_token");
+          setAuthChecked(true);
+        }
+      }
+    } catch (err) {
+      setError("Failed to check authentication");
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
 
                   if (!token && !isLoginPage) {
                     router.replace("/admin/login");
