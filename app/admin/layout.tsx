@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import SimpleBackToSiteLayout from "@/components/SimpleBackToSiteLayout";
 
 
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
   const [loading, setLoading] = useState(true);
