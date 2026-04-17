@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+
 import SimpleBackToSiteLayout from "@/components/SimpleBackToSiteLayout";
+import AdminSidebar from "@/components/AdminSidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -45,5 +47,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return null;
   }
 
-  return <SimpleBackToSiteLayout>{children}</SimpleBackToSiteLayout>;
+  // Sidebar layout for all admin pages except login
+  return (
+    <div style={{ display: "flex", minHeight: "100vh" }}>
+      <AdminSidebar />
+      <div style={{ flex: 1, background: "#0a101a" }}>
+        <SimpleBackToSiteLayout>{children}</SimpleBackToSiteLayout>
+      </div>
+    </div>
+  );
 }
