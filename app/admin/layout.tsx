@@ -35,9 +35,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     setAuthChecked(true);
                   }
                 }
-
+                setLoading(false);
               }
-              setLoading(false);
             }, [router, isLoginPage]);
 
             if (loading) {
