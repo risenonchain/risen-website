@@ -6,21 +6,31 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 
+
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [alreadyLoggedIn, setAlreadyLoggedIn] = useState(false);
+  const [checking, setChecking] = useState(true);
+  const [checkError, setCheckError] = useState<string | null>(null);
   const router = useRouter();
 
   // Check for existing session on mount
   React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("risen_admin_token");
-      if (token) {
-        setAlreadyLoggedIn(true);
+    setChecking(true);
+    try {
+      if (typeof window !== "undefined") {
+        const token = localStorage.getItem("risen_admin_token");
+        if (token) {
+          setAlreadyLoggedIn(true);
+        }
       }
+    } catch (e: any) {
+      setCheckError(e.message || "Unknown error");
+    } finally {
+      setChecking(false);
     }
   }, []);
 
@@ -48,6 +58,20 @@ export default function AdminLoginPage() {
     }
   };
 
+  if (checking) {
+    return (
+      <div style={{ color: '#2EDBFF', textAlign: 'center', marginTop: 80 }}>
+        Checking admin session...
+      </div>
+    );
+  }
+  if (checkError) {
+    return (
+      <div style={{ color: 'red', textAlign: 'center', marginTop: 80 }}>
+        Error: {checkError}
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a101a] to-[#18102a] relative overflow-hidden">
       {/* Decorative background */}
