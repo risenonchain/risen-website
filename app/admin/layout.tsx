@@ -29,33 +29,4 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [router]);
 
-                  if (!token && !isLoginPage) {
-                    router.replace("/admin/login");
-                  } else {
-                    setAuthChecked(true);
-                  }
-                }
-                setLoading(false);
-              }
-            }, [router, isLoginPage]);
 
-            if (loading) {
-              return (
-                <div style={{ color: "#2EDBFF", textAlign: "center", marginTop: 80 }}>
-                  Checking authentication...
-                </div>
-              );
-            }
-
-            // allow login page to render freely
-            if (isLoginPage) {
-              return <>{children}</>;
-            }
-
-            // protect only admin dashboard pages
-            if (!authChecked) {
-              return null;
-            }
-
-            return <SimpleBackToSiteLayout>{children}</SimpleBackToSiteLayout>;
-          }

@@ -147,9 +147,7 @@ function getOrCreateDeviceFingerprint(): string {
       ? crypto.randomUUID()
       : `rush_${Date.now()}_${Math.random().toString(36).slice(2, 12)}`;
 
-  localStorage.setItem(key, fingerprint);
-  return fingerprint;
-}
+
 
 /* =========================
    AUTH
