@@ -208,24 +208,24 @@ export async function loginRushUser(
 
   const raw = await res.text();
 
-  let data: any = null;
+  let parsed: any = null;
   try {
-    data = raw ? JSON.parse(raw) : null;
+    parsed = raw ? JSON.parse(raw) : null;
   } catch {
-    data = raw;
+    parsed = raw;
   }
 
   if (!res.ok) {
     const message =
-      typeof data === "object" && data?.detail
-        ? data.detail
-        : typeof data === "string" && data
-          ? data
+      typeof parsed === "object" && parsed?.detail
+        ? parsed.detail
+        : typeof parsed === "string" && parsed
+          ? parsed
           : "Login failed";
     throw new Error(message);
   }
 
-  return data;
+  return parsed;
 }
 
 export async function fetchCurrentRushUser(): Promise<MeResponse> {
