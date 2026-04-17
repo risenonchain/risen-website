@@ -1,5 +1,7 @@
 import "./globals.css";
-import Navbar from "../sections/Navbar";
+
+"use client";
+import { usePathname } from "next/navigation";
 import ClientNavbarWrapper from "@/components/ClientNavbarWrapper";
 import { LanguageProvider } from "@/context/LanguageContext";
 import AIButton from "@/components/ai/AIButton";
@@ -12,14 +14,22 @@ export const metadata = {
 
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+
+  const isAdmin = pathname.startsWith("/admin");
+  const isRush = pathname.startsWith("/rush");
+  const isAI = pathname.startsWith("/ai");
+
+  const showMainUI = !isAdmin && !isRush && !isAI;
+
   return (
     <html lang="en">
       <body>
         <LanguageProvider>
-          <ClientNavbarWrapper />
-          {/* 🔥 AI GLOBAL LAYER */}
-          <AIButton />
-          <AIDrawer />
+          {/* ONLY MAIN SITE */}
+          {showMainUI && <ClientNavbarWrapper />}
+          {showMainUI && <AIButton />}
+          {showMainUI && <AIDrawer />}
           {children}
         </LanguageProvider>
       </body>

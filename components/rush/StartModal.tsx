@@ -31,10 +31,10 @@ export default function StartModal({
 
         <div className="mt-6 grid gap-3 text-sm text-white/80">
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            Normal RSN = 5 points
+            Normal RSN = 5 points (1 RSN = 1,000 points)
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-            Golden RSN = 20 points
+            Golden RSN = 20 points (1 RSN = 1,000 points)
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
             Red Crash Orb, Heavy Drop, and Glitch Block reduce both score and lives

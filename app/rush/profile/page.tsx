@@ -262,28 +262,41 @@ export default function RushProfilePage() {
       setLoading(true);
       setScorecardError(null);
 
-      const API_URL = process.env.NEXT_PUBLIC_AI_API_URL!;
+      const API_URL = process.env.NEXT_PUBLIC_AI_API_URL;
 
-      const res = await fetch(`${API_URL}/media/generate-scorecard`, {
+      if (!API_URL) {
+        throw new Error("NEXT_PUBLIC_AI_API_URL is not configured");
+      }
+
+      const fallbackAvatar = "/images/default-avatar.png";
+
+      const res = await fetch(`${API_URL}/ai/generate-scorecard`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           username: currentUser.username,
-          score: profileStats.best_score,
+          score: profileStats.best_score ?? 0,
           rank: currentRank ?? 0,
-          avatar_path: activeAvatar,
+          avatar_path: activeAvatar || fallbackAvatar,
         }),
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Scorecard error:", text);
-        throw new Error("Scorecard failed");
+      const raw = await res.text();
+
+      let data: ScorecardApiResponse & { detail?: string; message?: string } = {};
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = {};
       }
 
-      const data: ScorecardApiResponse = await res.json();
+      if (!res.ok) {
+        throw new Error(
+          data.detail || data.message || raw || "Scorecard generation failed"
+        );
+      }
 
       if (!data.image_url) {
         throw new Error("AI did not return a scorecard image");
@@ -294,7 +307,7 @@ export default function RushProfilePage() {
       const message =
         err instanceof Error ? err.message : "Scorecard generation failed";
       setScorecardError(message);
-      console.error(err);
+      console.error("Scorecard generation error:", err);
     } finally {
       setLoading(false);
     }
@@ -554,7 +567,7 @@ export default function RushProfilePage() {
               <Card title="Redeem Points" eyebrow="Wallet">
                 <form onSubmit={handleRedeem} className="space-y-4">
                   <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
-                    Minimum threshold: <span className="font-semibold">100,000 points</span>
+                    Minimum threshold: <span className="font-semibold">100,000 points (100 RSN)</span>
                   </div>
 
                   <InputField

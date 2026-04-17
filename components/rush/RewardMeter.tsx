@@ -5,7 +5,8 @@ type Props = {
 export default function RewardMeter({ availablePoints }: Props) {
   const threshold = 100000;
   const ratio = Math.min(availablePoints / threshold, 1);
-  const estimatedRSN = availablePoints / 10000;
+  // 1,000 points = 1 RSN
+  const estimatedRSN = availablePoints / 1000;
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5">
@@ -29,7 +30,7 @@ export default function RewardMeter({ availablePoints }: Props) {
       </div>
 
       <div className="mt-3 text-sm text-white/65">
-        Minimum claim threshold: 100,000 points
+        Minimum claim threshold: 100,000 points (100 RSN)
       </div>
     </div>
   );

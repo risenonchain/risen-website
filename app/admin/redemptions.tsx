@@ -78,7 +78,7 @@ export default function AdminRedemptions() {
                   <th className="text-left px-2">User</th>
                   <th className="text-left px-2">Wallet</th>
                   <th className="text-left px-2">Points</th>
-                  <th className="text-left px-2">RSN Tokens</th>
+                  <th className="text-left px-2">RSN Tokens<br/>(1,000 points = 1 RSN)</th>
                   <th className="text-left px-2">Status</th>
                   <th className="text-left px-2">Requested</th>
                   <th className="text-left px-2">Reviewed</th>
@@ -108,7 +108,7 @@ export default function AdminRedemptions() {
                         </button>
                       </td>
                       <td className="py-2 px-2 text-white/90">{r.points_requested}</td>
-                      <td className="py-2 px-2 text-cyan-300 font-semibold">{(r.points_requested / 10000).toFixed(2)} RSN</td>
+                      <td className="py-2 px-2 text-cyan-300 font-semibold">{(r.points_requested / 1000).toFixed(2)} RSN</td>
                       <td className="py-2 px-2">
                         <span className={`inline-block rounded-full border px-3 py-1 font-semibold text-xs uppercase tracking-wider ${statusColor}`}>
                           {r.status}

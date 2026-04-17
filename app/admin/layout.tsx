@@ -19,36 +19,54 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (!token) {
           router.replace("/admin/login");
         } else {
-          setAuthChecked(true);
-        }
-      }
-    } catch (e: any) {
-      setError(e.message || "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }, [router]);
+          "use client";
 
-  if (loading) {
-    return (
-      <div style={{ color: '#2EDBFF', textAlign: 'center', marginTop: 80 }}>
-        Checking authentication...
-      </div>
-    );
-  }
+          import { useEffect, useState } from "react";
+          import { useRouter, usePathname } from "next/navigation";
+          import SimpleBackToSiteLayout from "@/components/SimpleBackToSiteLayout";
 
-  if (error) {
-    return (
-      <div style={{ color: 'red', textAlign: 'center', marginTop: 80 }}>
-        Error: {error}
-      </div>
-    );
-  }
+          export default function AdminLayout({ children }: { children: React.ReactNode }) {
+            const router = useRouter();
+            const pathname = usePathname();
 
-  if (!authChecked) {
-    // Prevent rendering until auth is checked
-    return null;
-  }
+            const [authChecked, setAuthChecked] = useState(false);
+            const [loading, setLoading] = useState(true);
 
-  return <SimpleBackToSiteLayout>{children}</SimpleBackToSiteLayout>;
-}
+            const isLoginPage = pathname === "/admin/login";
+
+            useEffect(() => {
+              try {
+                if (typeof window !== "undefined") {
+                  const token = localStorage.getItem("risen_admin_token");
+
+                  if (!token && !isLoginPage) {
+                    router.replace("/admin/login");
+                  } else {
+                    setAuthChecked(true);
+                  }
+                }
+              } finally {
+                setLoading(false);
+              }
+            }, [router, isLoginPage]);
+
+            if (loading) {
+              return (
+                <div style={{ color: "#2EDBFF", textAlign: "center", marginTop: 80 }}>
+                  Checking authentication...
+                </div>
+              );
+            }
+
+            // allow login page to render freely
+            if (isLoginPage) {
+              return <>{children}</>;
+            }
+
+            // protect only admin dashboard pages
+            if (!authChecked) {
+              return null;
+            }
+
+            return <SimpleBackToSiteLayout>{children}</SimpleBackToSiteLayout>;
+          }

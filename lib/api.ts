@@ -98,24 +98,7 @@ export function saveRushAuth(token: string, username?: string) {
 
   if (typeof window !== "undefined" && username) {
     localStorage.setItem("risen_rush_username", username);
-  }
-}
-
-export function clearRushAuth() {
-  localStorage.removeItem(TOKEN_KEY);
-}
-
-export function hasRushToken() {
-  return !!localStorage.getItem(TOKEN_KEY);
-}
-
-function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-/* =========================
-   BASE REQUEST
-========================= */
+  // Removed dead code: getOrCreateDeviceFingerprint
 
 async function request(endpoint: string, options: RequestInit = {}) {
   const token = getToken();
