@@ -1,4 +1,5 @@
 import { useRouter, usePathname } from "next/navigation";
+import { useCallback } from "react";
 import {
   LayoutDashboard,
   BadgeDollarSign,
@@ -19,12 +20,17 @@ export default function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
 
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem("risen_admin_token");
+    router.replace("/admin/login");
+  }, [router]);
+
   return (
     <aside className="min-h-screen w-64 bg-[#101828] border-r border-white/10 flex flex-col py-8 px-4">
       <div className="mb-10 text-center">
         <span className="text-2xl font-extrabold text-cyan-300 tracking-tight">RISEN Admin</span>
       </div>
-      <nav className="flex flex-col gap-2">
+      <nav className="flex flex-col gap-2 mb-8">
         {SIDEBAR_LINKS.map(({ label, icon: Icon, href }) => (
           <button
             key={href}
@@ -36,6 +42,12 @@ export default function AdminSidebar() {
           </button>
         ))}
       </nav>
+      <button
+        className="mt-auto px-4 py-3 rounded-lg bg-red-700 text-white font-semibold hover:bg-red-800 transition-colors"
+        onClick={handleLogout}
+      >
+        Logout
+      </button>
     </aside>
   );
 }

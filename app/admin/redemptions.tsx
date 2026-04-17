@@ -16,6 +16,7 @@ export default function AdminRedemptions() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   const [toast, setToast] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   useEffect(() => {
     const token = localStorage.getItem("risen_admin_token");
@@ -55,20 +56,56 @@ export default function AdminRedemptions() {
     }
   };
 
+  // Filtering and sorting logic
+  const filteredRedemptions = redemptions
+    .filter((r) => statusFilter === "all" || r.status === statusFilter)
+    .sort((a, b) => {
+      // Pending first, then by created_at desc
+      if (a.status === "pending" && b.status !== "pending") return -1;
+      if (a.status !== "pending" && b.status === "pending") return 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
   return (
     <div className="max-w-5xl mx-auto py-10">
-      <h1 className="text-2xl font-extrabold mb-6 text-risen-primary">Redemption Requests</h1>
+      <h1 className="text-3xl font-extrabold mb-6 text-cyan-300 drop-shadow-lg" style={{letterSpacing: '0.02em', textShadow: '0 2px 16px #00eaff, 0 1px 0 #000'}}>Redemption Requests</h1>
       {toast && (
         <div className={`fixed top-6 right-6 z-50 px-6 py-3 rounded-xl font-semibold shadow-lg ${toast.type === "success" ? "bg-green-600 text-white" : "bg-red-600 text-white"}`}>
           {toast.message}
         </div>
       )}
+      <div className="mb-4 flex gap-2">
+        <button
+          className={`px-4 py-2 rounded-lg font-semibold border transition-colors ${statusFilter === "all" ? "bg-cyan-700 text-white border-cyan-400" : "bg-[#07111d] text-white/70 border-white/10 hover:bg-cyan-950"}`}
+          onClick={() => setStatusFilter("all")}
+        >
+          All
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg font-semibold border transition-colors ${statusFilter === "pending" ? "bg-yellow-700 text-yellow-200 border-yellow-400" : "bg-[#07111d] text-white/70 border-white/10 hover:bg-yellow-900"}`}
+          onClick={() => setStatusFilter("pending")}
+        >
+          Pending
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg font-semibold border transition-colors ${statusFilter === "approved" ? "bg-green-700 text-green-200 border-green-400" : "bg-[#07111d] text-white/70 border-white/10 hover:bg-green-900"}`}
+          onClick={() => setStatusFilter("approved")}
+        >
+          Approved
+        </button>
+        <button
+          className={`px-4 py-2 rounded-lg font-semibold border transition-colors ${statusFilter === "rejected" ? "bg-red-700 text-red-200 border-red-400" : "bg-[#07111d] text-white/70 border-white/10 hover:bg-red-900"}`}
+          onClick={() => setStatusFilter("rejected")}
+        >
+          Rejected
+        </button>
+      </div>
       <div className="rounded-3xl bg-[#101828] border border-white/10 p-8 shadow-xl">
         {loading ? (
           <div className="text-white/60">Loading...</div>
         ) : error ? (
           <div className="text-red-400 mb-2">{error}</div>
-        ) : redemptions.length === 0 ? (
+        ) : filteredRedemptions.length === 0 ? (
           <div className="text-white/60">No redemption requests found.</div>
         ) : (
           <div className="overflow-x-auto">
@@ -86,7 +123,7 @@ export default function AdminRedemptions() {
                 </tr>
               </thead>
               <tbody>
-                {redemptions.map((r) => {
+                {filteredRedemptions.map((r) => {
                   let statusColor = "";
                   if (r.status === "approved") statusColor = "text-green-400 bg-green-900/30 border-green-400/20";
                   else if (r.status === "rejected") statusColor = "text-red-400 bg-red-900/30 border-red-400/20";

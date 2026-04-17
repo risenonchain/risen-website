@@ -680,12 +680,19 @@ export default function RushProfilePage() {
                   </button>
 
                   {scorecardImage && (
-                    <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-[#030913] p-3">
+                    <div className="mt-5 overflow-hidden rounded-2xl border border-white/10 bg-[#030913] p-3 flex flex-col items-center">
                       <img
                         src={scorecardImage}
                         alt="Scorecard"
-                        className="w-full rounded-xl"
+                        className="w-full rounded-xl mb-4"
                       />
+                      <a
+                        href={scorecardImage}
+                        download
+                        className="inline-flex items-center justify-center rounded-2xl bg-risen-primary px-5 py-3 font-semibold text-white shadow-[0_0_28px_rgba(46,219,255,0.35)] transition hover:shadow-[0_0_38px_rgba(46,219,255,0.45)]"
+                      >
+                        Download Scorecard
+                      </a>
                     </div>
                   )}
                 </div>
