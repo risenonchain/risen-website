@@ -10,6 +10,8 @@ export const metadata = {
   description: "Structured digital asset built for durability.",
 };
 
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
