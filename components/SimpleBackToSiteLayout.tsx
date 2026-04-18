@@ -18,7 +18,7 @@ export default function SimpleBackToSiteLayout({ children }: { children: React.R
     <div>
       <div style={{ padding: "1rem", background: "#010913", textAlign: "center" }}>
         <a href="/" style={{ color: "#2EDBFF", fontWeight: 600, fontSize: 16, cursor: "pointer" }} onClick={handleBack}>
-          04 Back to Main Site
+          Back to Main Site
         </a>
       </div>
       {children}

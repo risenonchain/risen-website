@@ -20,7 +20,7 @@ export default function AdminAuditLogs() {
 
   return (
     <div className="max-w-5xl mx-auto py-10">
-      <h1 className="text-2xl font-extrabold mb-6 text-risen-primary">Audit Logs</h1>
+      <h1 className="text-2xl font-extrabold mb-6 text-cyan-300">Audit Logs</h1>
       <div className="rounded-3xl bg-[#101828] border border-white/10 p-8 shadow-xl">
         {loading ? (
           <div className="text-white/60">Loading...</div>

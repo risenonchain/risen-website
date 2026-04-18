@@ -30,7 +30,7 @@ export default function AdminSidebar() {
       <div className="mb-10 text-center">
         <span className="text-2xl font-extrabold text-cyan-300 tracking-tight">RISEN Admin</span>
       </div>
-      <nav className="flex flex-col gap-2 mb-8">
+      <nav className="flex flex-col gap-2 mb-2">
         {SIDEBAR_LINKS.map(({ label, icon: Icon, href }) => (
           <button
             key={href}
@@ -43,7 +43,7 @@ export default function AdminSidebar() {
         ))}
       </nav>
       <button
-        className="mt-auto px-4 py-3 rounded-lg bg-red-700 text-white font-semibold hover:bg-red-800 transition-colors"
+        className="mb-8 px-4 py-3 rounded-lg bg-red-700 text-white font-semibold hover:bg-red-800 transition-colors"
         onClick={handleLogout}
       >
         Logout

@@ -687,7 +687,20 @@ export default function RushProfilePage() {
                         className="w-full rounded-xl mb-4"
                       />
                       <a
-                        href={scorecardImage}
+                        href={(() => {
+                          // Parse the image URL and append query params for on-demand generation
+                          if (!scorecardImage || !currentUser || !profileStats) return scorecardImage;
+                          try {
+                            const url = new URL(scorecardImage);
+                            url.searchParams.set('avatar_path', activeAvatar || '/images/default-avatar.png');
+                            url.searchParams.set('score', String(profileStats.best_score ?? 0));
+                            url.searchParams.set('rank', String(currentRank ?? 0));
+                            url.searchParams.set('username', currentUser.username);
+                            return url.toString();
+                          } catch {
+                            return scorecardImage;
+                          }
+                        })()}
                         download
                         className="inline-flex items-center justify-center rounded-2xl bg-risen-primary px-5 py-3 font-semibold text-white shadow-[0_0_28px_rgba(46,219,255,0.35)] transition hover:shadow-[0_0_38px_rgba(46,219,255,0.45)]"
                       >
