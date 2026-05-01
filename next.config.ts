@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  output: "export", // Enable static export for Capacitor/mobile
 
   async rewrites() {
     return [

@@ -1,6 +1,7 @@
 "use client";
 import "./globals.css";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import ClientNavbarWrapper from "@/components/ClientNavbarWrapper";
 import { LanguageProvider } from "@/context/LanguageContext";
 import AIButton from "@/components/ai/AIButton";
@@ -9,6 +10,14 @@ import Head from "next/head";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    // If running in Capacitor and on the landing page, redirect to the game login
+    if (typeof window !== "undefined" && (window as any).Capacitor && pathname === "/") {
+      router.push("/rush/login");
+    }
+  }, [pathname, router]);
 
   const isAdmin = pathname.startsWith("/admin");
   const isRush = pathname.startsWith("/rush");
@@ -19,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5182951866830006"

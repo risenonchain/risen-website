@@ -1,4 +1,19 @@
-const BASE_URL = process.env.NEXT_PUBLIC_RUSH_API_URL || "";
+const getBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_RUSH_API_URL) {
+    return process.env.NEXT_PUBLIC_RUSH_API_URL;
+  }
+
+  if (typeof window !== "undefined") {
+    // Check if running in Capacitor
+    if ((window as any).Capacitor) {
+      return "https://risen-rush-backend.onrender.com";
+    }
+  }
+
+  return "";
+};
+
+export const BASE_URL = getBaseUrl();
 
 /* =========================
    TYPES
@@ -18,6 +33,7 @@ export type LeaderboardEntry = {
   username: string;
   score: number;
   level: number;
+  is_premium?: boolean;
 };
 
 export type ProfileStatsResponse = {
@@ -28,11 +44,15 @@ export type ProfileStatsResponse = {
   total_sessions?: number;
   total_points_earned?: number;
   claimed_points?: number;
+  is_premium?: boolean;
+  premium_until?: string;
   wallet_address?: string;
   avatar_url?: string;
   generated_avatar_url?: string;
   username?: string;
   email?: string;
+  score_rank?: number;
+  level_rank?: number;
 };
 
 export type RedemptionRequestResponse = {
@@ -117,6 +137,8 @@ function getToken() {
    BASE REQUEST
 ========================= */
 
+export const APP_VERSION = "1.1.0";
+
 async function request(endpoint: string, options: RequestInit = {}) {
   const token = getToken();
 
@@ -124,6 +146,8 @@ async function request(endpoint: string, options: RequestInit = {}) {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      "X-App-Version": APP_VERSION,
+      "X-Platform": (window as any).Capacitor ? "android" : "web",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
@@ -193,39 +217,52 @@ export async function loginRushUser(
   },
   turnstileToken?: string | null
 ) {
-  const formData = new URLSearchParams();
-  formData.append("username", data.email);
-  formData.append("password", data.password);
+  // Use a raw string for body to avoid issues with URLSearchParams in some native environments
+  const body = `username=${encodeURIComponent(data.email)}&password=${encodeURIComponent(data.password)}`;
 
-  const res = await fetch(`${BASE_URL}/auth/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      ...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
-    },
-    body: formData.toString(),
-  });
-
-  const raw = await res.text();
-
-  let parsed: any = null;
   try {
-    parsed = raw ? JSON.parse(raw) : null;
-  } catch {
-    parsed = raw;
-  }
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-App-Version": APP_VERSION,
+        "X-Platform": (window as any).Capacitor ? "android" : "web",
+        ...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
+      },
+      body: body,
+    });
 
-  if (!res.ok) {
-    const message =
-      typeof parsed === "object" && parsed?.detail
-        ? parsed.detail
-        : typeof parsed === "string" && parsed
-          ? parsed
-          : "Login failed";
-    throw new Error(message);
-  }
+    const raw = await res.text();
 
-  return parsed;
+    let parsed: any = null;
+    try {
+      parsed = raw ? JSON.parse(raw) : null;
+    } catch {
+      parsed = raw;
+    }
+
+    if (!res.ok) {
+      const message =
+        typeof parsed === "object" && parsed?.detail
+          ? parsed.detail
+          : typeof parsed === "string" && parsed
+            ? parsed
+            : "Login failed";
+      throw new Error(message);
+    }
+
+    return parsed;
+  } catch (err) {
+    if (err instanceof TypeError && err.message === "Failed to fetch") {
+      throw new Error("Network error: Backend unreachable. Please check your internet connection or backend CORS settings.");
+    }
+    // Handle the "unexpected end of stream" or similar native errors specifically if possible
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    if (errorMessage.includes("unexpected end of stream")) {
+        throw new Error("Connection interrupted by network or server. Please try again.");
+    }
+    throw err;
+  }
 }
 
 export async function fetchCurrentRushUser(): Promise<MeResponse> {
@@ -343,6 +380,12 @@ export async function fetchMyRedemptionRequests(): Promise<
   return request("/profile/redemptions");
 }
 
+export async function claimAdReward(): Promise<WalletResponse> {
+  return request("/rush/ads/claim-reward", {
+    method: "POST",
+  });
+}
+
 /* =========================
    LEADERBOARD
 ========================= */
@@ -367,5 +410,13 @@ export async function fetchRushTopLevelLeaderboard(): Promise<LeaderboardEntry[]
 ========================= */
 
 export function getTurnstileSiteKey() {
-  return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
+  const envKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  if (envKey) return envKey;
+
+  // Fallback for mobile app if env variable is not picked up during static build
+  if (typeof window !== "undefined" && (window as any).Capacitor) {
+    return "0x4AAAAAACyq8KO_Awc5gL-A";
+  }
+
+  return "";
 }

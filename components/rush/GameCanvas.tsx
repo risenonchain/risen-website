@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { rushAudio } from "@/lib/rushAudio";
 import {
   applyCatchEffect,
   checkCollision,
@@ -28,6 +29,7 @@ type FinishData = {
 
 type Props = {
   isPlaying: boolean;
+  isPremium?: boolean;
   onGameOver: (data: FinishData) => void;
 };
 
@@ -46,7 +48,19 @@ type CornerGain = {
   tone: "good" | "bad" | "neutral";
 };
 
-export default function GameCanvas({ isPlaying, onGameOver }: Props) {
+type Particle = {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  life: number;
+  maxLife: number;
+};
+
+export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }: Props) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -54,6 +68,7 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
   const itemsRef = useRef<FallingItem[]>([]);
   const hitEffectsRef = useRef<HitEffect[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
   const lastSpawnTimeRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
   const lastTimerSecondRef = useRef<number>(0);
@@ -64,9 +79,13 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
   const isRunningRef = useRef<boolean>(false);
 
   const heavyDropSlowUntilRef = useRef<number | null>(null);
+  const screenShakeUntilRef = useRef<number | null>(null);
+  const levelUpBannerUntilRef = useRef<number | null>(null);
 
   const playerRef = useRef<Player>({ ...INITIAL_PLAYER });
   const stateRef = useRef({ ...INITIAL_GAME_STATE });
+
+  const pointerXRef = useRef<number | null>(null);
 
   const keyStateRef = useRef<{ left: boolean; right: boolean }>({
     left: false,
@@ -119,6 +138,22 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
     [clearCornerGainTimer]
   );
 
+  const spawnParticles = (x: number, y: number, color: string, count: number) => {
+    for (let i = 0; i < count; i++) {
+      particlesRef.current.push({
+        id: crypto.randomUUID(),
+        x,
+        y,
+        vx: (Math.random() - 0.5) * 8,
+        vy: (Math.random() - 0.5) * 8,
+        size: Math.random() * 4 + 2,
+        color,
+        life: 1,
+        maxLife: Math.random() * 0.5 + 0.5,
+      });
+    }
+  };
+
   const broadcastHudUpdate = useCallback((now: number) => {
     const multiplierActive =
       !!stateRef.current.multiplierActiveUntil &&
@@ -150,10 +185,31 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
       stateRef.current.multiplierActiveUntil > now;
 
     ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+    // Apply Screen Shake
+    if (screenShakeUntilRef.current && screenShakeUntilRef.current > now) {
+      const intensity = 8;
+      ctx.save();
+      ctx.translate((Math.random() - 0.5) * intensity, (Math.random() - 0.5) * intensity);
+    }
+
     drawBackground(ctx, stateRef.current.level, multiplierActive);
     drawItems(ctx, itemsRef.current);
+    drawParticles(ctx, particlesRef.current, now);
     drawHitEffects(ctx, hitEffectsRef.current, now);
-    drawPlayerVault(ctx, playerRef.current);
+    drawPlayerVault(ctx, playerRef.current, stateRef.current.isPremium);
+
+    // Draw In-Game HUD (Score & Lives)
+    drawInGameHUD(ctx, stateRef.current.score, stateRef.current.lives, multiplierActive, stateRef.current.elapsedSeconds);
+
+    if (screenShakeUntilRef.current && screenShakeUntilRef.current > now) {
+      ctx.restore();
+    }
+
+    // Level Up Banner
+    if (levelUpBannerUntilRef.current && levelUpBannerUntilRef.current > now) {
+      drawLevelUpBanner(ctx, stateRef.current.level, now, levelUpBannerUntilRef.current);
+    }
 
     if (
       !isPausedRef.current &&
@@ -196,6 +252,11 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
       gameLoopRef.current(now);
     });
   }, [isPlaying, stopLoop]);
+
+  // High-Performance Engine Logic
+  const lastUpdateRef = useRef<number>(0);
+  const accumulatorRef = useRef<number>(0);
+  const FIXED_TIMESTEP = 1000 / 60; // Locked 60fps logic
 
   const pauseGame = useCallback(() => {
     if (!isPlaying || stateRef.current.isGameOver || isPausedRef.current) return;
@@ -243,8 +304,14 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
     const updateResponsiveHeight = () => {
       const width = wrapper.clientWidth;
-      const ratio = GAME_HEIGHT / GAME_WIDTH;
-      setCanvasHeight(width * ratio);
+      const height = wrapper.clientHeight;
+
+      if (isPlaying && height > 0) {
+        setCanvasHeight(height);
+      } else {
+        const ratio = GAME_HEIGHT / GAME_WIDTH;
+        setCanvasHeight(width * ratio);
+      }
     };
 
     updateResponsiveHeight();
@@ -310,106 +377,142 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
       return;
     }
 
-    const effectiveElapsedMs =
-      now - startTimeRef.current - totalPausedDurationRef.current;
+    // Delta Timing for Smooth Motion
+    if (!lastUpdateRef.current) lastUpdateRef.current = now;
+    const deltaTime = now - lastUpdateRef.current;
+    lastUpdateRef.current = now;
 
-    const elapsed = Math.floor(effectiveElapsedMs / 1000);
+    // Cap delta to prevent huge jumps during background tasks
+    accumulatorRef.current += Math.min(deltaTime, 50);
 
-    if (elapsed !== lastTimerSecondRef.current) {
-      lastTimerSecondRef.current = elapsed;
-      const currentLevel = getLevelFromElapsed(elapsed);
-      stateRef.current.level = currentLevel;
-      stateRef.current.elapsedSeconds = elapsed;
-    }
+    let physicsUpdated = false;
+    while (accumulatorRef.current >= FIXED_TIMESTEP) {
+      physicsUpdated = true;
+      const loopNow = performance.now();
+      const effectiveElapsedMs =
+        loopNow - startTimeRef.current - totalPausedDurationRef.current;
 
-    if (
-      heavyDropSlowUntilRef.current !== null &&
-      now >= heavyDropSlowUntilRef.current
-    ) {
-      playerRef.current = {
-        ...playerRef.current,
-        speed: INITIAL_PLAYER.speed,
-      };
-      heavyDropSlowUntilRef.current = null;
-    }
+      const elapsed = Math.floor(effectiveElapsedMs / 1000);
 
-    const direction = keyStateRef.current.left
-      ? "left"
-      : keyStateRef.current.right
-      ? "right"
-      : null;
+      if (elapsed !== lastTimerSecondRef.current) {
+        lastTimerSecondRef.current = elapsed;
+        const currentLevel = getLevelFromElapsed(elapsed);
 
-    playerRef.current = movePlayer(playerRef.current, direction);
-
-    const spawnInterval = getSpawnInterval(stateRef.current.level);
-    if (now - lastSpawnTimeRef.current >= spawnInterval) {
-      itemsRef.current.push(createFallingItem(stateRef.current.level));
-      lastSpawnTimeRef.current = now;
-    }
-
-    itemsRef.current = itemsRef.current
-      .map((item) => ({
-        ...item,
-        y: item.y + item.speed,
-        rotation: item.rotation + item.rotationSpeed,
-      }))
-      .filter((item) => item.y <= GAME_HEIGHT + 70);
-
-    const remainingItems: FallingItem[] = [];
-
-    for (const item of itemsRef.current) {
-      if (checkCollision(item, playerRef.current)) {
-        const prevScore = stateRef.current.score;
-        stateRef.current = applyCatchEffect(item.type, stateRef.current, now);
-
-        const gained = stateRef.current.score - prevScore;
-        const hitText = formatHitText(item.type, gained);
-
-        if (isBadItem(item.type)) {
-          screenFlashRef.current = { type: "bad", until: now + 120 };
-        } else {
-          screenFlashRef.current = { type: "good", until: now + 90 };
+        if (currentLevel > stateRef.current.level) {
+          levelUpBannerUntilRef.current = performance.now() + 2500;
+          rushAudio.playLevelUp();
         }
 
-        if (item.type === "heavy_drop") {
-          playerRef.current = {
-            ...playerRef.current,
-            speed: Math.max(5, playerRef.current.speed - 1),
-          };
-          heavyDropSlowUntilRef.current = now + 1300;
-        }
-
-        hitEffectsRef.current.push({
-          id: crypto.randomUUID(),
-          x: item.x,
-          y: item.y,
-          text: hitText,
-          color: getHitColor(item.type),
-          createdAt: now,
-        });
-
-        if (shouldShowCornerGain(item.type, gained)) {
-          showCornerGain(
-            hitText,
-            gained > 0 ? "good" : gained < 0 ? "bad" : "neutral"
-          );
-        }
-
-        if (stateRef.current.isGameOver) {
-          break;
-        }
-      } else {
-        remainingItems.push(item);
+        stateRef.current.level = currentLevel;
+        stateRef.current.elapsedSeconds = elapsed;
       }
+
+      const direction = keyStateRef.current.left
+        ? "left"
+        : keyStateRef.current.right
+        ? "right"
+        : null;
+
+      playerRef.current = movePlayer(playerRef.current, direction);
+
+      // Process Pointer Movement for 100% Real-Time Feel
+      if (pointerXRef.current !== null && wrapperRef.current) {
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const relativeX = pointerXRef.current - rect.left;
+        const scaledX = (relativeX / rect.width) * GAME_WIDTH;
+        playerRef.current.x = Math.max(0, Math.min(GAME_WIDTH - playerRef.current.width, scaledX - playerRef.current.width / 2));
+      }
+
+      const spawnInterval = getSpawnInterval(stateRef.current.level);
+      if (performance.now() - lastSpawnTimeRef.current >= spawnInterval) {
+        itemsRef.current.push(createFallingItem(stateRef.current.level));
+        lastSpawnTimeRef.current = performance.now();
+      }
+
+      itemsRef.current = itemsRef.current
+        .map((item) => ({
+          ...item,
+          y: item.y + item.speed,
+          rotation: item.rotation + item.rotationSpeed,
+        }))
+        .filter((item) => item.y <= GAME_HEIGHT + 70);
+
+      const remainingItems: FallingItem[] = [];
+
+      for (const item of itemsRef.current) {
+        if (checkCollision(item, playerRef.current)) {
+          const prevScore = stateRef.current.score;
+          stateRef.current = applyCatchEffect(item.type, stateRef.current, performance.now());
+
+          const gained = stateRef.current.score - prevScore;
+          const hitText = formatHitText(item.type, gained);
+
+          if (isBadItem(item.type)) {
+            screenFlashRef.current = { type: "bad", until: performance.now() + 120 };
+            screenShakeUntilRef.current = performance.now() + 250;
+            rushAudio.playHazard();
+            if (typeof window !== "undefined" && navigator.vibrate) {
+              navigator.vibrate(50);
+            }
+          } else {
+            screenFlashRef.current = { type: "good", until: performance.now() + 90 };
+            if (item.type === "golden_rsn") {
+              rushAudio.playGolden();
+            } else {
+              rushAudio.playCoin();
+            }
+            spawnParticles(item.x + item.size / 2, item.y + item.size / 2, getHitColor(item.type), 8);
+          }
+
+          if (item.type === "heavy_drop") {
+            playerRef.current = {
+              ...playerRef.current,
+              speed: Math.max(5, playerRef.current.speed - 1),
+            };
+            heavyDropSlowUntilRef.current = performance.now() + 1300;
+          }
+
+          hitEffectsRef.current.push({
+            id: crypto.randomUUID(),
+            x: item.x,
+            y: item.y,
+            text: hitText,
+            color: getHitColor(item.type),
+            createdAt: performance.now(),
+          });
+
+          if (shouldShowCornerGain(item.type, gained)) {
+            showCornerGain(
+              hitText,
+              gained > 0 ? "good" : gained < 0 ? "bad" : "neutral"
+            );
+          }
+
+          if (stateRef.current.isGameOver) {
+            break;
+          }
+        } else {
+          remainingItems.push(item);
+        }
+      }
+
+      itemsRef.current = remainingItems;
+      accumulatorRef.current -= FIXED_TIMESTEP;
     }
 
-    itemsRef.current = remainingItems;
     hitEffectsRef.current = hitEffectsRef.current.filter(
-      (effect) => now - effect.createdAt < 700
+      (effect) => performance.now() - effect.createdAt < 700
     );
 
-    drawCurrentFrame(now);
-    broadcastHudUpdate(now);
+    particlesRef.current = particlesRef.current.map(p => ({
+      ...p,
+      x: p.x + p.vx,
+      y: p.y + p.vy,
+      life: p.life - (16 / (p.maxLife * 1000)),
+    })).filter(p => p.life > 0);
+
+    drawCurrentFrame(performance.now());
+    broadcastHudUpdate(performance.now());
 
     if (stateRef.current.isGameOver) {
       stopLoop();
@@ -445,7 +548,7 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
     const isSmallScreen =
       typeof window !== "undefined" ? window.innerWidth < 640 : false;
 
-    stateRef.current = { ...INITIAL_GAME_STATE };
+    stateRef.current = { ...INITIAL_GAME_STATE, isPremium };
     playerRef.current = {
       ...INITIAL_PLAYER,
       width: isSmallScreen ? 185 : 160,
@@ -455,7 +558,7 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
     itemsRef.current = [];
     hitEffectsRef.current = [];
-    lastSpawnTimeRef.current = 0;
+    lastSpawnTimeRef.current = performance.now();
     startTimeRef.current = performance.now();
     lastTimerSecondRef.current = 0;
     pausedAtRef.current = null;
@@ -487,46 +590,42 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
 
   const moveBasketToClientX = (clientX: number) => {
     if (isPausedRef.current) return;
-
-    const wrapper = wrapperRef.current;
-    if (!wrapper) return;
-
-    const rect = wrapper.getBoundingClientRect();
-    const relativeX = clientX - rect.left;
-    const scaledX = (relativeX / rect.width) * GAME_WIDTH;
-    const nextX = scaledX - playerRef.current.width / 2;
-
-    playerRef.current = {
-      ...playerRef.current,
-      x: Math.max(0, Math.min(GAME_WIDTH - playerRef.current.width, nextX)),
-    };
+    pointerXRef.current = clientX;
   };
 
   return (
-    <div className="rounded-[28px] border border-white/10 bg-[#030913] p-2 sm:p-3 shadow-2xl">
-      <div className="mb-2 sm:mb-3 flex items-center justify-between gap-3 text-[11px] sm:text-sm text-white/65">
-        <span>Move: drag, mouse, ← →, A / D</span>
+    <div className={`rounded-[28px] border border-white/10 bg-[#030913] p-2 sm:p-3 shadow-2xl ${isPlaying ? "flex-1 flex flex-col h-full border-none !p-0 !rounded-none" : ""}`}>
+      <div className={`mb-2 sm:mb-3 flex items-center justify-between gap-3 text-[11px] sm:text-sm text-white/65 ${isPlaying ? "absolute bottom-6 left-0 right-0 z-30 px-6 pointer-events-none" : ""}`}>
+        <span className={isPlaying ? "hidden" : ""}>Move: drag, mouse, ← →, A / D</span>
         <span className="hidden sm:inline">
           {isPaused
             ? "Game paused. Press P or Resume."
             : "Catch $RSN. Avoid destructive drops."}
         </span>
-        <div className="flex items-center gap-2">
-          <span className="sm:hidden">{isPaused ? "Paused" : "Drag basket"}</span>
+        <div className="flex items-center justify-between w-full sm:w-auto gap-4 pointer-events-auto">
+          {isPlaying && (
+            <span className="text-white/40 uppercase tracking-[0.2em] font-medium text-[10px]">
+              System Version 1.0.4
+            </span>
+          )}
           <button
             type="button"
             onClick={togglePause}
             disabled={!canPause}
-            className="pointer-events-auto rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+            className={`pointer-events-auto rounded-full border px-5 py-2 text-[11px] font-bold uppercase tracking-widest transition-all duration-300 ${
+              isPaused
+                ? "border-risen-primary bg-risen-primary/20 text-white shadow-[0_0_15px_rgba(46,219,255,0.4)]"
+                : "border-white/20 bg-black/40 text-white/70 hover:border-white/40 backdrop-blur-md"
+            }`}
           >
-            {isPaused ? "Resume" : "Pause"}
+            {isPaused ? "Resume Connection" : "Pause System"}
           </button>
         </div>
       </div>
 
       <div
         ref={wrapperRef}
-        className="relative w-full"
+        className={`relative w-full ${isPlaying ? "flex-1 h-full animate-[pageFadeIn_0.6s_ease-out]" : ""}`}
         onPointerMove={(event) => {
           moveBasketToClientX(event.clientX);
         }}
@@ -539,7 +638,7 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
           width={gameMetrics.width}
           height={gameMetrics.height}
           style={{ height: `${canvasHeight}px` }}
-          className="w-full rounded-[22px] bg-[#06101a] touch-none"
+          className={`w-full bg-[#06101a] touch-none ${isPlaying ? "" : "rounded-[22px]"}`}
         />
 
         <div className="pointer-events-none absolute right-3 top-3 z-20 flex min-h-[42px] items-start justify-end">
@@ -547,12 +646,12 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
             <div
               key={cornerGain.id}
               className={
-                "animate-[fadeCornerGain_0.85s_ease-out_forwards] rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.16em] shadow-lg backdrop-blur-md " +
+                "animate-[fadeCornerGain_0.85s_ease-out_forwards] rounded-xl border px-4 py-2 text-[12px] font-bold uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(0,0,0,0.5)] backdrop-blur-xl " +
                 (cornerGain.tone === "good"
-                  ? "border-amber-300/40 bg-amber-300/12 text-amber-100"
+                  ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
                   : cornerGain.tone === "bad"
-                  ? "border-red-300/35 bg-red-400/12 text-red-100"
-                  : "border-cyan-300/35 bg-cyan-300/10 text-cyan-100")
+                  ? "border-red-400/40 bg-red-400/10 text-red-300"
+                  : "border-risen-primary/40 bg-risen-primary/10 text-risen-primary")
               }
             >
               {cornerGain.text}
@@ -560,11 +659,14 @@ export default function GameCanvas({ isPlaying, onGameOver }: Props) {
           ) : null}
         </div>
 
-        {!isPaused ? (
-          <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full border border-white/10 bg-[#04101a]/78 px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-white/65 backdrop-blur sm:hidden">
-            Drag basket
+        {!isPaused && isPlaying && (
+          <div className="pointer-events-none absolute left-1/2 bottom-24 -translate-x-1/2 opacity-30 animate-pulse">
+            <div className="flex flex-col items-center gap-2">
+               <div className="w-12 h-0.5 bg-white/40 rounded-full" />
+               <span className="text-[9px] uppercase tracking-[0.4em] text-white">Manual Control</span>
+            </div>
           </div>
-        ) : null}
+        )}
 
         <style jsx>{`
           @keyframes fadeCornerGain {
@@ -615,39 +717,77 @@ function drawBackground(
   level: number,
   multiplierActive: boolean
 ) {
+  const now = performance.now();
+  const shift = (now / 60) % GAME_HEIGHT;
+
+  // Deep Space Gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-  gradient.addColorStop(0, "#06101a");
-  gradient.addColorStop(1, "#02070d");
+  gradient.addColorStop(0, "#010812");
+  gradient.addColorStop(0.5, "#020B1A");
+  gradient.addColorStop(1, "#01050a");
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-  for (let i = 0; i < 28; i += 1) {
-    const x = 30 + i * 32;
-    const y = 40 + ((i % 6) * 78);
-    ctx.fillStyle = "rgba(255,255,255,0.035)";
+  // Layered Parallax Starfield
+  // Layer 1: Slow, small stars
+  for (let i = 0; i < 40; i += 1) {
+    const x = (i * 137) % GAME_WIDTH;
+    const y = (i * 243 + shift * 0.3) % GAME_HEIGHT;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
     ctx.beginPath();
-    ctx.arc(x, y, 1.8, 0, Math.PI * 2);
+    ctx.arc(x, y, 0.8, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  ctx.strokeStyle = "rgba(255,255,255,0.03)";
+  // Layer 2: Medium, faster stars
+  for (let i = 0; i < 20; i += 1) {
+    const x = (i * 567) % GAME_WIDTH;
+    const y = (i * 389 + shift * 0.7) % GAME_HEIGHT;
+    ctx.fillStyle = "rgba(46, 219, 255, 0.25)";
+    ctx.beginPath();
+    ctx.arc(x, y, 1.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Nebula Glows
+  const nebulaGlow = ctx.createRadialGradient(GAME_WIDTH / 2, GAME_HEIGHT / 2, 100, GAME_WIDTH / 2, GAME_HEIGHT / 2, 600);
+  nebulaGlow.addColorStop(0, "rgba(46, 219, 255, 0.03)");
+  nebulaGlow.addColorStop(1, "transparent");
+  ctx.fillStyle = nebulaGlow;
+  ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+  // Subtle Grid
+  ctx.strokeStyle = "rgba(255,255,255,0.015)";
   ctx.lineWidth = 1;
+  for (let i = 0; i < 10; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(0, i * (GAME_HEIGHT / 10));
+    ctx.lineTo(GAME_WIDTH, i * (GAME_HEIGHT / 10));
+    ctx.stroke();
+  }
   for (let i = 0; i < 6; i += 1) {
     ctx.beginPath();
-    ctx.moveTo(0, 70 + i * 90);
-    ctx.lineTo(GAME_WIDTH, 70 + i * 90);
+    ctx.moveTo(i * (GAME_WIDTH / 6), 0);
+    ctx.lineTo(i * (GAME_WIDTH / 6), GAME_HEIGHT);
     ctx.stroke();
   }
 
-  const levelGlow = Math.min(level * 0.015, 0.12);
+  const levelGlow = Math.min(level * 0.012, 0.08);
   ctx.fillStyle = `rgba(250, 204, 21, ${levelGlow})`;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
   if (multiplierActive) {
-    ctx.fillStyle = "rgba(125, 211, 252, 0.05)";
+    ctx.fillStyle = "rgba(125, 211, 252, 0.04)";
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
   }
+
+  // Vignette Effect
+  const vignette = ctx.createRadialGradient(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH / 3, GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_HEIGHT / 1.1);
+  vignette.addColorStop(0, "transparent");
+  vignette.addColorStop(1, "rgba(0, 0, 0, 0.6)");
+  ctx.fillStyle = vignette;
+  ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 }
 
 function drawScreenFlash(ctx: CanvasRenderingContext2D, color: string) {
@@ -678,7 +818,7 @@ function drawPausedOverlay(ctx: CanvasRenderingContext2D) {
   ctx.restore();
 }
 
-function drawPlayerVault(ctx: CanvasRenderingContext2D, player: Player) {
+function drawPlayerVault(ctx: CanvasRenderingContext2D, player: Player, isPremium: boolean = false) {
   const x = player.x;
   const y = player.y;
   const w = player.width;
@@ -686,21 +826,33 @@ function drawPlayerVault(ctx: CanvasRenderingContext2D, player: Player) {
 
   ctx.save();
 
-  ctx.shadowColor = "rgba(212, 175, 55, 0.28)";
-  ctx.shadowBlur = 18;
+  if (isPremium) {
+    ctx.shadowColor = "rgba(255, 215, 0, 0.6)";
+    ctx.shadowBlur = 25;
+  } else {
+    ctx.shadowColor = "rgba(212, 175, 55, 0.28)";
+    ctx.shadowBlur = 18;
+  }
 
   const bodyGradient = ctx.createLinearGradient(x, y, x, y + h);
-  bodyGradient.addColorStop(0, "#d4af37");
-  bodyGradient.addColorStop(0.45, "#a57f1b");
-  bodyGradient.addColorStop(1, "#4c3910");
+  if (isPremium) {
+    // Brighter, more "PRIME" gold
+    bodyGradient.addColorStop(0, "#FFD700");
+    bodyGradient.addColorStop(0.45, "#FFC800");
+    bodyGradient.addColorStop(1, "#B8860B");
+  } else {
+    bodyGradient.addColorStop(0, "#d4af37");
+    bodyGradient.addColorStop(0.45, "#a57f1b");
+    bodyGradient.addColorStop(1, "#4c3910");
+  }
 
   ctx.fillStyle = bodyGradient;
   roundedRectPath(ctx, x + 10, y + 14, w - 20, h - 18, 14);
   ctx.fill();
 
   ctx.shadowBlur = 0;
-  ctx.strokeStyle = "rgba(255,255,255,0.28)";
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = isPremium ? "rgba(255, 255, 255, 0.6)" : "rgba(255,255,255,0.28)";
+  ctx.lineWidth = isPremium ? 3 : 2;
   roundedRectPath(ctx, x + 10, y + 14, w - 20, h - 18, 14);
   ctx.stroke();
 
@@ -708,8 +860,16 @@ function drawPlayerVault(ctx: CanvasRenderingContext2D, player: Player) {
   ctx.moveTo(x + 18, y + 18);
   ctx.quadraticCurveTo(x + w / 2, y - 8, x + w - 18, y + 18);
   ctx.lineWidth = 6;
-  ctx.strokeStyle = "#f6d365";
+  ctx.strokeStyle = isPremium ? "#FFFFFF" : "#f6d365";
   ctx.stroke();
+
+  if (isPremium) {
+    // Add a "PRIME" text to the basket
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.font = "bold 10px Inter, Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("PRIME VAULT", x + w / 2, y + h - 10);
+  }
 
   ctx.beginPath();
   ctx.moveTo(x + 32, y + 20);
@@ -1027,4 +1187,123 @@ function roundedRectPath(
   ctx.lineTo(x, y + radius);
   ctx.quadraticCurveTo(x, y, x + radius, y);
   ctx.closePath();
+}
+
+function drawParticles(ctx: CanvasRenderingContext2D, particles: Particle[], now: number) {
+  ctx.save();
+  for (const p of particles) {
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawLevelUpBanner(ctx: CanvasRenderingContext2D, level: number, now: number, until: number) {
+  const duration = 2500;
+  const remaining = until - now;
+  const progress = 1 - (remaining / duration);
+
+  ctx.save();
+  ctx.translate(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+
+  // Slide and Fade
+  let alpha = 1;
+  if (progress < 0.2) alpha = progress / 0.2;
+  if (progress > 0.8) alpha = (1 - progress) / 0.2;
+  ctx.globalAlpha = alpha;
+
+  // Background Strap
+  ctx.fillStyle = "rgba(46, 219, 255, 0.15)";
+  ctx.fillRect(-GAME_WIDTH / 2, -60, GAME_WIDTH, 120);
+
+  ctx.shadowColor = "#2EDBFF";
+  ctx.shadowBlur = 20;
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 80px Inter, Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(`LEVEL ${level}`, 0, 15);
+
+  ctx.font = "bold 20px Inter, Arial";
+  ctx.fillStyle = "#2EDBFF";
+  ctx.fillText("SYSTEM EVOLUTION COMPLETE", 0, 50);
+
+  ctx.restore();
+}
+
+function drawInGameHUD(
+  ctx: CanvasRenderingContext2D,
+  score: number,
+  lives: number,
+  multiplierActive: boolean,
+  elapsedSeconds: number
+) {
+  ctx.save();
+
+  // Top Area Shadow/Gradient for readability
+  const headGrad = ctx.createLinearGradient(0, 0, 0, 100);
+  headGrad.addColorStop(0, "rgba(0,0,0,0.6)");
+  headGrad.addColorStop(1, "transparent");
+  ctx.fillStyle = headGrad;
+  ctx.fillRect(0, 0, GAME_WIDTH, 100);
+
+  // Level Progress Bar (at the very top)
+  const levelProgress = (elapsedSeconds % 60) / 60;
+  ctx.fillStyle = "rgba(46, 219, 255, 0.1)";
+  ctx.fillRect(0, 0, GAME_WIDTH, 4);
+  ctx.fillStyle = "#2EDBFF";
+  ctx.shadowColor = "#2EDBFF";
+  ctx.shadowBlur = 10;
+  ctx.fillRect(0, 0, GAME_WIDTH * levelProgress, 4);
+  ctx.shadowBlur = 0;
+
+  // Top Left: Score
+  ctx.fillStyle = multiplierActive ? "#7dd3fc" : "#ffffff";
+  ctx.shadowColor = multiplierActive ? "rgba(125, 211, 252, 0.8)" : "rgba(0,0,0,0.8)";
+  ctx.shadowBlur = 15;
+
+  // Label
+  ctx.font = "bold 16px Inter, Arial";
+  ctx.textAlign = "left";
+  ctx.globalAlpha = 0.6;
+  ctx.fillText("VAULT POINTS", 30, 45);
+
+  // Value
+  ctx.globalAlpha = 1;
+  ctx.font = "bold 42px Inter, Arial";
+  ctx.fillText(`${score.toLocaleString()}`, 30, 90);
+
+  if (multiplierActive) {
+    ctx.font = "bold 14px Inter, Arial";
+    ctx.fillStyle = "#7dd3fc";
+    ctx.fillText("● 2X MULTIPLIER", 30, 110);
+  }
+
+  // Top Right: Health/Status
+  ctx.textAlign = "right";
+  ctx.font = "bold 16px Inter, Arial";
+  ctx.globalAlpha = 0.6;
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("SYSTEM STABILITY", GAME_WIDTH - 30, 40);
+
+  // Hearts
+  ctx.globalAlpha = 1;
+  const heartIcon = "❤️";
+  ctx.font = "28px Arial";
+  let livesText = "";
+  for (let i = 0; i < lives; i++) {
+    livesText += heartIcon;
+  }
+  ctx.fillText(livesText, GAME_WIDTH - 30, 80);
+
+  // Scanline Effect Overlay
+  ctx.globalAlpha = 0.04;
+  ctx.fillStyle = "#ffffff";
+  for (let i = 0; i < GAME_HEIGHT; i += 4) {
+    ctx.fillRect(0, i, GAME_WIDTH, 1);
+  }
+
+  ctx.restore();
 }

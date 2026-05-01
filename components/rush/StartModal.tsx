@@ -5,6 +5,9 @@ type Props = {
   onStart: () => void;
   isLoading: boolean;
   error: string | null;
+  trialsRemaining: number;
+  onWatchAd: () => void;
+  isAdLoading: boolean;
 };
 
 export default function StartModal({
@@ -12,12 +15,15 @@ export default function StartModal({
   onStart,
   isLoading,
   error,
+  trialsRemaining,
+  onWatchAd,
+  isAdLoading,
 }: Props) {
   if (!isOpen) return null;
 
   return (
     <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#02050b]/75 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-[#07111d]/95 p-8 shadow-2xl">
+      <div className="w-full max-w-xl rounded-3xl border border-white/10 bg-[#07111d]/95 p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
         <div className="text-sm uppercase tracking-[0.3em] text-amber-300/80">
           Mini Game
         </div>
@@ -50,13 +56,28 @@ export default function StartModal({
           </div>
         ) : null}
 
-        <button
-          onClick={onStart}
-          disabled={isLoading}
-          className="mt-6 inline-flex items-center justify-center rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-black transition hover:scale-[1.01] disabled:opacity-60"
-        >
-          {isLoading ? "Starting..." : "Start Rush"}
-        </button>
+        <div className="mt-6 flex flex-col gap-3">
+          <button
+            onClick={onStart}
+            disabled={isLoading || trialsRemaining <= 0}
+            className="inline-flex items-center justify-center rounded-2xl bg-amber-400 px-5 py-3 font-semibold text-black transition hover:scale-[1.01] disabled:opacity-40"
+          >
+            {isLoading ? "Starting..." : trialsRemaining > 0 ? "Start Rush" : "No Trials Left"}
+          </button>
+
+          {trialsRemaining <= 0 && (
+            <button
+              onClick={onWatchAd}
+              disabled={isAdLoading}
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-risen-primary/30 bg-risen-primary/10 px-5 py-3 font-semibold text-risen-primary transition hover:bg-risen-primary/20 disabled:opacity-60"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+              </svg>
+              {isAdLoading ? "Loading Ad..." : "Watch Ad for +1 Trial"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

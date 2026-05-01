@@ -54,6 +54,14 @@ function RegisterContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [isCapacitor, setIsCapacitor] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).Capacitor) {
+      setIsCapacitor(true);
+    }
+  }, []);
+
   const turnstileEnabled = !!getTurnstileSiteKey();
 
   const normalizedUsername = useMemo(
@@ -105,6 +113,9 @@ function RegisterContent() {
     script.async = true;
     script.defer = true;
     script.onload = renderWidget;
+    script.onerror = () => {
+      setError("Security challenge failed to load. Please ensure you have a stable internet connection.");
+    };
     document.body.appendChild(script);
   }, [turnstileEnabled]);
 
@@ -222,11 +233,14 @@ function RegisterContent() {
 
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-white/75">
+                  <label className="mb-2 block text-sm font-medium text-white/75" htmlFor="email">
                     Email
                   </label>
                   <input
+                    id="email"
+                    name="email"
                     type="email"
+                    autoComplete="email"
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
                     required
@@ -236,11 +250,14 @@ function RegisterContent() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-white/75">
+                  <label className="mb-2 block text-sm font-medium text-white/75" htmlFor="username">
                     Username
                   </label>
                   <input
+                    id="username"
+                    name="username"
                     type="text"
+                    autoComplete="username"
                     value={username}
                     onChange={(event) => setUsername(event.target.value)}
                     required
@@ -258,7 +275,7 @@ function RegisterContent() {
 
                 <div>
                   <div className="mb-2 flex items-center justify-between gap-3">
-                    <label className="block text-sm font-medium text-white/75">
+                    <label className="block text-sm font-medium text-white/75" htmlFor="password">
                       Password
                     </label>
                     <button
@@ -270,7 +287,10 @@ function RegisterContent() {
                     </button>
                   </div>
                   <input
+                    id="password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
@@ -282,7 +302,7 @@ function RegisterContent() {
 
                 <div>
                   <div className="mb-2 flex items-center justify-between gap-3">
-                    <label className="block text-sm font-medium text-white/75">
+                    <label className="block text-sm font-medium text-white/75" htmlFor="confirmPassword">
                       Confirm Password
                     </label>
                     <button
@@ -294,7 +314,10 @@ function RegisterContent() {
                     </button>
                   </div>
                   <input
+                    id="confirmPassword"
+                    name="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
+                    autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(event) => setConfirmPassword(event.target.value)}
                     required
@@ -344,11 +367,13 @@ function RegisterContent() {
                 </Link>
               </p>
 
-              <p className="mt-4 text-sm text-white/50">
-                <Link href="/" className="hover:text-white">
-                  ← Back to RISEN homepage
-                </Link>
-              </p>
+              {!isCapacitor && (
+                <p className="mt-4 text-sm text-white/50">
+                  <Link href="/" className="hover:text-white">
+                    ← Back to RISEN homepage
+                  </Link>
+                </p>
+              )}
             </div>
           </div>
         </div>

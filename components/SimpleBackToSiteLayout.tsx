@@ -1,9 +1,17 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function SimpleBackToSiteLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const [isCapacitor, setIsCapacitor] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).Capacitor) {
+      setIsCapacitor(true);
+    }
+  }, []);
+
   const handleBack = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     if (typeof window !== "undefined" && localStorage.getItem("risen_admin_token")) {
@@ -13,6 +21,10 @@ export default function SimpleBackToSiteLayout({ children }: { children: React.R
       router.push("/");
     }
   }, [router]);
+
+  if (isCapacitor) {
+    return <>{children}</>;
+  }
 
   return (
     <div>

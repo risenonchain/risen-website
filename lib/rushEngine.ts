@@ -34,11 +34,12 @@ export type GameState = {
   comboCount: number;
   comboMultiplier: number;
   multiplierActiveUntil: number | null;
+  isPremium: boolean;
   isGameOver: boolean;
 };
 
 export const GAME_WIDTH = 900;
-export const GAME_HEIGHT = 560;
+export const GAME_HEIGHT = 1400;
 
 export const INITIAL_PLAYER: Player = {
   x: GAME_WIDTH / 2 - 80,
@@ -56,19 +57,22 @@ export const INITIAL_GAME_STATE: GameState = {
   comboCount: 0,
   comboMultiplier: 1,
   multiplierActiveUntil: null,
+  isPremium: false,
   isGameOver: false,
 };
 
 export function getLevelFromElapsed(elapsedSeconds: number): number {
-  return Math.floor(elapsedSeconds / 30) + 1;
+  return Math.floor(elapsedSeconds / 60) + 1;
 }
 
 export function getSpawnInterval(level: number): number {
-  return Math.max(220, 880 - (level - 1) * 95);
+  // Smoother progression for the taller 1400px screen
+  return Math.max(350, 1000 - (level - 1) * 45);
 }
 
 export function getDropSpeed(level: number): number {
-  return 2.8 + (level - 1) * 0.8;
+  // Snappier base speed for 1400px height (prev was 2.8)
+  return 7.0 + (level - 1) * 1.1;
 }
 
 function randomBetween(min: number, max: number): number {
@@ -81,7 +85,19 @@ function randomType(level: number): FallingItemType {
   const multiplierWeight = 0.05;
   const streakWeight = 0.08;
 
-  const roll = Math.random();
+  let roll = Math.random();
+
+  // Difficulty spike at level 15+
+  if (level >= 15) {
+    const spikeRoll = Math.random();
+    // 60% chance to force a hazard at level 15+
+    if (spikeRoll < 0.60) {
+      const hazardRoll = Math.random();
+      if (hazardRoll < 0.4) return "red_crash_orb";
+      if (hazardRoll < 0.7) return "heavy_drop";
+      return "glitch_block";
+    }
+  }
 
   if (roll < badWeight / 3) return "red_crash_orb";
   if (roll < (badWeight * 2) / 3) return "heavy_drop";
@@ -97,6 +113,11 @@ export function createFallingItem(level: number): FallingItem {
 
   let size = 30;
   let speed = getDropSpeed(level);
+
+  // Difficulty spike at level 15+ speed increase
+  if (level >= 15) {
+    speed += (level - 14) * 0.5;
+  }
 
   if (type === "golden_rsn") {
     size = 34;
@@ -180,25 +201,31 @@ export function applyCatchEffect(
   const activeMultiplier =
     multiplierActiveUntil && multiplierActiveUntil > nowMs ? 2 : 1;
 
+  // Level 15+ value bonus
+  const levelBonus = state.level >= 15 ? 2.5 : 1;
+
+  // Premium 1.1x boost
+  const premiumMultiplier = state.isPremium ? 1.1 : 1;
+
   if (itemType === "normal_rsn") {
     comboCount += 1;
-    score += Math.round(5 * activeMultiplier * getComboMultiplier(comboCount));
+    score += Math.round(5 * activeMultiplier * getComboMultiplier(comboCount) * levelBonus * premiumMultiplier);
   }
 
   if (itemType === "golden_rsn") {
     comboCount += 1;
-    score += Math.round(20 * activeMultiplier * getComboMultiplier(comboCount));
+    score += Math.round(20 * activeMultiplier * getComboMultiplier(comboCount) * levelBonus * premiumMultiplier);
   }
 
   if (itemType === "multiplier") {
     comboCount += 1;
     multiplierActiveUntil = nowMs + 5000;
-    score += Math.round(25 * activeMultiplier);
+    score += Math.round(25 * activeMultiplier * levelBonus * premiumMultiplier);
   }
 
   if (itemType === "streak") {
     comboCount += 2;
-    score += Math.round(40 * activeMultiplier * getComboMultiplier(comboCount));
+    score += Math.round(40 * activeMultiplier * getComboMultiplier(comboCount) * levelBonus * premiumMultiplier);
   }
 
   if (itemType === "red_crash_orb") {

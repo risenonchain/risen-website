@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { rushAudio } from "@/lib/rushAudio";
 import {
   ChangePasswordPayload,
   clearRushAuth,
@@ -20,14 +21,16 @@ import {
   ReferralInfoResponse,
   updateRushProfile,
   changeRushPassword,
+  BASE_URL,
 } from "@/lib/api";
 
 type ScorecardApiResponse = {
   image_url?: string;
 };
 
-export default function RushProfilePage() {
+function ProfileContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [isBooting, setIsBooting] = useState(true);
   const [currentUser, setCurrentUser] = useState<MeResponse | null>(null);
@@ -49,6 +52,22 @@ export default function RushProfilePage() {
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
 
+  const [soundEnabled, setSoundEnabled] = useState(true);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("risen_rush_sound_enabled");
+    if (saved !== null) {
+      setSoundEnabled(saved === "true");
+    }
+  }, []);
+
+  const toggleSound = () => {
+    const next = !soundEnabled;
+    setSoundEnabled(next);
+    localStorage.setItem("risen_rush_sound_enabled", String(next));
+    rushAudio.setEnabled(next);
+  };
+
   const [passwordForm, setPasswordForm] = useState<ChangePasswordPayload>({
     current_password: "",
     new_password: "",
@@ -56,6 +75,8 @@ export default function RushProfilePage() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const [redeemPoints, setRedeemPoints] = useState("");
   const [redeemWalletAddress, setRedeemWalletAddress] = useState("");
@@ -122,12 +143,30 @@ export default function RushProfilePage() {
 
       setRedeemWalletAddress(stats.wallet_address ?? me.wallet_address ?? "");
       localStorage.setItem("risen_rush_username", me.username);
+
+      // --- AUTO-VERIFY PAYMENT IF REFERENCE IN URL ---
+      const reference = searchParams.get("reference") || searchParams.get("trxref");
+      if (reference && !stats.is_premium) {
+        setProfileMessage("Verifying recent payment...");
+        const res = await fetch(`${BASE_URL}/payments/verify-transaction`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+          },
+          body: JSON.stringify({ reference_id: reference }),
+        });
+        if (res.ok) {
+          setProfileMessage("PRIME ACCESS ACTIVATED!");
+          setTimeout(() => window.location.replace(window.location.pathname), 2000);
+        }
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to load profile";
       setPageError(message);
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -148,6 +187,16 @@ export default function RushProfilePage() {
     };
 
     bootstrap();
+
+    // --- AUTO-REFRESH ON APP RESUME ---
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        loadAll(); // Re-fetch stats when user returns to app from browser
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [loadAll, router]);
 
   const handleLogout = () => {
@@ -220,6 +269,42 @@ export default function RushProfilePage() {
       setPasswordError(message);
     } finally {
       setPasswordSaving(false);
+    }
+  };
+
+  const handlePaystackPayment = async () => {
+    if (!currentUser || !profileStats) {
+      setProfileError("Profile data is still loading. Please wait.");
+      return;
+    }
+
+    try {
+      setPaymentLoading(true);
+      setProfileError(null);
+
+      const response = await fetch(`${BASE_URL}/payments/initialize`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+        },
+        body: JSON.stringify({
+            product_id: "risen_prime_monthly"
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        throw new Error(data.detail || "Could not initialize payment. Please check your backend.");
+      }
+
+    } catch (e) {
+      setPaymentLoading(false);
+      const msg = e instanceof Error ? e.message : "Network error. Please try again.";
+      setProfileError(`Payment error: ${msg}`);
     }
   };
 
@@ -315,18 +400,25 @@ export default function RushProfilePage() {
 
   if (isBooting) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#02070d] text-white">
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white/70">
-          Loading profile...
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#02070d] text-white">
+        <div className="relative flex flex-col items-center">
+          <div className="h-16 w-16 animate-spin rounded-full border-4 border-white/5 border-t-risen-primary shadow-[0_0_20px_rgba(46,219,255,0.2)]" />
+          <div className="mt-6 text-sm font-bold uppercase tracking-[0.3em] text-white/40 animate-pulse">
+            Accessing Vault Data...
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#02070d] text-white">
+    <main className={`min-h-screen bg-[#02070d] text-white ${profileStats?.is_premium ? "selection:bg-amber-400/30" : ""}`}>
       <section className="relative overflow-hidden px-4 py-5 sm:px-6 sm:py-8 md:px-10">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(46,219,255,0.14),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(212,175,55,0.10),transparent_18%)]" />
+        {profileStats?.is_premium ? (
+           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.08),transparent_25%),radial-gradient(circle_at_bottom_left,rgba(212,175,55,0.05),transparent_20%)]" />
+        ) : (
+           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(46,219,255,0.14),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(212,175,55,0.10),transparent_18%)]" />
+        )}
 
         <div className="mx-auto max-w-7xl">
           <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -383,7 +475,12 @@ export default function RushProfilePage() {
             <div className="space-y-6">
               <Card title="Profile Overview" eyebrow="Account">
                 <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-                  <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-[#07111d]">
+                  <div className={`relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-3xl border ${profileStats?.is_premium ? "border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)]" : "border-white/10"} bg-[#07111d]`}>
+                    {profileStats?.is_premium && (
+                      <div className="absolute top-0 right-0 z-20 bg-amber-400 px-1.5 py-0.5 text-[8px] font-black uppercase text-black">
+                        PRIME
+                      </div>
+                    )}
                     {activeAvatar ? (
                       <img
                         src={activeAvatar}
@@ -392,7 +489,7 @@ export default function RushProfilePage() {
                       />
                     ) : (
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-risen-primary">
+                        <div className={`text-2xl font-bold ${profileStats?.is_premium ? "text-amber-400" : "text-risen-primary"}`}>
                           {currentUser?.username?.slice(0, 1)?.toUpperCase() || "R"}
                         </div>
                         <div className="mt-1 text-[10px] uppercase tracking-[0.25em] text-white/40">
@@ -403,12 +500,9 @@ export default function RushProfilePage() {
                   </div>
 
                   <div className="grid flex-1 gap-3 sm:grid-cols-2">
-                    <StatRow label="Username" value={profileStats?.username ?? "-"} />
+                    <StatRow label="Username" value={profileStats?.username ?? "-"} highlight={profileStats?.is_premium} />
+                    <StatRow label="Account Status" value={profileStats?.is_premium ? "RISEN PRIME" : "STANDARD"} highlight={profileStats?.is_premium} />
                     <StatRow label="Email" value={profileStats?.email ?? "-"} />
-                    <StatRow
-                      label="Total Sessions"
-                      value={profileStats?.total_sessions ?? 0}
-                    />
                     <StatRow label="Rank" value={currentRank ?? "Unranked"} />
                     <StatRow
                       label="Total Earned"
@@ -481,6 +575,51 @@ export default function RushProfilePage() {
                 </form>
               </Card>
 
+              <Card title="Game Settings" eyebrow="Experience">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#07111d] p-4">
+                    <div>
+                      <div className="text-sm font-semibold text-white">System Audio</div>
+                      <div className="text-xs text-white/50">Enable synthesized arcade sounds</div>
+                    </div>
+                    <button
+                      onClick={toggleSound}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                        soundEnabled ? "bg-risen-primary" : "bg-white/10"
+                      }`}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          soundEnabled ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {!profileStats?.is_premium && (
+                    <div className="rounded-2xl border border-risen-primary/30 bg-risen-primary/5 p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-bold text-white uppercase tracking-wider">Upgrade to Premium</div>
+                          <div className="text-xs text-risen-primary mt-1">Unlimited trials, 1.1x points, Elite badge</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-white">$1</div>
+                          <div className="text-[10px] text-white/40">per month</div>
+                        </div>
+                      </div>
+                      <button
+                        className="w-full mt-4 rounded-xl bg-risen-primary py-2.5 text-sm font-bold text-white shadow-[0_0_20px_rgba(46,219,255,0.3)] active:scale-[0.98] transition-transform disabled:opacity-50"
+                        onClick={handlePaystackPayment}
+                        disabled={paymentLoading}
+                      >
+                        {paymentLoading ? "INITIALIZING SECURE GATEWAY..." : "GET PREMIUM ACCESS"}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
               <Card title="Change Password" eyebrow="Security">
                 <form onSubmit={handlePasswordChange} className="space-y-4">
                   <InputField
@@ -549,7 +688,7 @@ export default function RushProfilePage() {
                     Shareable Referral Link
                   </div>
                   <div className="mt-2 break-all text-sm text-white/80">
-                    {typeof window !== "undefined" && referralInfo?.referral_link
+                    {referralInfo?.referral_link
                       ? `${window.location.origin}${referralInfo.referral_link}`
                       : referralInfo?.referral_link || "-"}
                   </div>
@@ -566,12 +705,21 @@ export default function RushProfilePage() {
 
               <Card title="Redeem Points" eyebrow="Wallet">
                 <form onSubmit={handleRedeem} className="space-y-4">
-                  <div className="rounded-2xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
-                    Minimum threshold: <span className="font-semibold">100,000 points (100 RSN)</span>
+                  <div className={`rounded-2xl border ${profileStats?.is_premium ? "border-amber-400/30 bg-amber-400/5 text-amber-100" : "border-amber-400/20 bg-amber-400/10 text-amber-100"} px-4 py-3 text-sm`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="h-2 w-2 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.8)]" />
+                      <span className="font-bold uppercase tracking-wider text-[10px]">Redemption Protocol</span>
+                    </div>
+                    Minimum threshold: <span className="font-semibold text-white">100,000 points (100 RSN)</span>.
+                    <div className="mt-2 text-xs text-white/50 leading-relaxed">
+                      {profileStats?.is_premium
+                        ? "PRIME PERK: You can submit multiple redemption requests per month as soon as you hit the threshold."
+                        : "STANDARD LIMIT: You can only submit one redemption request per calendar month."}
+                    </div>
                   </div>
 
                   <InputField
-                    label="Wallet Address"
+                    label="Wallet Address (BEP-20)"
                     value={redeemWalletAddress}
                     onChange={setRedeemWalletAddress}
                     placeholder="Enter wallet address"
@@ -688,7 +836,6 @@ export default function RushProfilePage() {
                       />
                       <a
                         href={(() => {
-                          // Parse the image URL and append query params for on-demand generation
                           if (!scorecardImage || !currentUser || !profileStats) return scorecardImage;
                           try {
                             const url = new URL(scorecardImage);
@@ -715,6 +862,23 @@ export default function RushProfilePage() {
         </div>
       </section>
     </main>
+  );
+}
+
+export default function RushProfilePage() {
+  return (
+    <Suspense fallback={
+        <main className="flex min-h-screen flex-col items-center justify-center bg-[#02070d] text-white">
+          <div className="relative flex flex-col items-center">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-white/5 border-t-risen-primary shadow-[0_0_20px_rgba(46,219,255,0.2)]" />
+            <div className="mt-6 text-sm font-bold uppercase tracking-[0.3em] text-white/40 animate-pulse">
+              Accessing Vault Data...
+            </div>
+          </div>
+        </main>
+    }>
+      <ProfileContent />
+    </Suspense>
   );
 }
 
@@ -754,16 +918,18 @@ function TopStat({ label, value }: { label: string; value: number }) {
 function StatRow({
   label,
   value,
+  highlight = false,
 }: {
   label: string;
   value: string | number;
+  highlight?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#07111d] px-4 py-3">
-      <div className="text-[11px] uppercase tracking-[0.2em] text-white/50">
+    <div className={`rounded-2xl border ${highlight ? "border-amber-400/40 bg-amber-400/10 shadow-[0_0_15px_rgba(251,191,36,0.1)]" : "border-white/10 bg-[#07111d]"} px-4 py-3`}>
+      <div className={`text-[11px] uppercase tracking-[0.2em] ${highlight ? "text-amber-200/60" : "text-white/50"}`}>
         {label}
       </div>
-      <div className="mt-1 break-words text-base font-semibold text-white">
+      <div className={`mt-1 break-words text-base font-semibold ${highlight ? "text-amber-400" : "text-white"}`}>
         {typeof value === "number" ? value.toLocaleString() : value}
       </div>
     </div>

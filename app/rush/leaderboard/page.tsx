@@ -7,11 +7,13 @@ import LeaderboardPanel from "@/components/rush/LeaderboardPanel";
 import {
   clearRushAuth,
   fetchCurrentRushUser,
+  fetchRushProfileStats,
   fetchRushTopLevelLeaderboard,
   fetchRushTopScoreLeaderboard,
   hasRushToken,
   LeaderboardEntry,
   MeResponse,
+  ProfileStatsResponse,
 } from "@/lib/api";
 
 export default function RushLeaderboardPage() {
@@ -19,6 +21,7 @@ export default function RushLeaderboardPage() {
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentUser, setCurrentUser] = useState<MeResponse | null>(null);
+  const [profileStats, setProfileStats] = useState<ProfileStatsResponse | null>(null);
 
   const [topScoreEntries, setTopScoreEntries] = useState<LeaderboardEntry[]>([]);
   const [topLevelEntries, setTopLevelEntries] = useState<LeaderboardEntry[]>([]);
@@ -67,8 +70,13 @@ export default function RushLeaderboardPage() {
       }
 
       try {
-        const me = await fetchCurrentRushUser();
+        const [me, stats] = await Promise.all([
+          fetchCurrentRushUser(),
+          fetchRushProfileStats(),
+        ]);
+
         setCurrentUser(me);
+        setProfileStats(stats);
         localStorage.setItem("risen_rush_username", me.username);
 
         await Promise.all([loadTopScore(), loadTopLevel()]);
@@ -156,6 +164,16 @@ export default function RushLeaderboardPage() {
           <div className="grid gap-6 xl:grid-cols-2">
             <LeaderboardPanel
               entries={topScoreEntries}
+              userEntry={
+                profileStats
+                  ? {
+                      rank: profileStats.score_rank || 0,
+                      username: currentUser?.username || "",
+                      score: profileStats.best_score || 0,
+                      level: profileStats.best_level || 0,
+                    }
+                  : null
+              }
               currentUsername={currentUser?.username}
               loading={scoreLoading}
               error={scoreError}
@@ -167,6 +185,16 @@ export default function RushLeaderboardPage() {
 
             <LeaderboardPanel
               entries={topLevelEntries}
+              userEntry={
+                profileStats
+                  ? {
+                      rank: profileStats.level_rank || 0,
+                      username: currentUser?.username || "",
+                      score: profileStats.best_score || 0,
+                      level: profileStats.best_level || 0,
+                    }
+                  : null
+              }
               currentUsername={currentUser?.username}
               loading={levelLoading}
               error={levelError}

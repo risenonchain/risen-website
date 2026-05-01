@@ -1,12 +1,8 @@
-type LeaderboardEntry = {
-  rank: number;
-  username: string;
-  score: number;
-  level: number;
-};
+import { LeaderboardEntry } from "@/lib/api";
 
 type Props = {
   entries: LeaderboardEntry[];
+  userEntry?: LeaderboardEntry | null;
   currentUsername?: string | null;
   loading?: boolean;
   error?: string | null;
@@ -18,6 +14,7 @@ type Props = {
 
 export default function LeaderboardPanel({
   entries,
+  userEntry = null,
   currentUsername = null,
   loading = false,
   error = null,
@@ -28,6 +25,67 @@ export default function LeaderboardPanel({
 }: Props) {
   const normalizedCurrentUsername = (currentUsername || "").trim().toLowerCase();
   const metricLabel = mode === "level" ? "level" : "points";
+
+  const isUserInTop = entries.some(
+    (e) => e.username.trim().toLowerCase() === normalizedCurrentUsername
+  );
+
+  const renderEntry = (entry: LeaderboardEntry, isLast = false) => {
+    const isCurrentUser =
+      entry.username.trim().toLowerCase() === normalizedCurrentUsername;
+
+    const primaryValue =
+      mode === "level" ? entry.level.toLocaleString() : entry.score.toLocaleString();
+
+    const secondaryLine =
+      mode === "level"
+        ? `Score ${entry.score.toLocaleString()}${isCurrentUser ? " • You" : ""}`
+        : `Level ${entry.level}${isCurrentUser ? " • You" : ""}`;
+
+    return (
+      <div
+        key={`${mode}-${entry.rank}-${entry.username}-${isLast ? "sticky" : "list"}`}
+        className={[
+          "grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-2xl border px-4 py-3 transition",
+          isCurrentUser
+            ? "border-amber-400/30 bg-amber-400/10"
+            : "border-white/10 bg-[#07111d]",
+        ].join(" ")}
+      >
+        <div
+          className={[
+            "flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold",
+            entry.rank > 0 && entry.rank <= 3
+              ? "border border-amber-400/30 bg-amber-400/10 text-amber-200"
+              : "border border-white/15 bg-white/5 text-white/85",
+          ].join(" ")}
+        >
+          #{entry.rank > 0 ? entry.rank : "?"}
+        </div>
+
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 truncate text-sm font-semibold text-white">
+            {entry.username}
+            {entry.is_premium && (
+              <span className="shrink-0 inline-flex items-center rounded-md bg-risen-primary/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-risen-primary border border-risen-primary/30 shadow-[0_0_10px_rgba(46,219,255,0.2)]">
+                Prime
+              </span>
+            )}
+          </div>
+          <div className="text-xs uppercase tracking-[0.18em] text-white/45">
+            {secondaryLine}
+          </div>
+        </div>
+
+        <div className="text-right">
+          <div className="text-sm font-semibold text-white">{primaryValue}</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-white/45">
+            {metricLabel}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl">
@@ -80,62 +138,29 @@ export default function LeaderboardPanel({
               </button>
             ) : null}
           </div>
-        ) : entries.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-[#07111d] px-4 py-4 text-sm text-white/65">
-            No leaderboard entries yet.
-          </div>
         ) : (
-          entries.map((entry) => {
-            const isCurrentUser =
-              entry.username.trim().toLowerCase() === normalizedCurrentUsername;
-
-            const primaryValue =
-              mode === "level" ? entry.level.toLocaleString() : entry.score.toLocaleString();
-
-            const secondaryLine =
-              mode === "level"
-                ? `Score ${entry.score.toLocaleString()}${isCurrentUser ? " • You" : ""}`
-                : `Level ${entry.level}${isCurrentUser ? " • You" : ""}`;
-
-            return (
-              <div
-                key={`${mode}-${entry.rank}-${entry.username}`}
-                className={[
-                  "grid grid-cols-[56px_1fr_auto] items-center gap-3 rounded-2xl border px-4 py-3 transition",
-                  isCurrentUser
-                    ? "border-amber-400/30 bg-amber-400/10"
-                    : "border-white/10 bg-[#07111d]",
-                ].join(" ")}
-              >
-                <div
-                  className={[
-                    "flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold",
-                    entry.rank <= 3
-                      ? "border border-amber-400/30 bg-amber-400/10 text-amber-200"
-                      : "border border-white/15 bg-white/5 text-white/85",
-                  ].join(" ")}
-                >
-                  #{entry.rank}
-                </div>
-
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold text-white">
-                    {entry.username}
-                  </div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-white/45">
-                    {secondaryLine}
-                  </div>
-                </div>
-
-                <div className="text-right">
-                  <div className="text-sm font-semibold text-white">{primaryValue}</div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-white/45">
-                    {metricLabel}
-                  </div>
-                </div>
+          <>
+            {entries.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-[#07111d] px-4 py-4 text-sm text-white/65">
+                No leaderboard entries yet.
               </div>
-            );
-          })
+            ) : (
+              entries.map((entry) => renderEntry(entry))
+            )}
+
+            {!isUserInTop && userEntry && (
+              <>
+                <div className="flex items-center justify-center py-1">
+                  <div className="h-px flex-1 bg-white/5" />
+                  <div className="px-3 text-[10px] font-bold uppercase tracking-[0.3em] text-white/20">
+                    Your Position
+                  </div>
+                  <div className="h-px flex-1 bg-white/5" />
+                </div>
+                {renderEntry(userEntry, true)}
+              </>
+            )}
+          </>
         )}
       </div>
     </div>
