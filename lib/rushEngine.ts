@@ -43,7 +43,7 @@ export const GAME_HEIGHT = 1400;
 
 export const INITIAL_PLAYER: Player = {
   x: GAME_WIDTH / 2 - 80,
-  y: GAME_HEIGHT - 72,
+  y: GAME_HEIGHT - 280, // Raised significantly to clear bottom UI buttons (prev 120)
   width: 160,
   height: 54,
   speed: 10,

@@ -185,6 +185,7 @@ function mapLeaderboard(data: any[]): LeaderboardEntry[] {
     username: item.username ?? item.user ?? "Unknown",
     score: item.score ?? 0,
     level: item.level ?? 1,
+    is_premium: !!item.is_premium,
   }));
 }
 
@@ -383,6 +384,7 @@ export async function fetchMyRedemptionRequests(): Promise<
 export async function claimAdReward(): Promise<WalletResponse> {
   return request("/rush/ads/claim-reward", {
     method: "POST",
+    body: JSON.stringify({}), // Added empty body for strict backend parsers
   });
 }
 
@@ -410,10 +412,16 @@ export async function fetchRushTopLevelLeaderboard(): Promise<LeaderboardEntry[]
 ========================= */
 
 export function getTurnstileSiteKey() {
+  // Use a variable that is definitely visible to the client
+  const enabled = process.env.NEXT_PUBLIC_TURNSTILE_ENABLED;
+  if (enabled === "false" || enabled === "False") {
+    return "";
+  }
+
   const envKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   if (envKey) return envKey;
 
-  // Fallback for mobile app if env variable is not picked up during static build
+  // If we are on app.risenonchain.net, the hardcoded key MUST be whitelisted for it
   if (typeof window !== "undefined" && (window as any).Capacitor) {
     return "0x4AAAAAACyq8KO_Awc5gL-A";
   }

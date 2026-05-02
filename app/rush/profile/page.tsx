@@ -77,6 +77,8 @@ function ProfileContent() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
 
   const [redeemPoints, setRedeemPoints] = useState("");
   const [redeemWalletAddress, setRedeemWalletAddress] = useState("");
@@ -147,7 +149,7 @@ function ProfileContent() {
       // --- AUTO-VERIFY PAYMENT IF REFERENCE IN URL ---
       const reference = searchParams.get("reference") || searchParams.get("trxref");
       if (reference && !stats.is_premium) {
-        setProfileMessage("Verifying recent payment...");
+        setPaymentMessage("Verifying recent payment...");
         const res = await fetch(`${BASE_URL}/payments/verify-transaction`, {
           method: "POST",
           headers: {
@@ -157,8 +159,12 @@ function ProfileContent() {
           body: JSON.stringify({ reference_id: reference }),
         });
         if (res.ok) {
-          setProfileMessage("PRIME ACCESS ACTIVATED!");
-          setTimeout(() => window.location.replace(window.location.pathname), 2000);
+          setPaymentMessage("PRIME ACCESS ACTIVATED!");
+          // Instead of reload, just refresh data and clear search params
+          loadAll();
+          router.replace("/rush/profile");
+        } else {
+          setPaymentError("Auto-verification failed. Please try manual entry below.");
         }
       }
     } catch (error) {
@@ -274,13 +280,14 @@ function ProfileContent() {
 
   const handlePaystackPayment = async () => {
     if (!currentUser || !profileStats) {
-      setProfileError("Profile data is still loading. Please wait.");
+      setPaymentError("Profile data is still loading. Please wait.");
       return;
     }
 
     try {
       setPaymentLoading(true);
-      setProfileError(null);
+      setPaymentError(null);
+      setPaymentMessage(null);
 
       const response = await fetch(`${BASE_URL}/payments/initialize`, {
         method: "POST",
@@ -304,7 +311,7 @@ function ProfileContent() {
     } catch (e) {
       setPaymentLoading(false);
       const msg = e instanceof Error ? e.message : "Network error. Please try again.";
-      setProfileError(`Payment error: ${msg}`);
+      setPaymentError(`Payment error: ${msg}`);
     }
   };
 
@@ -412,8 +419,8 @@ function ProfileContent() {
   }
 
   return (
-    <main className={`min-h-screen bg-[#02070d] text-white ${profileStats?.is_premium ? "selection:bg-amber-400/30" : ""}`}>
-      <section className="relative overflow-hidden px-4 py-5 sm:px-6 sm:py-8 md:px-10">
+    <main className={`min-h-screen bg-[#02070d] text-white flex flex-col items-center overflow-x-hidden ${profileStats?.is_premium ? "selection:bg-amber-400/30" : ""}`}>
+      <section className="relative px-4 py-5 sm:px-6 sm:py-8 md:px-10 w-full max-w-7xl mx-auto">
         {profileStats?.is_premium ? (
            <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.08),transparent_25%),radial-gradient(circle_at_bottom_left,rgba(212,175,55,0.05),transparent_20%)]" />
         ) : (
@@ -615,6 +622,39 @@ function ProfileContent() {
                       >
                         {paymentLoading ? "INITIALIZING SECURE GATEWAY..." : "GET PREMIUM ACCESS"}
                       </button>
+
+                      {paymentError && <div className="mt-4"><ErrorBox message={paymentError} /></div>}
+                      {paymentMessage && <div className="mt-4"><SuccessBox message={paymentMessage} /></div>}
+
+                      <div className="mt-4 pt-4 border-t border-white/5">
+                        <p className="text-[10px] text-white/30 text-center uppercase tracking-widest">Already paid but not updated?</p>
+                        <button
+                          onClick={() => {
+                            const ref = prompt("Enter your Paystack Transaction Reference:");
+                            if (ref) {
+                               setPaymentMessage("Manually verifying...");
+                               fetch(`${BASE_URL}/payments/verify-transaction`, {
+                                  method: "POST",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+                                  },
+                                  body: JSON.stringify({ reference_id: ref.trim() }),
+                               }).then(res => {
+                                  if (res.ok) {
+                                    setPaymentMessage("PRIME ACTIVATED!");
+                                    loadAll(); // Instant refresh without redirecting to main site
+                                  } else {
+                                    setPaymentError("Manual verification failed. Check reference.");
+                                  }
+                               });
+                            }
+                          }}
+                          className="w-full mt-2 text-[10px] font-bold text-risen-primary/60 hover:text-risen-primary transition-colors underline underline-offset-4"
+                        >
+                          CLICK HERE TO MANUALLY VERIFY
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

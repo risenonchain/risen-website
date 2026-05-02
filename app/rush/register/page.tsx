@@ -81,42 +81,74 @@ function RegisterContent() {
     if (!turnstileEnabled) return;
     if (!widgetRef.current) return;
 
-    const existingScript = document.querySelector(
-      'script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
-    );
+    let intervalId: any = null;
 
     const renderWidget = () => {
       if (!window.turnstile || !widgetRef.current || widgetIdRef.current) return;
 
-      widgetIdRef.current = window.turnstile.render(widgetRef.current, {
-        sitekey: getTurnstileSiteKey(),
-        theme: "dark",
-        callback: (token: string) => setTurnstileToken(token),
-        "expired-callback": () => setTurnstileToken(null),
-        "error-callback": () => setTurnstileToken(null),
-      });
+      try {
+        widgetIdRef.current = window.turnstile.render(widgetRef.current, {
+          sitekey: getTurnstileSiteKey(),
+          theme: "dark",
+          callback: (token: string) => {
+            setTurnstileToken(token);
+            setError(null);
+          },
+          "expired-callback": () => {
+            setTurnstileToken(null);
+            if (window.turnstile && widgetIdRef.current) {
+              window.turnstile.reset(widgetIdRef.current);
+            }
+          },
+          "error-callback": () => {
+            setTurnstileToken(null);
+            setError("Verification error. Resetting...");
+            if (window.turnstile && widgetIdRef.current) {
+              window.turnstile.reset(widgetIdRef.current);
+            }
+          },
+        });
+      } catch (e) {
+        console.error("Turnstile render error:", e);
+      }
     };
+
+    const scriptId = "cloudflare-turnstile-script";
+    const existingScript = document.getElementById(scriptId);
 
     if (existingScript) {
-      const waitForTurnstile = window.setInterval(() => {
-        if (window.turnstile) {
-          window.clearInterval(waitForTurnstile);
-          renderWidget();
-        }
-      }, 200);
-
-      return () => window.clearInterval(waitForTurnstile);
+      if (window.turnstile) {
+        renderWidget();
+      } else {
+        intervalId = setInterval(() => {
+          if (window.turnstile) {
+            clearInterval(intervalId);
+            renderWidget();
+          }
+        }, 100);
+      }
+    } else {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      script.async = true;
+      script.defer = true;
+      script.onload = renderWidget;
+      script.onerror = () => {
+        setError("Security challenge failed to load. Check your internet connection.");
+      };
+      document.body.appendChild(script);
     }
 
-    const script = document.createElement("script");
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    script.async = true;
-    script.defer = true;
-    script.onload = renderWidget;
-    script.onerror = () => {
-      setError("Security challenge failed to load. Please ensure you have a stable internet connection.");
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      if (window.turnstile && widgetIdRef.current) {
+        try {
+          window.turnstile.reset(widgetIdRef.current);
+        } catch (e) {}
+        widgetIdRef.current = null;
+      }
     };
-    document.body.appendChild(script);
   }, [turnstileEnabled]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {

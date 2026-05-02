@@ -36,6 +36,7 @@ export default function RushLoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
@@ -56,42 +57,74 @@ export default function RushLoginPage() {
     if (!turnstileEnabled) return;
     if (!widgetRef.current) return;
 
-    const existingScript = document.querySelector(
-      'script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]'
-    );
+    let intervalId: any = null;
 
     const renderWidget = () => {
       if (!window.turnstile || !widgetRef.current || widgetIdRef.current) return;
 
-      widgetIdRef.current = window.turnstile.render(widgetRef.current, {
-        sitekey: getTurnstileSiteKey(),
-        theme: "dark",
-        callback: (token: string) => setTurnstileToken(token),
-        "expired-callback": () => setTurnstileToken(null),
-        "error-callback": () => setTurnstileToken(null),
-      });
+      try {
+        widgetIdRef.current = window.turnstile.render(widgetRef.current, {
+          sitekey: getTurnstileSiteKey(),
+          theme: "dark",
+          callback: (token: string) => {
+            setTurnstileToken(token);
+            setError(null);
+          },
+          "expired-callback": () => {
+            setTurnstileToken(null);
+            if (window.turnstile && widgetIdRef.current) {
+              window.turnstile.reset(widgetIdRef.current);
+            }
+          },
+          "error-callback": () => {
+            setTurnstileToken(null);
+            setError("Verification error. Resetting...");
+            if (window.turnstile && widgetIdRef.current) {
+              window.turnstile.reset(widgetIdRef.current);
+            }
+          },
+        });
+      } catch (e) {
+        console.error("Turnstile render error:", e);
+      }
     };
+
+    const scriptId = "cloudflare-turnstile-script";
+    const existingScript = document.getElementById(scriptId);
 
     if (existingScript) {
-      const waitForTurnstile = window.setInterval(() => {
-        if (window.turnstile) {
-          window.clearInterval(waitForTurnstile);
-          renderWidget();
-        }
-      }, 200);
-
-      return () => window.clearInterval(waitForTurnstile);
+      if (window.turnstile) {
+        renderWidget();
+      } else {
+        intervalId = setInterval(() => {
+          if (window.turnstile) {
+            clearInterval(intervalId);
+            renderWidget();
+          }
+        }, 100);
+      }
+    } else {
+      const script = document.createElement("script");
+      script.id = scriptId;
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+      script.async = true;
+      script.defer = true;
+      script.onload = renderWidget;
+      script.onerror = () => {
+        setError("Security challenge failed to load. Check your internet connection.");
+      };
+      document.body.appendChild(script);
     }
 
-    const script = document.createElement("script");
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    script.async = true;
-    script.defer = true;
-    script.onload = renderWidget;
-    script.onerror = () => {
-      setError("Security challenge failed to load. Please ensure you have a stable internet connection and that your device supports the latest web standards.");
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      if (window.turnstile && widgetIdRef.current) {
+        try {
+          window.turnstile.reset(widgetIdRef.current);
+        } catch (e) {}
+        widgetIdRef.current = null;
+      }
     };
-    document.body.appendChild(script);
   }, [turnstileEnabled]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -209,13 +242,31 @@ export default function RushLoginPage() {
                 </div>
 
                 <div>
-                  <label className="mb-2 block text-sm font-medium text-white/75" htmlFor="password">
-                    Password
-                  </label>
+                  <div className="mb-2 flex items-center justify-between">
+                    <label className="block text-sm font-medium text-white/75" htmlFor="password">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="text-xs text-white/40 hover:text-white transition-colors"
+                    >
+                      {showPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                   <input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}

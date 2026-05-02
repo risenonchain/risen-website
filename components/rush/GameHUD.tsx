@@ -9,6 +9,7 @@ type Props = {
   isPaused?: boolean;
   onTogglePause?: () => void;
   canPause?: boolean;
+  isPremium?: boolean;
 };
 
 export default function GameHUD({
@@ -22,20 +23,16 @@ export default function GameHUD({
   isPaused = false,
   onTogglePause,
   canPause = true,
+  isPremium = false,
 }: Props) {
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <StatCard label="Score" value={score.toLocaleString()} />
-        <StatCard label="Lives" value={String(lives)} />
+        <StatCard label={isPremium ? "Integrity" : "Lives"} value={String(lives)} highlight={isPremium && lives <= 1} />
         <StatCard label="Level" value={String(level)} />
         <StatCard label="Time" value={`${elapsedSeconds}s`} />
         <StatCard label="Combo" value={`${comboMultiplier.toFixed(1)}x`} />
-        <StatCard
-          label="Trials Left"
-          value={String(trialsRemaining)}
-          highlight={multiplierActive}
-        />
         <StatCard
           label="Status"
           value={isPaused ? "Paused" : "Live"}

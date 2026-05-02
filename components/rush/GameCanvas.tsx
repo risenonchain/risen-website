@@ -86,6 +86,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
   const stateRef = useRef({ ...INITIAL_GAME_STATE });
 
   const pointerXRef = useRef<number | null>(null);
+  const wrapperRectRef = useRef<DOMRect | null>(null);
 
   const keyStateRef = useRef<{ left: boolean; right: boolean }>({
     left: false,
@@ -98,6 +99,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
   });
 
   const [canvasHeight, setCanvasHeight] = useState<number>(560);
+  const [canvasWidth, setCanvasWidth] = useState<number>(900);
   const [isPaused, setIsPaused] = useState(false);
   const [cornerGain, setCornerGain] = useState<CornerGain | null>(null);
 
@@ -155,6 +157,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
   };
 
   const broadcastHudUpdate = useCallback((now: number) => {
+    // Throttled in loop to save main thread
     const multiplierActive =
       !!stateRef.current.multiplierActiveUntil &&
       stateRef.current.multiplierActiveUntil > now;
@@ -188,7 +191,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
 
     // Apply Screen Shake
     if (screenShakeUntilRef.current && screenShakeUntilRef.current > now) {
-      const intensity = 8;
+      const intensity = isMobileRef.current ? 4 : 8;
       ctx.save();
       ctx.translate((Math.random() - 0.5) * intensity, (Math.random() - 0.5) * intensity);
     }
@@ -200,7 +203,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
     drawPlayerVault(ctx, playerRef.current, stateRef.current.isPremium);
 
     // Draw In-Game HUD (Score & Lives)
-    drawInGameHUD(ctx, stateRef.current.score, stateRef.current.lives, multiplierActive, stateRef.current.elapsedSeconds);
+    drawInGameHUD(ctx, stateRef.current.score, stateRef.current.lives, multiplierActive, stateRef.current.elapsedSeconds, stateRef.current.isPremium);
 
     if (screenShakeUntilRef.current && screenShakeUntilRef.current > now) {
       ctx.restore();
@@ -255,8 +258,14 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
 
   // High-Performance Engine Logic
   const lastUpdateRef = useRef<number>(0);
+  const lastHudUpdateRef = useRef<number>(0);
   const accumulatorRef = useRef<number>(0);
   const FIXED_TIMESTEP = 1000 / 60; // Locked 60fps logic
+  const isMobileRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    isMobileRef.current = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  }, []);
 
   const pauseGame = useCallback(() => {
     if (!isPlaying || stateRef.current.isGameOver || isPausedRef.current) return;
@@ -307,11 +316,29 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
       const height = wrapper.clientHeight;
 
       if (isPlaying && height > 0) {
-        setCanvasHeight(height);
+        const targetRatio = GAME_WIDTH / GAME_HEIGHT;
+        const screenRatio = width / height;
+
+        if (screenRatio > targetRatio) {
+          // Tablet/Wide screen: Lock width to maintain ratio
+          setCanvasWidth(height * targetRatio);
+          setCanvasHeight(height);
+        } else {
+          // Phone/Tall screen: Use full width
+          setCanvasWidth(width);
+          setCanvasHeight(height);
+        }
       } else {
         const ratio = GAME_HEIGHT / GAME_WIDTH;
+        setCanvasWidth(width);
         setCanvasHeight(width * ratio);
       }
+
+      // Rect update needs to happen after state updates usually,
+      // but we use a small timeout or just read from DOM directly in the loop.
+      setTimeout(() => {
+        if (wrapperRef.current) wrapperRectRef.current = wrapperRef.current.getBoundingClientRect();
+      }, 50);
     };
 
     updateResponsiveHeight();
@@ -415,14 +442,6 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
 
       playerRef.current = movePlayer(playerRef.current, direction);
 
-      // Process Pointer Movement for 100% Real-Time Feel
-      if (pointerXRef.current !== null && wrapperRef.current) {
-        const rect = wrapperRef.current.getBoundingClientRect();
-        const relativeX = pointerXRef.current - rect.left;
-        const scaledX = (relativeX / rect.width) * GAME_WIDTH;
-        playerRef.current.x = Math.max(0, Math.min(GAME_WIDTH - playerRef.current.width, scaledX - playerRef.current.width / 2));
-      }
-
       const spawnInterval = getSpawnInterval(stateRef.current.level);
       if (performance.now() - lastSpawnTimeRef.current >= spawnInterval) {
         itemsRef.current.push(createFallingItem(stateRef.current.level));
@@ -504,15 +523,31 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
       (effect) => performance.now() - effect.createdAt < 700
     );
 
-    particlesRef.current = particlesRef.current.map(p => ({
-      ...p,
-      x: p.x + p.vx,
-      y: p.y + p.vy,
-      life: p.life - (16 / (p.maxLife * 1000)),
-    })).filter(p => p.life > 0);
+    // Particles update - optimized loop
+    const particles = particlesRef.current;
+    const pLen = particles.length;
+    const nextParticles = [];
+    const lifeDecay = 16 / 1000;
 
-    drawCurrentFrame(performance.now());
-    broadcastHudUpdate(performance.now());
+    for (let i = 0; i < pLen; i++) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= lifeDecay / p.maxLife;
+      if (p.life > 0) {
+        nextParticles.push(p);
+      }
+    }
+    particlesRef.current = nextParticles;
+
+    drawCurrentFrame(now);
+
+    // Throttled HUD update: only every ~150ms to save main thread
+    const nowMs = performance.now();
+    if (!lastHudUpdateRef.current || nowMs - lastHudUpdateRef.current > 150) {
+      broadcastHudUpdate(nowMs);
+      lastHudUpdateRef.current = nowMs;
+    }
 
     if (stateRef.current.isGameOver) {
       stopLoop();
@@ -590,12 +625,21 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
 
   const moveBasketToClientX = (clientX: number) => {
     if (isPausedRef.current) return;
-    pointerXRef.current = clientX;
+
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const rect = wrapper.getBoundingClientRect();
+    const relativeX = clientX - rect.left;
+    const scaledX = (relativeX / rect.width) * GAME_WIDTH;
+    const targetX = scaledX - playerRef.current.width / 2;
+
+    playerRef.current.x = Math.max(0, Math.min(GAME_WIDTH - playerRef.current.width, targetX));
   };
 
   return (
     <div className={`rounded-[28px] border border-white/10 bg-[#030913] p-2 sm:p-3 shadow-2xl ${isPlaying ? "flex-1 flex flex-col h-full border-none !p-0 !rounded-none" : ""}`}>
-      <div className={`mb-2 sm:mb-3 flex items-center justify-between gap-3 text-[11px] sm:text-sm text-white/65 ${isPlaying ? "absolute bottom-6 left-0 right-0 z-30 px-6 pointer-events-none" : ""}`}>
+      <div className={`mb-2 sm:mb-3 flex items-center justify-between gap-3 text-[11px] sm:text-sm text-white/65 ${isPlaying ? "absolute bottom-10 left-0 right-0 z-30 px-6 pointer-events-none" : ""}`}>
         <span className={isPlaying ? "hidden" : ""}>Move: drag, mouse, ← →, A / D</span>
         <span className="hidden sm:inline">
           {isPaused
@@ -637,8 +681,12 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
           ref={canvasRef}
           width={gameMetrics.width}
           height={gameMetrics.height}
-          style={{ height: `${canvasHeight}px` }}
-          className={`w-full bg-[#06101a] touch-none ${isPlaying ? "" : "rounded-[22px]"}`}
+          style={{
+            height: `${canvasHeight}px`,
+            width: `${canvasWidth}px`,
+            margin: '0 auto' // Center the game on wide screens
+          }}
+          className={`bg-[#06101a] touch-none block ${isPlaying ? "" : "rounded-[22px] w-full"}`}
         />
 
         <div className="pointer-events-none absolute right-3 top-3 z-20 flex min-h-[42px] items-start justify-end">
@@ -720,72 +768,58 @@ function drawBackground(
   const now = performance.now();
   const shift = (now / 60) % GAME_HEIGHT;
 
-  // Deep Space Gradient
+  // Deep Space Gradient - Use 2 stops instead of 3 for speed
   const gradient = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
   gradient.addColorStop(0, "#010812");
-  gradient.addColorStop(0.5, "#020B1A");
   gradient.addColorStop(1, "#01050a");
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 
-  // Layered Parallax Starfield
-  // Layer 1: Slow, small stars
-  for (let i = 0; i < 40; i += 1) {
+  // Simplified Starfield
+  // Layer 1: Slow
+  ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
+  for (let i = 0; i < 25; i += 1) {
     const x = (i * 137) % GAME_WIDTH;
     const y = (i * 243 + shift * 0.3) % GAME_HEIGHT;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.15)";
-    ctx.beginPath();
-    ctx.arc(x, y, 0.8, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(x, y, 1, 1);
   }
 
-  // Layer 2: Medium, faster stars
-  for (let i = 0; i < 20; i += 1) {
+  // Layer 2: Medium
+  ctx.fillStyle = "rgba(46, 219, 255, 0.2)";
+  for (let i = 0; i < 12; i += 1) {
     const x = (i * 567) % GAME_WIDTH;
     const y = (i * 389 + shift * 0.7) % GAME_HEIGHT;
-    ctx.fillStyle = "rgba(46, 219, 255, 0.25)";
-    ctx.beginPath();
-    ctx.arc(x, y, 1.4, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.fillRect(x, y, 2, 2);
   }
 
-  // Nebula Glows
-  const nebulaGlow = ctx.createRadialGradient(GAME_WIDTH / 2, GAME_HEIGHT / 2, 100, GAME_WIDTH / 2, GAME_HEIGHT / 2, 600);
-  nebulaGlow.addColorStop(0, "rgba(46, 219, 255, 0.03)");
-  nebulaGlow.addColorStop(1, "transparent");
-  ctx.fillStyle = nebulaGlow;
-  ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
-  // Subtle Grid
-  ctx.strokeStyle = "rgba(255,255,255,0.015)";
+  // Optimized Grid
+  ctx.strokeStyle = "rgba(255,255,255,0.012)";
   ctx.lineWidth = 1;
-  for (let i = 0; i < 10; i += 1) {
+  const hStep = GAME_HEIGHT / 8;
+  const wStep = GAME_WIDTH / 6;
+  for (let i = 0; i < 8; i += 1) {
     ctx.beginPath();
-    ctx.moveTo(0, i * (GAME_HEIGHT / 10));
-    ctx.lineTo(GAME_WIDTH, i * (GAME_HEIGHT / 10));
+    ctx.moveTo(0, i * hStep);
+    ctx.lineTo(GAME_WIDTH, i * hStep);
     ctx.stroke();
   }
   for (let i = 0; i < 6; i += 1) {
     ctx.beginPath();
-    ctx.moveTo(i * (GAME_WIDTH / 6), 0);
-    ctx.lineTo(i * (GAME_WIDTH / 6), GAME_HEIGHT);
+    ctx.moveTo(i * wStep, 0);
+    ctx.lineTo(i * wStep, GAME_HEIGHT);
     ctx.stroke();
   }
 
-  const levelGlow = Math.min(level * 0.012, 0.08);
-  ctx.fillStyle = `rgba(250, 204, 21, ${levelGlow})`;
-  ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-
   if (multiplierActive) {
-    ctx.fillStyle = "rgba(125, 211, 252, 0.04)";
+    ctx.fillStyle = "rgba(125, 211, 252, 0.03)";
     ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
   }
 
-  // Vignette Effect
-  const vignette = ctx.createRadialGradient(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH / 3, GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_HEIGHT / 1.1);
+  // Simplified Vignette
+  const vignette = ctx.createRadialGradient(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH / 2.5, GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_HEIGHT);
   vignette.addColorStop(0, "transparent");
-  vignette.addColorStop(1, "rgba(0, 0, 0, 0.6)");
+  vignette.addColorStop(1, "rgba(0, 0, 0, 0.5)");
   ctx.fillStyle = vignette;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
 }
@@ -826,12 +860,17 @@ function drawPlayerVault(ctx: CanvasRenderingContext2D, player: Player, isPremiu
 
   ctx.save();
 
-  if (isPremium) {
-    ctx.shadowColor = "rgba(255, 215, 0, 0.6)";
-    ctx.shadowBlur = 25;
-  } else {
-    ctx.shadowColor = "rgba(212, 175, 55, 0.28)";
-    ctx.shadowBlur = 18;
+  // ShadowBlur is expensive on mobile
+  const useShadow = !(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+
+  if (useShadow) {
+    if (isPremium) {
+      ctx.shadowColor = "rgba(255, 215, 0, 0.6)";
+      ctx.shadowBlur = 25;
+    } else {
+      ctx.shadowColor = "rgba(212, 175, 55, 0.28)";
+      ctx.shadowBlur = 18;
+    }
   }
 
   const bodyGradient = ctx.createLinearGradient(x, y, x, y + h);
@@ -940,14 +979,15 @@ function drawRSNCoin(
   ctx.translate(cx, cy);
   ctx.rotate(item.rotation);
 
-  ctx.shadowColor = golden
-    ? "rgba(253, 230, 138, 0.7)"
-    : "rgba(212, 175, 55, 0.55)";
-  ctx.shadowBlur = golden ? 22 : 14;
+  // Skip shadow for standard items to save GPU
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  if (golden && !isMobile) {
+    ctx.shadowColor = "rgba(253, 230, 138, 0.6)";
+    ctx.shadowBlur = 15;
+  }
 
-  const fill = ctx.createRadialGradient(-4, -4, 2, 0, 0, r);
+  const fill = ctx.createRadialGradient(-2, -2, 1, 0, 0, r);
   fill.addColorStop(0, golden ? "#fff7d6" : "#f8e39c");
-  fill.addColorStop(0.42, golden ? "#f6d365" : "#d4af37");
   fill.addColorStop(1, golden ? "#a16c06" : "#7a5b12");
 
   ctx.beginPath();
@@ -956,14 +996,8 @@ function drawRSNCoin(
   ctx.fill();
 
   ctx.shadowBlur = 0;
-  ctx.lineWidth = 2.5;
-  ctx.strokeStyle = "rgba(255,255,255,0.35)";
-  ctx.stroke();
-
-  ctx.beginPath();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "rgba(9,16,24,0.35)";
-  ctx.arc(0, 0, r - 5, 0, Math.PI * 2);
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = "rgba(255,255,255,0.25)";
   ctx.stroke();
 
   ctx.fillStyle = "#091018";
@@ -988,8 +1022,11 @@ function drawEnergyOrb(
   ctx.translate(cx, cy);
   ctx.rotate(item.rotation);
 
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 20;
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  if (!isMobile) {
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 20;
+  }
 
   const g = ctx.createRadialGradient(-4, -4, 2, 0, 0, r);
   g.addColorStop(0, "#ffffff");
@@ -1036,12 +1073,10 @@ function drawHazardOrb(
   ctx.translate(cx, cy);
   ctx.rotate(item.rotation);
 
-  ctx.shadowColor = color;
-  ctx.shadowBlur = 18;
-
-  const g = ctx.createRadialGradient(-4, -4, 2, 0, 0, r);
+  // Skip shadow for hazards to save GPU
+  const g = ctx.createRadialGradient(-2, -2, 1, 0, 0, r);
   g.addColorStop(0, "#ffd3d3");
-  g.addColorStop(0.28, "#ef4444");
+  g.addColorStop(0.3, color);
   g.addColorStop(1, "#3b0a0a");
 
   ctx.beginPath();
@@ -1049,24 +1084,18 @@ function drawHazardOrb(
   ctx.arc(0, 0, r, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.shadowBlur = 0;
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "rgba(255,255,255,0.28)";
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = "rgba(255,255,255,0.25)";
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(-r / 2, -r / 2);
-  ctx.lineTo(r / 2, r / 2);
-  ctx.moveTo(r / 2, -r / 2);
-  ctx.lineTo(-r / 2, r / 2);
-  ctx.lineWidth = 3;
-  ctx.strokeStyle = "rgba(255,255,255,0.5)";
+  ctx.moveTo(-r / 2.5, -r / 2.5);
+  ctx.lineTo(r / 2.5, r / 2.5);
+  ctx.moveTo(r / 2.5, -r / 2.5);
+  ctx.lineTo(-r / 2.5, r / 2.5);
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = "rgba(255,255,255,0.4)";
   ctx.stroke();
-
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 12px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText(label, 0, 4);
 
   ctx.restore();
 }
@@ -1206,6 +1235,8 @@ function drawLevelUpBanner(ctx: CanvasRenderingContext2D, level: number, now: nu
   const remaining = until - now;
   const progress = 1 - (remaining / duration);
 
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
   ctx.save();
   ctx.translate(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
@@ -1219,8 +1250,10 @@ function drawLevelUpBanner(ctx: CanvasRenderingContext2D, level: number, now: nu
   ctx.fillStyle = "rgba(46, 219, 255, 0.15)";
   ctx.fillRect(-GAME_WIDTH / 2, -60, GAME_WIDTH, 120);
 
-  ctx.shadowColor = "#2EDBFF";
-  ctx.shadowBlur = 20;
+  if (!isMobile) {
+    ctx.shadowColor = "#2EDBFF";
+    ctx.shadowBlur = 20;
+  }
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 80px Inter, Arial";
   ctx.textAlign = "center";
@@ -1238,7 +1271,8 @@ function drawInGameHUD(
   score: number,
   lives: number,
   multiplierActive: boolean,
-  elapsedSeconds: number
+  elapsedSeconds: number,
+  isPremium: boolean = false
 ) {
   ctx.save();
 
@@ -1251,10 +1285,10 @@ function drawInGameHUD(
 
   // Level Progress Bar (at the very top)
   const levelProgress = (elapsedSeconds % 60) / 60;
-  ctx.fillStyle = "rgba(46, 219, 255, 0.1)";
+  ctx.fillStyle = isPremium ? "rgba(251, 191, 36, 0.1)" : "rgba(46, 219, 255, 0.1)";
   ctx.fillRect(0, 0, GAME_WIDTH, 4);
-  ctx.fillStyle = "#2EDBFF";
-  ctx.shadowColor = "#2EDBFF";
+  ctx.fillStyle = isPremium ? "#FBBF24" : "#2EDBFF";
+  ctx.shadowColor = isPremium ? "#FBBF24" : "#2EDBFF";
   ctx.shadowBlur = 10;
   ctx.fillRect(0, 0, GAME_WIDTH * levelProgress, 4);
   ctx.shadowBlur = 0;
@@ -1268,7 +1302,7 @@ function drawInGameHUD(
   ctx.font = "bold 16px Inter, Arial";
   ctx.textAlign = "left";
   ctx.globalAlpha = 0.6;
-  ctx.fillText("VAULT POINTS", 30, 45);
+  ctx.fillText(isPremium ? "PRIME POINTS" : "VAULT POINTS", 30, 45);
 
   // Value
   ctx.globalAlpha = 1;
@@ -1286,24 +1320,17 @@ function drawInGameHUD(
   ctx.font = "bold 16px Inter, Arial";
   ctx.globalAlpha = 0.6;
   ctx.fillStyle = "#ffffff";
-  ctx.fillText("SYSTEM STABILITY", GAME_WIDTH - 30, 40);
+  ctx.fillText(isPremium ? "CORE INTEGRITY" : "SYSTEM STABILITY", GAME_WIDTH - 30, 40);
 
   // Hearts
   ctx.globalAlpha = 1;
-  const heartIcon = "❤️";
+  const heartIcon = isPremium ? "💎" : "❤️";
   ctx.font = "28px Arial";
   let livesText = "";
   for (let i = 0; i < lives; i++) {
     livesText += heartIcon;
   }
   ctx.fillText(livesText, GAME_WIDTH - 30, 80);
-
-  // Scanline Effect Overlay
-  ctx.globalAlpha = 0.04;
-  ctx.fillStyle = "#ffffff";
-  for (let i = 0; i < GAME_HEIGHT; i += 4) {
-    ctx.fillRect(0, i, GAME_WIDTH, 1);
-  }
 
   ctx.restore();
 }
