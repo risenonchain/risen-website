@@ -645,7 +645,7 @@ function LobbyView({
 
                <div className="pt-10 flex flex-col items-center gap-3">
                   <button onClick={onLogout} className="text-[10px] font-black text-red-500/50 uppercase tracking-[0.4em] hover:text-red-500 transition-colors">Terminate Identity</button>
-                  <div className="text-[8px] font-black text-white/10 uppercase tracking-[0.8em]">ID_{user?.id?.slice(0,8)}</div>
+                  <div className="text-[8px] font-black text-white/10 uppercase tracking-[0.8em]">ID_{typeof user?.id === "string" ? user.id.slice(0,8) : user?.id ?? ""}</div>
                </div>
             </div>
          </div>
