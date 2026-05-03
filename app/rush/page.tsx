@@ -463,9 +463,15 @@ function LobbyView({
             </div>
          </div>
 
-         <div className="rounded-[22px] border border-white/5 bg-[#030913] px-4 py-2 flex flex-col items-end shadow-inner border border-white/5">
-            <span className="text-[9px] uppercase tracking-widest text-white/30 font-black">Vault Pts</span>
-            <span className="text-base font-black text-amber-400 italic tracking-tighter">{walletPoints.toLocaleString()}</span>
+         <div className="flex items-center gap-3">
+            <div className="rounded-[22px] border border-white/5 bg-[#030913] px-4 py-2 flex flex-col items-end shadow-inner border border-white/5">
+               <span className="text-[9px] uppercase tracking-widest text-white/30 font-black">Rank</span>
+               <span className="text-base font-black text-white italic tracking-tighter">#{stats?.score_rank ?? '-'}</span>
+            </div>
+            <div className="rounded-[22px] border border-white/5 bg-[#030913] px-4 py-2 flex flex-col items-end shadow-inner border border-white/5">
+               <span className="text-[9px] uppercase tracking-widest text-white/30 font-black">Vault Pts</span>
+               <span className="text-base font-black text-amber-400 italic tracking-tighter">{walletPoints.toLocaleString()}</span>
+            </div>
          </div>
       </div>
 
@@ -579,6 +585,13 @@ function LobbyView({
             <div className="flex-1 overflow-y-auto pr-1 custom-scroll">
                <LeaderboardPanel
                   entries={rankTab === 'score' ? scoreLeaderboard : levelLeaderboard}
+                  userEntry={user ? {
+                    rank: rankTab === 'score' ? (stats?.score_rank ?? 0) : (stats?.level_rank ?? 0),
+                    username: user.username,
+                    score: stats?.best_score ?? 0,
+                    level: stats?.best_level ?? 1,
+                    is_premium: !!isPremium
+                  } : null}
                   currentUsername={user?.username}
                   loading={isLeaderboardLoading}
                   onRetry={onRefreshLeaderboard}
@@ -816,7 +829,7 @@ function RedemptionModule({ stats, isPremium, onReload }: any) {
           MINIMUM SYNC: 100,000 PTS. {isPremium ? "PRIME UNLOCK: UNLIMITED CLAIMS." : "LIMIT: 1 CLAIM / MONTH."}
        </div>
        <form onSubmit={handleClaim} className="space-y-4">
-          <input value={wallet} onChange={e => setWallet(e.target.value)} placeholder="BEP-20 WALLET" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-black uppercase outline-none focus:border-amber-400/50" />
+          <input value={wallet} onChange={e => setWallet(e.target.value)} placeholder="WALLET ADDRESS" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-black uppercase outline-none focus:border-amber-400/50" />
           <input value={points} onChange={e => setPoints(e.target.value)} placeholder="PTS TO CLAIM" type="number" className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs font-black uppercase outline-none focus:border-amber-400/50" />
           <button disabled={loading} className="w-full py-4 rounded-2xl bg-amber-400 text-black font-black uppercase text-[10px] tracking-[0.2em] shadow-lg active:scale-95 disabled:opacity-50">{loading ? "SYNCING..." : "INITIALIZE CLAIM"}</button>
        </form>
