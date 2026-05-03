@@ -1,3 +1,5 @@
+
+"use client";
 import AdminLeaguePanel from "@/components/admin/AdminLeaguePanel";
 import AdminLeagueFixtures from "@/components/admin/AdminLeagueFixtures";
 import AdminLeagueRegistrations from "@/components/admin/AdminLeagueRegistrations";
