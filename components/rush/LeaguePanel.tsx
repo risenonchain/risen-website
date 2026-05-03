@@ -22,7 +22,7 @@ export default function LeaguePanel({ isPremium = false }: Props) {
       <p className="text-sm text-white/40 px-8 mb-12 leading-relaxed font-bold">
         Deployment in <span className="text-amber-400">28 Cycles</span>.{" "}
         {isPremium ? (
-          <span className="text-amber-400">Prime users auto-qualify for the $1,000 algorithmic prize pool.</span>
+          <span className="text-amber-400">Prime users auto-qualify for the RSN100,000 algorithmic prize pool.</span>
         ) : (
           "Upgrade to Prime to qualify for the RSN100,000 prize pool."
         )}

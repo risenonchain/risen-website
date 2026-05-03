@@ -527,9 +527,9 @@ function LobbyView({
       {/* Trial Stats */}
       <div className="w-full max-w-7xl mx-auto px-6 mt-auto py-6">
          <div className="grid grid-cols-3 gap-4">
-            <StatSmall label="Session" value={isPremium ? "∞" : dailyTrials} />
+            <StatSmall label="Playable" value={isPremium ? "∞" : totalTrials} />
             <StatSmall label="Vault Pts" value={walletPoints.toLocaleString()} highlight={walletPoints >= 100000} />
-            <StatSmall label="Status" value={isPremium ? "PRIME" : totalTrials} highlight={isPremium} />
+            <StatSmall label="Status" value={isPremium ? "PRIME" : "STANDARD"} highlight={isPremium} />
          </div>
       </div>
 
@@ -925,23 +925,68 @@ function ScorecardModule({ user, stats, isPremium }: any) {
    const handleAI = async () => {
       try {
          setLoading(true);
-         const res = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/ai/generate-scorecard`, {
+         setImg(null);
+         const apiBase = process.env.NEXT_PUBLIC_AI_API_URL || "https://risen-ai-backend.onrender.com";
+         const res = await fetch(`${apiBase}/ai/generate-scorecard`, {
             method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: user.username, score: stats.best_score, rank: stats.score_rank, avatar_path: user.avatar_url || "/images/default-avatar.png" })
+            body: JSON.stringify({
+               username: user.username,
+               score: stats.best_score,
+               rank: stats.score_rank,
+               avatar_path: user.avatar_url || user.generated_avatar_url || "https://risenonchain.net/images/default-avatar.png"
+            })
          });
+
          const data = await res.json();
-         if (data.image_url) setImg(data.image_url);
-      } catch { alert("Neural Node Error."); } finally { setLoading(false); }
+         if (data.image_url) {
+            // Ensure the URL is absolute
+            let finalUrl = data.image_url;
+            if (finalUrl.startsWith('/')) {
+               finalUrl = `${apiBase}${finalUrl}`;
+            }
+            setImg(finalUrl);
+         } else {
+            throw new Error("Invalid response from engine");
+         }
+      } catch (err) {
+         console.error("AI Error:", err);
+         alert("Neural Node Error. Please try again in a few seconds.");
+      } finally {
+         setLoading(false);
+      }
    };
 
    return (
       <div className="p-7 rounded-[40px] border border-white/5 bg-[#030913] space-y-5 shadow-inner">
          <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-2">RISEN AI Engine</div>
          <p className="text-[10px] font-bold text-white/40 leading-relaxed uppercase italic">Generate an algorithmic scorecard using your current best performance data.</p>
-         {img && <img src={img} className="w-full rounded-2xl border border-white/10 mb-4" alt="AI" />}
+
+         {img && (
+            <div className="relative group">
+               <img
+                  src={img}
+                  className="w-full rounded-2xl border border-white/10 mb-4 shadow-2xl animate-[fadeIn_0.5s_ease-out]"
+                  alt="AI Scorecard"
+                  onLoad={() => setLoading(false)}
+               />
+               <a
+                  href={img}
+                  download={`risen-scorecard-${user.username}.png`}
+                  className="absolute bottom-6 right-2 bg-black/60 backdrop-blur-md text-white text-[8px] font-black px-3 py-1.5 rounded-full border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity"
+               >
+                  DOWNLOAD
+               </a>
+            </div>
+         )}
 
          {isPremium ? (
-            <button disabled={loading} onClick={handleAI} className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-lg active:scale-95">{loading ? "PROCESSING..." : "GENERATE SCORECARD"}</button>
+            <button
+               disabled={loading}
+               onClick={handleAI}
+               className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-lg active:scale-95 disabled:opacity-50 transition-all"
+            >
+               {loading ? "GENERATING MATRIX..." : "GENERATE SCORECARD"}
+            </button>
          ) : (
             <div className="bg-white/5 rounded-[20px] p-5 border border-white/5 text-center">
                <div className="text-[9px] font-black text-amber-400 uppercase tracking-[0.3em] mb-1">Access Restricted</div>
