@@ -465,12 +465,12 @@ function LobbyView({
 
          <div className="flex items-center gap-3">
             <div className="rounded-[22px] border border-white/5 bg-[#030913] px-4 py-2 flex flex-col items-end shadow-inner border border-white/5">
-               <span className="text-[9px] uppercase tracking-widest text-white/30 font-black">Rank</span>
-               <span className="text-base font-black text-white italic tracking-tighter">#{stats?.score_rank ?? '-'}</span>
+               <span className="text-[9px] uppercase tracking-widest text-white/30 font-black">Max Depth</span>
+               <span className="text-base font-black text-white italic tracking-tighter">Lvl {stats?.best_level ?? 1}</span>
             </div>
             <div className="rounded-[22px] border border-white/5 bg-[#030913] px-4 py-2 flex flex-col items-end shadow-inner border border-white/5">
-               <span className="text-[9px] uppercase tracking-widest text-white/30 font-black">Vault Pts</span>
-               <span className="text-base font-black text-amber-400 italic tracking-tighter">{walletPoints.toLocaleString()}</span>
+               <span className="text-[9px] uppercase tracking-widest text-white/30 font-black">Best Score</span>
+               <span className="text-base font-black text-amber-400 italic tracking-tighter">{(stats?.best_score ?? 0).toLocaleString()}</span>
             </div>
          </div>
       </div>
@@ -528,7 +528,7 @@ function LobbyView({
       <div className="w-full max-w-7xl mx-auto px-6 mt-auto py-6">
          <div className="grid grid-cols-3 gap-4">
             <StatSmall label="Session" value={isPremium ? "∞" : dailyTrials} />
-            <StatSmall label="Vault" value={isPremium ? "∞" : vaultTrials} />
+            <StatSmall label="Vault Pts" value={walletPoints.toLocaleString()} highlight={walletPoints >= 100000} />
             <StatSmall label="Status" value={isPremium ? "PRIME" : totalTrials} highlight={isPremium} />
          </div>
       </div>
