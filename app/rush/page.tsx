@@ -648,7 +648,7 @@ function LobbyView({
                <ReferralModule stats={stats} />
 
                {/* AI Scorecard Node */}
-               <ScorecardModule user={user} stats={stats} />
+               <ScorecardModule user={user} stats={stats} isPremium={isPremium} />
 
                {/* Settings Sub-Module */}
                <EditProfileModule user={user} stats={stats} onReload={onReloadAll} />
@@ -918,7 +918,7 @@ function SecurityModule() {
    );
 }
 
-function ScorecardModule({ user, stats }: any) {
+function ScorecardModule({ user, stats, isPremium }: any) {
    const [loading, setLoading] = useState(false);
    const [img, setImg] = useState<string | null>(null);
 
@@ -939,7 +939,15 @@ function ScorecardModule({ user, stats }: any) {
          <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-2">RISEN AI Engine</div>
          <p className="text-[10px] font-bold text-white/40 leading-relaxed uppercase italic">Generate an algorithmic scorecard using your current best performance data.</p>
          {img && <img src={img} className="w-full rounded-2xl border border-white/10 mb-4" alt="AI" />}
-         <button disabled={loading} onClick={handleAI} className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-lg active:scale-95">{loading ? "PROCESSING..." : "GENERATE SCORECARD"}</button>
+
+         {isPremium ? (
+            <button disabled={loading} onClick={handleAI} className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 text-white font-black uppercase text-[10px] tracking-[0.2em] shadow-lg active:scale-95">{loading ? "PROCESSING..." : "GENERATE SCORECARD"}</button>
+         ) : (
+            <div className="bg-white/5 rounded-[20px] p-5 border border-white/5 text-center">
+               <div className="text-[9px] font-black text-amber-400 uppercase tracking-[0.3em] mb-1">Access Restricted</div>
+               <div className="text-[8px] font-black text-white/20 uppercase italic">Prime Protocol Required for AI Logic</div>
+            </div>
+         )}
       </div>
    );
 }
