@@ -8,10 +8,13 @@ import {
   ScrollText
 } from "lucide-react";
 
+import { Trophy } from "lucide-react";
+
 const SIDEBAR_LINKS = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
   { label: "Redemptions", icon: BadgeDollarSign, href: "/admin/redemptions" },
   { label: "News", icon: Newspaper, href: "/admin/news" },
+  { label: "League Management", icon: Trophy, href: "/admin/league" },
   { label: "Modal Management", icon: Calendar, href: "/admin/modals" },
   { label: "Audit Logs", icon: ScrollText, href: "/admin/audit" },
 ];
