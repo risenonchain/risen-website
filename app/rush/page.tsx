@@ -667,7 +667,7 @@ function LobbyView({
 
       {/* Contest Panel */}
       <OverlayPanel isOpen={activePanel === 'contest'} title="Risen League" onClose={() => setActivePanel(null)}>
-        <LeaguePanel isPremium={profileStats?.is_premium} />
+        <LeaguePanel isPremium={stats?.is_premium} />
       </OverlayPanel>
 
       {/* Config Panel */}
