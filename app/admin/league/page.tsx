@@ -8,7 +8,7 @@ import AdminLeagueAudit from "@/components/admin/AdminLeagueAudit";
 import { useState } from "react";
 
 export default function AdminLeaguePage() {
-  const [selectedLeagueId, setSelectedLeagueId] = useState<string>("");
+  const [selectedLeagueId, setSelectedLeagueId] = useState<number>(1);
 
   // You may want to fetch available leagues here and allow selection
   // For now, just show all panels for the selected league
