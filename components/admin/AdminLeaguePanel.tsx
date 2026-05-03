@@ -85,7 +85,7 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
         <input
           type="number"
           value={leagueId}
-          onChange={e => setLeagueId(Number(e.target.value))}
+          readOnly
           className="w-20 px-2 py-1 rounded bg-[#07111d] text-white border border-amber-400/30"
         />
       </div>
