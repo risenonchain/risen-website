@@ -14,9 +14,12 @@ const TABS = [
   { key: "admin", label: "Admin Controls" },
 ];
 
-export default function AdminLeaguePanel() {
+interface AdminLeaguePanelProps {
+  leagueId: number;
+}
+
+export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
   const [tab, setTab] = useState("events");
-  const [leagueId, setLeagueId] = useState<number>(1);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminMsg, setAdminMsg] = useState("");
 
