@@ -8,9 +8,11 @@ interface AuditLog {
   created_at: string;
 }
 
-export default function AdminLeagueAudit() {
-  // TODO: Replace with actual league_id selection
-  const leagueId = 1;
+interface Props {
+  leagueId: number;
+}
+
+export default function AdminLeagueAudit({ leagueId }: Props) {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

@@ -7,9 +7,11 @@ interface Registration {
   registered_at: string;
 }
 
-export default function AdminLeagueRegistrations() {
-  // TODO: Replace with actual league_id selection
-  const leagueId = 1;
+interface Props {
+  leagueId: number;
+}
+
+export default function AdminLeagueRegistrations({ leagueId }: Props) {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

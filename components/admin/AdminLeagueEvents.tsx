@@ -9,7 +9,11 @@ interface LeagueEvent {
   created_at: string;
 }
 
-export default function AdminLeagueEvents() {
+interface Props {
+  leagueId: number;
+}
+
+export default function AdminLeagueEvents({ leagueId }: Props) {
   const [events, setEvents] = useState<LeagueEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -19,7 +23,7 @@ export default function AdminLeagueEvents() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("/api/league/events");
+        const res = await fetch(`/api/league/events`); // Optionally filter by leagueId if your API supports it
         if (!res.ok) throw new Error("Failed to fetch events");
         const data = await res.json();
         setEvents(data);
@@ -30,7 +34,7 @@ export default function AdminLeagueEvents() {
       }
     }
     fetchEvents();
-  }, []);
+  }, [leagueId]);
 
   // Form state for creating a new event
   const [showForm, setShowForm] = useState(false);

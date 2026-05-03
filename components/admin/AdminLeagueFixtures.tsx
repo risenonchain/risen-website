@@ -9,13 +9,14 @@ interface Fixture {
   result_submitted: boolean;
 }
 
-export default function AdminLeagueFixtures() {
-  // TODO: Replace with actual league_id selection
-  const leagueId = 1;
+interface Props {
+  leagueId: number;
+}
+
+export default function AdminLeagueFixtures({ leagueId }: Props) {
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
 
   async function fetchFixtures() {
     setLoading(true);
