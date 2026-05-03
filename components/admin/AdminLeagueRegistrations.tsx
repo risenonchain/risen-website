@@ -22,7 +22,17 @@ export default function AdminLeagueRegistrations({ leagueId }: Props) {
       setError("");
       try {
         const res = await fetch(`/api/league/events/${leagueId}/registrations`);
-        if (!res.ok) throw new Error("Failed to fetch registrations");
+        if (!res.ok) {
+          let detail = "Unknown error";
+          try {
+            const data = await res.json();
+            detail = data.detail || detail;
+          } catch {
+            const text = await res.text();
+            detail = text.slice(0, 200);
+          }
+          throw new Error(detail);
+        }
         const data = await res.json();
         setRegistrations(data);
       } catch (err: any) {

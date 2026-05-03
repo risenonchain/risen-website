@@ -23,7 +23,17 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
     setError("");
     try {
       const res = await fetch(`/api/league/events/${leagueId}/fixtures`);
-      if (!res.ok) throw new Error("Failed to fetch fixtures");
+      if (!res.ok) {
+        let detail = "Unknown error";
+        try {
+          const data = await res.json();
+          detail = data.detail || detail;
+        } catch {
+          const text = await res.text();
+          detail = text.slice(0, 200);
+        }
+        throw new Error(detail);
+      }
       const data = await res.json();
       setFixtures(data);
     } catch (err: any) {

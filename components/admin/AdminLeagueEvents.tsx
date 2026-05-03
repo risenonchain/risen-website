@@ -24,7 +24,17 @@ export default function AdminLeagueEvents({ leagueId }: Props) {
       setError("");
       try {
         const res = await fetch(`/api/league/events`); // Optionally filter by leagueId if your API supports it
-        if (!res.ok) throw new Error("Failed to fetch events");
+        if (!res.ok) {
+          let detail = "Unknown error";
+          try {
+            const data = await res.json();
+            detail = data.detail || detail;
+          } catch {
+            const text = await res.text();
+            detail = text.slice(0, 200);
+          }
+          throw new Error(detail);
+        }
         const data = await res.json();
         setEvents(data);
       } catch (err: any) {

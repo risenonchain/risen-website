@@ -23,7 +23,17 @@ export default function AdminLeagueAudit({ leagueId }: Props) {
       setError("");
       try {
         const res = await fetch(`/api/league/events/${leagueId}/admin-audit`);
-        if (!res.ok) throw new Error("Failed to fetch audit log");
+        if (!res.ok) {
+          let detail = "Unknown error";
+          try {
+            const data = await res.json();
+            detail = data.detail || detail;
+          } catch {
+            const text = await res.text();
+            detail = text.slice(0, 200);
+          }
+          throw new Error(detail);
+        }
         const data = await res.json();
         setLogs(data);
       } catch (err: any) {
