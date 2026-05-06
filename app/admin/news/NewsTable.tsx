@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { BASE_URL } from "@/lib/api";
 const NewsForm = dynamic(() => import("./NewsForm"), { ssr: false });
 
 interface NewsItem {
@@ -24,7 +25,9 @@ export default function AdminNewsPage() {
 
   const fetchNews = () => {
     setLoading(true);
-    fetch(process.env.NEXT_PUBLIC_RUSH_API_URL + "/news/")
+    fetch(`${BASE_URL}/news/`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+    })
       .then(res => res.json())
       .then(setNews)
       .catch(() => setError("Failed to load news"))
@@ -48,7 +51,10 @@ export default function AdminNewsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this news item?")) return;
     setSaving(true);
-    await fetch(process.env.NEXT_PUBLIC_RUSH_API_URL + "/news/" + id, { method: "DELETE" });
+    await fetch(`${BASE_URL}/news/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+    });
     fetchNews();
     setSaving(false);
   };
@@ -56,10 +62,13 @@ export default function AdminNewsPage() {
   const handleSave = async (data: any) => {
     setSaving(true);
     const method = editItem ? "PUT" : "POST";
-    const url = process.env.NEXT_PUBLIC_RUSH_API_URL + "/news" + (editItem ? "/" + editItem.id : "/");
+    const url = `${BASE_URL}/news` + (editItem ? "/" + editItem.id : "/");
     await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+      },
       body: JSON.stringify(data),
     });
     setShowForm(false);

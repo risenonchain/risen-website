@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import GameCanvas from "@/components/rush/GameCanvas";
 import GameOverModal from "@/components/rush/GameOverModal";
 import RewardMeter from "@/components/rush/RewardMeter";
 import LeaderboardPanel from "@/components/rush/LeaderboardPanel";
 import LeaguePanel from "@/components/rush/LeaguePanel";
+import NotificationToast from "@/components/NotificationToast";
 import { initializeAdMob, showRewardedAd } from "@/lib/admob";
 import { rushAudio } from "@/lib/rushAudio";
 import {
@@ -29,8 +30,11 @@ import {
   fetchRushReferralInfo,
   fetchMyRedemptionRequests,
   createRedemptionRequest,
+  startLeagueSession,
+  finishLeagueSession,
   ReferralInfoResponse,
-  RedemptionRequestResponse
+  RedemptionRequestResponse,
+  BASE_URL
 } from "@/lib/api";
 
 type FinishData = {
@@ -41,7 +45,23 @@ type FinishData = {
 };
 
 export default function RushPage() {
+  return (
+    <Suspense fallback={
+      <main className="flex min-h-screen flex-col items-center justify-center bg-[#02070d] text-white font-sans">
+        <div className="relative flex flex-col items-center">
+          <div className="h-16 w-16 animate-spin rounded-full border-4 border-white/5 border-t-risen-primary shadow-[0_0_20px_rgba(46,219,255,0.2)]" />
+          <div className="mt-6 text-[10px] font-black uppercase tracking-[0.4em] text-white/30 animate-pulse">Establishing Logic...</div>
+        </div>
+      </main>
+    }>
+      <RushContent />
+    </Suspense>
+  );
+}
+
+function RushContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentUser, setCurrentUser] = useState<MeResponse | null>(null);
@@ -63,9 +83,11 @@ export default function RushPage() {
   const [isStarting, setIsStarting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAdLoading, setIsAdLoading] = useState(false);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [sessionId, setSessionId] = useState<number | null>(null);
+  const [gameMode, setGameMode] = useState<"regular" | "league">("regular");
 
   const [trialsRemaining, setTrialsRemaining] = useState(3);
   const [dailyTrialsRemaining, setDailyTrialsRemaining] = useState(3);
@@ -83,6 +105,56 @@ export default function RushPage() {
   const [finalElapsedSeconds, setFinalElapsedSeconds] = useState(0);
 
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [notification, setNotification] = useState<{ message: string; type: "info" | "success" | "warning" | "error" } | null>(null);
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const checkUpcomingMatches = async () => {
+        try {
+            const token = localStorage.getItem("rush_token");
+            if (!token) return;
+
+            // Find active league first
+            const eRes = await fetch(`${BASE_URL}/league/events`, {
+                headers: {
+                  "Authorization": `Bearer ${token}`,
+                  "X-App-Version": "1.1.0"
+                }
+            });
+            if (!eRes.ok) return;
+            const events = await eRes.json();
+            const active = events.find((e: any) => e.is_active);
+            if (!active) return;
+
+            const fRes = await fetch(`${BASE_URL}/league/events/${active.id}/fixtures`, {
+                headers: {
+                  "Authorization": `Bearer ${token}`,
+                  "X-App-Version": "1.1.0"
+                }
+            });
+            if (!fRes.ok) return;
+            const fixtures = await fRes.json();
+
+            // Check if current user has a pending match
+            const myPending = fixtures.find((f: any) =>
+                !f.result_submitted && (String(f.player1_id) === currentUser.id || String(f.player2_id) === currentUser.id)
+            );
+
+            if (myPending) {
+                setNotification({
+                    message: `Neural Link Active: You have a pending league match in Round ${myPending.round}.`,
+                    type: "warning"
+                });
+            }
+        } catch (e) {}
+    };
+
+    const interval = setInterval(checkUpcomingMatches, 120000); // Every 2 minutes
+    checkUpcomingMatches(); // Initial check
+
+    return () => clearInterval(interval);
+  }, [currentUser]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -134,37 +206,63 @@ export default function RushPage() {
     if (activePanel === 'ranks') loadLeaderboards();
   }, [activePanel, loadLeaderboards]);
 
+  const bootstrap = useCallback(async () => {
+    if (!hasRushToken()) {
+      router.replace("/rush/login");
+      return;
+    }
+
+    if (typeof window !== "undefined" && (window as any).Capacitor) {
+      initializeAdMob();
+    }
+
+    try {
+      const [me, stats] = await Promise.all([
+        fetchCurrentRushUser(),
+        fetchRushProfileStats(),
+      ]);
+      setCurrentUser(me);
+      setProfileStats(stats);
+      localStorage.setItem("risen_rush_username", me.username);
+      await loadWallet();
+    } catch {
+      clearRushAuth();
+      router.replace("/rush/login");
+      return;
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  }, [loadWallet, router]);
+
   useEffect(() => {
-    const bootstrap = async () => {
-      if (!hasRushToken()) {
-        router.replace("/rush/login");
-        return;
-      }
+    bootstrap();
+  }, [bootstrap]);
 
-      if (typeof window !== "undefined" && (window as any).Capacitor) {
-        initializeAdMob();
-      }
-
-      try {
-        const [me, stats] = await Promise.all([
-          fetchCurrentRushUser(),
-          fetchRushProfileStats(),
-        ]);
-        setCurrentUser(me);
-        setProfileStats(stats);
-        localStorage.setItem("risen_rush_username", me.username);
-        await loadWallet();
-      } catch {
-        clearRushAuth();
-        router.replace("/rush/login");
-        return;
-      } finally {
-        setIsCheckingAuth(false);
+  useEffect(() => {
+    const checkPayment = async () => {
+      const reference = searchParams.get("reference") || searchParams.get("trxref");
+      if (reference && profileStats && !profileStats.is_premium) {
+         try {
+           const res = await fetch(`${BASE_URL}/payments/verify-transaction`, {
+             method: "POST",
+             headers: {
+               "Content-Type": "application/json",
+               "Authorization": `Bearer ${localStorage.getItem("rush_token")}`,
+               "X-App-Version": "1.1.0"
+             },
+             body: JSON.stringify({ reference_id: reference }),
+           });
+           if (res.ok) {
+             await bootstrap();
+             router.replace("/rush");
+           }
+         } catch (e) {
+           console.error("Payment verification failed", e);
+         }
       }
     };
-
-    bootstrap();
-  }, [loadWallet, router]);
+    checkPayment();
+  }, [searchParams, profileStats, router, bootstrap]);
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -191,25 +289,50 @@ export default function RushPage() {
     };
   }, []);
 
-  const handleStart = async () => {
+  useEffect(() => {
+    const startLeagueHandler = (event: any) => {
+      handleStart(event.detail.matchId);
+    };
+    window.addEventListener("risen-rush-start-league", startLeagueHandler);
+    return () => window.removeEventListener("risen-rush-start-league", startLeagueHandler);
+  }, []);
+
+  useEffect(() => {
+    const goPremiumHandler = () => handlePremiumPayment();
+    window.addEventListener("risen-rush-go-premium", goPremiumHandler);
+    return () => window.removeEventListener("risen-rush-go-premium", goPremiumHandler);
+  }, []);
+
+  const handleStart = async (leagueMatchId?: number) => {
     try {
       setIsStarting(true);
       setStartError(null);
       setSubmitError(null);
 
-      if (!profileStats?.is_premium && trialsRemaining <= 0) {
+      const isLeague = leagueMatchId && typeof leagueMatchId === 'number';
+
+      if (!isLeague && !profileStats?.is_premium && trialsRemaining <= 0) {
         setStartError("No trials remaining. Watch an ad to get back in the game!");
         setIsStarting(false);
         return;
       }
 
       rushAudio.stopBGM();
-      const result = await startRushSession();
+
+      let result;
+      if (isLeague) {
+        setGameMode("league");
+        result = await startLeagueSession(leagueMatchId);
+      } else {
+        setGameMode("regular");
+        result = await startRushSession();
+      }
+
       setSessionId(result.session_id);
 
-      if (profileStats?.is_premium) {
+      if (profileStats?.is_premium && !isLeague) {
         setTrialsRemaining(999);
-      } else {
+      } else if (!isLeague) {
         setTrialsRemaining(result.trials_remaining);
         setDailyTrialsRemaining(result.daily_trials_remaining ?? 0);
         setVaultTrialsRemaining(result.vault_trials_remaining ?? 0);
@@ -248,13 +371,19 @@ export default function RushPage() {
         setIsSubmitting(true);
         setSubmitError(null);
 
-        await finishRushSession({
+        const payload = {
           session_id: sessionId,
           final_score: data.finalScore,
           duration_seconds: data.durationSeconds,
           level_reached: data.levelReached,
           lives_remaining: data.livesRemaining,
-        });
+        };
+
+        if (gameMode === "league") {
+          await finishLeagueSession(payload);
+        } else {
+          await finishRushSession(payload);
+        }
 
         const [newMe, newStats, newWallet] = await Promise.all([
            fetchCurrentRushUser(),
@@ -285,8 +414,62 @@ export default function RushPage() {
         setIsSubmitting(false);
       }
     },
-    [sessionId]
+    [sessionId, gameMode]
   );
+
+  const handlePremiumPayment = async () => {
+    try {
+      setIsPaymentLoading(true);
+      const res = await fetch(`${BASE_URL}/payments/initialize`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("rush_token")}`,
+          "X-App-Version": "1.1.0"
+        },
+        body: JSON.stringify({ product_id: "risen_prime_monthly" })
+      });
+      const data = await res.json();
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        alert(data.detail || "Payment error");
+      }
+    } catch (e) {
+      alert("Network error");
+    } finally {
+      setIsPaymentLoading(false);
+    }
+  };
+
+  const handleManualVerify = async () => {
+    const ref = prompt("Enter your Paystack Transaction Reference:");
+    if (!ref) return;
+
+    try {
+      setIsPaymentLoading(true);
+      const res = await fetch(`${BASE_URL}/payments/verify-transaction`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("rush_token")}`,
+          "X-App-Version": "1.1.0"
+        },
+        body: JSON.stringify({ reference_id: ref.trim() }),
+      });
+      if (res.ok) {
+        alert("PRIME ACTIVATED!");
+        await bootstrap();
+      } else {
+        const data = await res.json();
+        alert(data.detail || "Verification failed. Check reference.");
+      }
+    } catch (e) {
+      alert("Network error.");
+    } finally {
+      setIsPaymentLoading(false);
+    }
+  };
 
   const handlePlayAgain = () => {
     setShowGameOverModal(false);
@@ -300,6 +483,9 @@ export default function RushPage() {
     setIsPlaying(false);
     setSessionId(null);
     setStartError(null);
+    if (gameMode === "league") {
+      setActivePanel("contest");
+    }
   };
 
   const handleWatchAd = async () => {
@@ -361,8 +547,17 @@ export default function RushPage() {
         isSubmitting={isSubmitting}
         submitError={submitError}
         isPremium={profileStats?.is_premium}
-        onGoPremium={() => { setShowGameOverModal(false); setIsPlaying(false); setActivePanel('profile'); }}
+        gameMode={gameMode}
+        onGoPremium={handlePremiumPayment}
       />
+
+      {notification && (
+          <NotificationToast
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification(null)}
+          />
+      )}
 
       {isPlaying ? (
         <section className="h-full w-full p-0 flex flex-col relative">
@@ -372,6 +567,7 @@ export default function RushPage() {
                   <GameCanvas
                     isPlaying={isPlaying}
                     isPremium={profileStats?.is_premium}
+                    gameMode={gameMode}
                     onGameOver={handleGameOver}
                   />
                 </div>
@@ -407,11 +603,15 @@ export default function RushPage() {
              const [me, s] = await Promise.all([fetchCurrentRushUser(), fetchRushProfileStats()]);
              setCurrentUser(me); setProfileStats(s);
           }}
+          onGoPremium={handlePremiumPayment}
+          onVerifyManual={handleManualVerify}
+          isPaymentLoading={isPaymentLoading}
         />
       )}
     </main>
   );
 }
+
 
 function LobbyView({
   user,
@@ -437,23 +637,37 @@ function LobbyView({
   onLogout,
   onReloadAll,
   soundEnabled,
-  onToggleSound
+  onToggleSound,
+  onGoPremium,
+  onVerifyManual,
+  isPaymentLoading
 }: any) {
   return (
-    <div className="relative flex flex-col w-full min-h-screen pb-24 overflow-y-auto font-sans">
+    <div className="relative flex flex-col w-full min-h-screen pb-32 md:pb-44 overflow-y-auto font-sans">
       <div className={`absolute inset-0 -z-10 ${isPremium ? "bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.12),transparent_30%)]" : "bg-[radial-gradient(circle_at_top_right,rgba(46,219,255,0.14),transparent_30%)]"}`} />
 
       {/* Header */}
       <div className="w-full max-w-7xl mx-auto px-6 py-8 flex items-center justify-between">
          <div className="flex items-center gap-4">
-            <div className={`h-14 w-14 rounded-[20px] border-2 ${isPremium ? "border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.2)]" : "border-white/10"} bg-[#030913] p-1`}>
-               <div className="h-full w-full rounded-[15px] overflow-hidden bg-white/5 flex items-center justify-center">
-                  {user?.avatar_url || user?.generated_avatar_url ? (
-                     <img src={user?.avatar_url || user?.generated_avatar_url} className="h-full w-full object-cover" alt="X" />
-                  ) : (
-                     <span className="text-xl font-black text-white/20">{user?.username?.charAt(0).toUpperCase()}</span>
-                  )}
+            <div className="flex flex-col items-center gap-2">
+               <div className={`h-14 w-14 rounded-[20px] border-2 ${isPremium ? "border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.2)]" : "border-white/10"} bg-[#030913] p-1`}>
+                  <div className="h-full w-full rounded-[15px] overflow-hidden bg-white/5 flex items-center justify-center">
+                     {user?.avatar_url || user?.generated_avatar_url ? (
+                        <img src={user?.avatar_url || user?.generated_avatar_url} className="h-full w-full object-cover" alt="X" />
+                     ) : (
+                        <span className="text-xl font-black text-white/20">{user?.username?.charAt(0).toUpperCase()}</span>
+                     )}
+                  </div>
                </div>
+               {!isPremium && (
+                 <button
+                   onClick={onGoPremium}
+                   disabled={isPaymentLoading}
+                   className="text-[9px] font-black text-amber-400 uppercase tracking-[0.1em] hover:underline text-center block"
+                 >
+                   {isPaymentLoading ? "..." : "UPGRADE"}
+                 </button>
+               )}
             </div>
             <div>
                <div className="flex items-center gap-2">
@@ -488,7 +702,7 @@ function LobbyView({
                <div className={`absolute inset-[-50px] rounded-full animate-pulse opacity-10 ${isPremium ? "bg-amber-400 shadow-[0_0_100px_rgba(251,191,36,0.2)]" : "bg-risen-primary shadow-[0_0_100px_rgba(46,219,255,0.2)]"}`} />
 
                <button
-                  onClick={onStart}
+                  onClick={() => onStart()}
                   disabled={isStarting}
                   className={`relative h-60 w-60 rounded-full border-[10px] flex flex-col items-center justify-center transition-all hover:scale-105 active:scale-95 z-10 overflow-hidden ${
                     isPremium
@@ -547,24 +761,78 @@ function LobbyView({
       </div>
 
       {/* Info Panel */}
-      <OverlayPanel isOpen={activePanel === 'info'} title="System Log" onClose={() => setActivePanel(null)}>
-        <div className="space-y-5 max-h-[65vh] overflow-y-auto pr-2 custom-scroll">
+      <OverlayPanel isOpen={activePanel === 'info'} title="Neural Manual" onClose={() => setActivePanel(null)}>
+        <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2 custom-scroll pb-10">
            <RewardMeter availablePoints={walletPoints} />
-           <div className="rounded-[35px] border border-white/5 bg-[#030913] p-8 space-y-6 text-sm text-white/60">
-              <div className="flex items-center gap-5">
-                 <div className="h-10 w-10 rounded-2xl bg-amber-400/5 flex items-center justify-center text-amber-400 font-black border border-amber-400/10">01</div>
-                 <span className="font-bold tracking-tight">Standard Catch = 5 Points</span>
+
+           <div className="space-y-4">
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 px-2">Data Nodes (Catch)</div>
+
+              <div className="grid gap-3">
+                 <InfoItem
+                    color="#facc15"
+                    label="Standard RSN"
+                    value="+5 Pts"
+                    desc="Common network token. Essential for stability."
+                    icon="●"
+                 />
+                 <InfoItem
+                    color="#fde68a"
+                    label="Golden Protocol"
+                    value="+20 Pts"
+                    desc="Rare high-value node. Highly recommended."
+                    icon="★"
+                 />
+                 <InfoItem
+                    color="#7dd3fc"
+                    label="2X Multiplier"
+                    value="+25 Pts"
+                    desc="Active for 5s. Double all incoming data."
+                    icon="⚡"
+                 />
+                 <InfoItem
+                    color="#c4b5fd"
+                    label="Streak Surge"
+                    value="+40 Pts"
+                    desc="Instant combo boost. Maximum efficiency."
+                    icon="◈"
+                 />
               </div>
-              <div className="flex items-center gap-5">
-                 <div className="h-10 w-10 rounded-2xl bg-amber-400/5 flex items-center justify-center text-amber-400 font-black border border-amber-400/10">02</div>
-                 <span className="font-bold tracking-tight">Golden Protocol = 20 Points</span>
+
+              <div className="text-[10px] font-black uppercase tracking-[0.4em] text-red-500/40 px-2 mt-6">Corrupt Nodes (Avoid)</div>
+              <div className="grid gap-3">
+                 <InfoItem
+                    color="#ef4444"
+                    label="Crash Orb"
+                    value="-120 Pts / -1 Life"
+                    desc="Critical system failure. Red X appearance."
+                    icon="✕"
+                 />
+                 <InfoItem
+                    color="#374151"
+                    label="Heavy Drop"
+                    value="-80 Pts / -1 Life"
+                    desc="Massive block. Slows down neural sync."
+                    icon="■"
+                 />
+                 <InfoItem
+                    color="#14142b"
+                    label="Glitch Block"
+                    value="-100 Pts / -1 Life"
+                    desc="Unstable matrix. Disrupts connection."
+                    icon="▨"
+                 />
               </div>
-              <div className="flex items-center gap-5 text-red-500/80">
-                 <div className="h-10 w-10 rounded-2xl bg-red-500/5 flex items-center justify-center font-black border border-red-500/10 italic">ERR</div>
-                 <span className="font-black italic uppercase tracking-tighter">Avoid Crash/Heavy Drops</span>
+
+              <div className="mt-6 p-6 rounded-[35px] border border-amber-400/10 bg-amber-400/5">
+                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400 mb-2">Combo Logic</div>
+                 <p className="text-[11px] text-white/60 leading-relaxed uppercase italic font-bold">
+                    Catch consecutive nodes to unlock 1.2x (3 catches), 1.5x (6 catches), and 2x (10+ catches) multipliers. Missing a good node or hitting a hazard resets the combo.
+                 </p>
               </div>
-              <div className="pt-6 border-t border-white/5 text-[9px] font-black text-white/20 uppercase tracking-[0.5em] text-center">
-                 Sync Limit: 100k PTS
+
+              <div className="pt-6 border-t border-white/5 text-[9px] font-black text-white/10 uppercase tracking-[0.5em] text-center">
+                 Sync Limit: 100k PTS PER CLAIM
               </div>
            </div>
         </div>
@@ -624,6 +892,22 @@ function LobbyView({
                   <div className={`text-[9px] font-black px-4 py-1.5 rounded-full mt-4 uppercase tracking-[0.4em] ${isPremium ? "bg-amber-400 text-black shadow-lg" : "bg-white/5 text-white/40 border border-white/5"}`}>
                      {isPremium ? "Prime Protocol" : "Standard Sync"}
                   </div>
+                  {!isPremium && (
+                     <div className="flex flex-col items-center gap-3">
+                        <button
+                           onClick={onGoPremium}
+                           className="mt-4 text-[11px] font-black text-amber-400 uppercase tracking-widest hover:underline"
+                        >
+                           Upgrade to Prime Elite →
+                        </button>
+                        <button
+                           onClick={onVerifyManual}
+                           className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] hover:text-white transition-colors"
+                        >
+                           Already Paid? Verify Manually
+                        </button>
+                     </div>
+                  )}
                </div>
 
                {/* Vital Stats */}
@@ -729,6 +1013,26 @@ function LobbyView({
 }
 
 /* SUB-COMPONENTS */
+
+function InfoItem({ color, label, value, desc, icon }: any) {
+  return (
+    <div className="flex items-center gap-4 p-4 rounded-[30px] bg-[#030913] border border-white/5">
+       <div
+          className="h-12 w-12 rounded-2xl flex items-center justify-center text-xl shadow-lg border"
+          style={{ backgroundColor: `${color}10`, borderColor: `${color}30`, color: color }}
+       >
+          {icon}
+       </div>
+       <div className="flex-1">
+          <div className="flex items-center justify-between mb-0.5">
+             <span className="text-[11px] font-black uppercase tracking-tight text-white">{label}</span>
+             <span className="text-[10px] font-black italic" style={{ color: color }}>{value}</span>
+          </div>
+          <div className="text-[9px] font-bold text-white/30 uppercase tracking-widest leading-tight">{desc}</div>
+       </div>
+    </div>
+  );
+}
 
 function ProfileStat({ label, value }: any) {
   return (
@@ -913,7 +1217,11 @@ function ScorecardModule({ user, stats, isPremium }: any) {
          setImg(null);
          const apiBase = process.env.NEXT_PUBLIC_AI_API_URL || "https://risen-ai-backend.onrender.com";
          const res = await fetch(`${apiBase}/ai/generate-scorecard`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
+            method: "POST",
+            headers: {
+               "Content-Type": "application/json",
+               "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+            },
             body: JSON.stringify({
                username: user.username,
                score: stats.best_score,
@@ -921,6 +1229,11 @@ function ScorecardModule({ user, stats, isPremium }: any) {
                avatar_path: user.avatar_url || user.generated_avatar_url || "https://risenonchain.net/images/default-avatar.png"
             })
          });
+
+         if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || "Scorecard generation failed");
+         }
 
          const data = await res.json();
          if (data.image_url) {
@@ -933,9 +1246,9 @@ function ScorecardModule({ user, stats, isPremium }: any) {
          } else {
             throw new Error("Invalid response from engine");
          }
-      } catch (err) {
+      } catch (err: any) {
          console.error("AI Error:", err);
-         alert("Neural Node Error. Please try again in a few seconds.");
+         alert(err.message || "Neural Node Error. Please try again in a few seconds.");
       } finally {
          setLoading(false);
       }

@@ -65,24 +65,6 @@ export default function Navbar() {
     return () => observers.forEach((obs) => obs.disconnect());
   }, [pathname]);
 
-  useEffect(() => {
-    if (pathname !== "/") return;
-
-    const applyHashActive = () => {
-      const hash = window.location.hash.replace("#", "");
-      if (hash && sectionIds.includes(hash as (typeof sectionIds)[number])) {
-        setActive(hash);
-      } else {
-        setActive("home");
-      }
-    };
-
-    applyHashActive();
-    window.addEventListener("hashchange", applyHashActive);
-
-    return () => window.removeEventListener("hashchange", applyHashActive);
-  }, [pathname]);
-
   const scrollTo = (id: string) => {
     if (pathname !== "/") {
       setMenuOpen(false);
@@ -99,244 +81,121 @@ export default function Navbar() {
     window.scrollTo({ top, behavior: "smooth" });
     setActive(id);
     setMenuOpen(false);
-
-    if (window.location.hash !== `#${id}`) {
-      window.history.replaceState(null, "", `/#${id}`);
-    }
   };
-
-  const navItemClass = (id?: string) =>
-    `relative text-sm font-semibold transition-all duration-300 pb-1 ${
-      id && active === id
-        ? "text-white [text-shadow:0_0_10px_rgba(46,219,255,0.9),0_0_20px_rgba(46,219,255,0.55)]"
-        : "text-gray-400 hover:text-white"
-    }`;
-
-  const mobileLinkClass =
-    "w-full text-left px-4 py-3 rounded-xl text-sm font-semibold text-white/85 hover:text-white hover:bg-white/5 transition";
-
-  const pillBase =
-    "rounded-2xl border border-risen-primary/20 bg-[#06111f]/80 backdrop-blur-xl shadow-[0_0_30px_rgba(46,219,255,0.10)]";
-
-  const rushLinkClass =
-    "inline-flex items-center gap-2 rounded-full border border-risen-primary/35 " +
-    "bg-[linear-gradient(180deg,rgba(46,219,255,0.16),rgba(46,219,255,0.05))] " +
-    "px-4 py-2 text-sm font-semibold text-white transition-all duration-300 " +
-    "shadow-[0_0_20px_rgba(46,219,255,0.22),inset_0_0_18px_rgba(46,219,255,0.05)] " +
-    "hover:border-risen-primary/60 hover:shadow-[0_0_30px_rgba(46,219,255,0.35),inset_0_0_24px_rgba(46,219,255,0.10)] hover:-translate-y-[1px]";
-
-  const rushDot =
-    "inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95),0_0_22px_rgba(46,219,255,0.55)] animate-pulse";
-
-  const buyLinkClass =
-    "inline-flex items-center gap-2 rounded-full bg-risen-primary px-4 py-2 text-sm font-semibold text-white transition-all duration-300 " +
-    "shadow-[0_0_22px_rgba(46,219,255,0.28)] hover:shadow-[0_0_30px_rgba(46,219,255,0.36)] hover:-translate-y-[1px]";
 
   return (
     <div
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-700 ${
         scrolled
-          ? "bg-[#010913]/72 backdrop-blur-md border-b border-risen-primary/20"
-          : "bg-transparent"
+          ? "py-3 bg-[#010913]/80 backdrop-blur-2xl border-b border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
+          : "py-6 bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 shrink-0 min-w-0">
+      <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
+        {/* Brand */}
+        <div
+          onClick={() => router.push("/")}
+          className="flex items-center gap-4 cursor-pointer group"
+        >
+          <div className="relative">
+            <div className="absolute -inset-2 bg-risen-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
             <Image
               src={logo}
-              alt="RISEN Logo"
-              className={`transition-all duration-500 ${
-                scrolled ? "w-9" : "w-11 sm:w-12"
+              alt="RISEN"
+              className={`relative transition-all duration-500 ${
+                scrolled ? "w-9 h-9" : "w-12 h-12"
               }`}
-              priority
             />
-            <span className="text-white font-semibold tracking-wide text-sm sm:text-base">
-              RISEN
-            </span>
           </div>
-
-          <div className="hidden lg:flex items-center gap-4 px-5 py-2 rounded-full bg-[#020B1A]/80 backdrop-blur-md border border-risen-primary/20 shadow-[0_0_25px_rgba(46,219,255,0.08)]">
-            {sections.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => scrollTo(s.id)}
-                className={navItemClass(s.id)}
-              >
-                {s.label}
-                {active === s.id && (
-                  <span
-                    className="absolute left-0 right-0 bottom-0 h-[2px] rounded-full bg-[#2EDBFF]
-                    shadow-[0_0_12px_rgba(46,219,255,0.85),0_0_24px_rgba(46,219,255,0.45)]"
-                  />
-                )}
-              </button>
-            ))}
-
-            <a href="/rush" className={rushLinkClass}>
-              <span className={rushDot} />
-              {t("nav.rush")}
-            </a>
-
-            <a
-              href="/litepaper"
-              className="text-sm font-semibold text-gray-400 hover:text-white transition"
-            >
-              {t("nav.litepaper")}
-            </a>
-
-            <LanguageSwitcher />
-          </div>
-
-          <div
-            className={`hidden md:flex items-center gap-4 px-4 py-2 ${pillBase} shrink-0`}
-          >
-            <LiveDateTime />
-
-            {RISEN_IS_CONTRACT_LIVE && (
-              <a
-                href={RISEN_BUY_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={buyLinkClass}
-              >
-                Buy $RSN
-              </a>
-            )}
-          </div>
-
-          <div className="flex md:hidden items-center gap-2 shrink-0">
-            <a
-              href="/rush"
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-2xl border border-risen-primary/30 bg-[#06111f]/85 text-white text-[11px] font-semibold tracking-wide shadow-[0_0_18px_rgba(46,219,255,0.22)]"
-            >
-              <span className={rushDot} />
-              Rush
-            </a>
-
-            {RISEN_IS_CONTRACT_LIVE && (
-              <a
-                href={RISEN_BUY_LINK}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-3 py-2 rounded-2xl bg-risen-primary text-white text-[11px] font-semibold tracking-wide shadow-[0_0_18px_rgba(46,219,255,0.22)]"
-              >
-                Buy
-              </a>
-            )}
-
-            <button
-              type="button"
-              aria-label="Toggle menu"
-              onClick={() => setMenuOpen((prev) => !prev)}
-              className={`inline-flex items-center justify-center w-11 h-11 ${pillBase}`}
-            >
-              <div className="flex flex-col gap-1.5">
-                <span
-                  className={`block h-0.5 w-5 bg-white transition ${
-                    menuOpen ? "translate-y-2 rotate-45" : ""
-                  }`}
-                />
-                <span
-                  className={`block h-0.5 w-5 bg-white transition ${
-                    menuOpen ? "opacity-0" : ""
-                  }`}
-                />
-                <span
-                  className={`block h-0.5 w-5 bg-white transition ${
-                    menuOpen ? "-translate-y-2 -rotate-45" : ""
-                  }`}
-                />
-              </div>
-            </button>
+          <div className="flex flex-col">
+            <span className="text-white font-black tracking-[0.2em] text-lg uppercase italic leading-none">RISEN</span>
+            <span className="text-[8px] font-black text-risen-primary uppercase tracking-[0.4em] mt-1 opacity-60">Neural Network</span>
           </div>
         </div>
 
-        <div className="hidden md:flex lg:hidden mt-3 justify-center">
-          <div className="flex items-center gap-4 px-5 py-2 rounded-full bg-[#020B1A]/80 backdrop-blur-md border border-risen-primary/20 shadow-[0_0_25px_rgba(46,219,255,0.08)]">
+        {/* Center Nav */}
+        <div className="hidden lg:flex items-center gap-2 p-1.5 rounded-[24px] bg-white/5 border border-white/5 backdrop-blur-3xl shadow-inner">
             {sections.map((s) => (
               <button
                 key={s.id}
-                type="button"
                 onClick={() => scrollTo(s.id)}
-                className={navItemClass(s.id)}
+                className={`px-5 py-2.5 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all duration-500 relative overflow-hidden group ${
+                  active === s.id ? "text-white bg-white/10" : "text-white/40 hover:text-white"
+                }`}
               >
-                {s.label}
+                <span className="relative z-10">{s.label}</span>
                 {active === s.id && (
-                  <span
-                    className="absolute left-0 right-0 bottom-0 h-[2px] rounded-full bg-[#2EDBFF]
-                    shadow-[0_0_12px_rgba(46,219,255,0.85),0_0_24px_rgba(46,219,255,0.45)]"
-                  />
+                  <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[2px] bg-risen-primary shadow-[0_0_10px_rgba(46,219,255,1)]" />
                 )}
+                <div className="absolute inset-0 bg-risen-primary/5 translate-y-full group-hover:translate-y-0 transition-transform" />
               </button>
             ))}
-
-            <a href="/rush" className={rushLinkClass}>
-              <span className={rushDot} />
-              {t("nav.rush")}
-            </a>
-
-            <a
-              href="/litepaper"
-              className="text-sm font-semibold text-gray-400 hover:text-white transition"
-            >
-              {t("nav.litepaper")}
-            </a>
-
-            <LanguageSwitcher />
-          </div>
         </div>
 
-        {menuOpen && (
-          <div className="md:hidden mt-3 rounded-2xl border border-risen-primary/20 bg-[#06111f]/92 backdrop-blur-xl shadow-[0_0_30px_rgba(46,219,255,0.10)] p-3">
-            <div className="mb-3">
-              <LanguageSwitcher className="w-full" />
-            </div>
+        {/* Action Buttons */}
+        <div className="hidden md:flex items-center gap-4">
+            <a
+                href="/store"
+                className="group relative px-6 py-3 rounded-2xl border border-white/10 bg-white/5 overflow-hidden transition-all hover:border-risen-primary/40 shadow-lg"
+            >
+                <div className="absolute inset-0 bg-risen-primary opacity-0 group-hover:opacity-5 transition-opacity" />
+                <div className="flex items-center gap-3">
+                    <div className="h-1.5 w-1.5 rounded-full bg-risen-primary shadow-[0_0_10px_rgba(46,219,255,1)] animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-white">App Store</span>
+                </div>
+            </a>
 
-            <div className="grid gap-2">
-              {sections.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => scrollTo(s.id)}
-                  className={mobileLinkClass}
-                >
-                  {s.label}
-                </button>
-              ))}
-
-              <a href="/rush" className={mobileLinkClass}>
-                {t("nav.rush")}
-              </a>
-
-              <a href="/litepaper" className={mobileLinkClass}>
-                {t("nav.litepaper")}
-              </a>
-
-              {RISEN_IS_CONTRACT_LIVE && (
+            {RISEN_IS_CONTRACT_LIVE && (
                 <a
-                  href={RISEN_BUY_LINK}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={mobileLinkClass}
+                    href={RISEN_BUY_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-8 py-3 rounded-2xl bg-risen-primary text-white font-black uppercase text-[10px] tracking-widest shadow-[0_0_30px_rgba(46,219,255,0.3)] hover:scale-105 active:scale-95 transition-all"
                 >
-                  Buy $RSN
+                    Buy $RSN
                 </a>
-              )}
-            </div>
+            )}
 
-            <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3">
-              <div className="text-[10px] uppercase tracking-[0.18em] text-white/45">
-                Live
-              </div>
-              <div className="mt-1 text-sm font-semibold text-white">UTC+1</div>
-              <div className="mt-3">
-                <LiveDateTime />
-              </div>
+            <div className="h-10 w-px bg-white/10 mx-2" />
+
+            <LanguageSwitcher />
+        </div>
+
+        {/* Mobile Toggle */}
+        <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="lg:hidden h-12 w-12 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center justify-center gap-1.5 transition-all active:scale-90"
+        >
+            <div className={`h-0.5 w-5 bg-white transition-all ${menuOpen ? "rotate-45 translate-y-2" : ""}`} />
+            <div className={`h-0.5 w-5 bg-white transition-all ${menuOpen ? "opacity-0" : ""}`} />
+            <div className={`h-0.5 w-5 bg-white transition-all ${menuOpen ? "-rotate-45 -translate-y-2" : ""}`} />
+        </button>
+      </div>
+
+      {/* Mobile Menu */}
+      <div className={`lg:hidden absolute top-full left-0 w-full bg-[#010913]/95 backdrop-blur-3xl border-b border-white/5 transition-all duration-500 overflow-hidden ${menuOpen ? "max-h-[90vh] opacity-100 shadow-[0_20px_60px_rgba(0,0,0,0.8)]" : "max-h-0 opacity-0"}`}>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(46,219,255,0.1),transparent_40%)] pointer-events-none" />
+        <div className="relative p-8 space-y-4">
+            {sections.map((s) => (
+                <button
+                    key={s.id}
+                    onClick={() => scrollTo(s.id)}
+                    className="w-full py-4 text-left text-2xl font-black uppercase italic tracking-tighter text-white/40 hover:text-risen-primary transition-colors border-b border-white/5"
+                >
+                    {s.label}
+                </button>
+            ))}
+            <div className="pt-6 grid grid-cols-2 gap-4">
+                <a href="/store" className="py-4 rounded-2xl bg-white/5 border border-white/10 text-center text-[10px] font-black uppercase tracking-widest text-white transition-all active:scale-95">Store</a>
+                <a href="/rush" className="py-4 rounded-2xl bg-risen-primary text-center text-[10px] font-black uppercase tracking-widest text-black shadow-lg transition-all active:scale-95">Play Rush</a>
             </div>
-          </div>
-        )}
+            <div className="pt-6 flex justify-between items-center">
+                <LiveDateTime />
+                <div className="scale-90 origin-right">
+                    <LanguageSwitcher />
+                </div>
+            </div>
+        </div>
       </div>
     </div>
   );

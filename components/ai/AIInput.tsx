@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -23,35 +22,37 @@ export default function AIInput({ onSend, onUpload }: Props) {
   };
 
   return (
-    <div className="mt-3 flex gap-2 items-center">
-
-      {/* 📎 Upload */}
-      <label className="cursor-pointer px-3 py-2 rounded-xl bg-[#06111f] border border-risen-primary/20 text-xs">
-        📎
+    <div className="relative flex items-center gap-3">
+      {/* 📎 Upload Node */}
+      <label className="shrink-0 h-12 w-12 cursor-pointer rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-lg transition-all hover:bg-white/10 hover:border-white/20 active:scale-95 group">
+        <span className="opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all">📎</span>
         <input type="file" hidden onChange={handleFile} />
       </label>
 
-      {/* Input */}
-      <input
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Ask RISEN AI..."
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            handleSend();
-          }
-        }}
-        className="flex-1 px-4 py-3 rounded-xl bg-[#020B1A] text-white text-sm
-        border border-risen-primary/20 outline-none"
-      />
+      {/* Cognitive Input */}
+      <div className="flex-1 relative group">
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Initialize cognitive query..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
+            className="w-full h-12 px-5 rounded-2xl bg-[#07111d] text-white text-xs font-black uppercase tracking-widest border border-white/5 outline-none transition-all focus:border-risen-primary/40 focus:bg-[#0a1829] shadow-inner"
+          />
+          <div className="absolute inset-0 rounded-2xl border border-risen-primary/20 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none blur-sm" />
+      </div>
 
-      {/* Send */}
+      {/* Execute Pulse */}
       <button
         onClick={handleSend}
-        className="px-4 py-3 rounded-xl bg-risen-primary text-white text-sm"
+        className="h-12 px-6 rounded-2xl bg-risen-primary text-black font-black uppercase text-[10px] tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
       >
-        Send
+        Execute
+        <span className="text-base leading-none">⚡</span>
       </button>
     </div>
   );

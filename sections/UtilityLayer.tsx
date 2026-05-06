@@ -58,12 +58,10 @@ export default function UtilityLayer() {
           {/* CTA BUTTON */}
           <div className="mt-12">
             <a
-              href="https://t.me/RisenInfrastructureBot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block px-8 py-4 bg-risen-primary text-white font-bold rounded-xl shadow-[0_0_25px_rgba(46,219,255,0.4)] hover:scale-105 transition-all duration-300"
+              href="/store"
+              className="inline-block px-8 py-4 bg-risen-primary text-white font-bold rounded-xl shadow-[0_0_25px_rgba(46,219,255,0.4)] hover:scale-105 transition-all duration-300 uppercase tracking-widest text-xs"
             >
-              {t("utilityLayer.button")}
+              Open RISEN App Store
             </a>
           </div>
         </div>

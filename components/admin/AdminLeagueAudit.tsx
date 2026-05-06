@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { BASE_URL } from "@/lib/api";
 
 interface AuditLog {
   id: number;
@@ -22,18 +23,10 @@ export default function AdminLeagueAudit({ leagueId }: Props) {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/league/events/${leagueId}/admin-audit`);
-        if (!res.ok) {
-          let detail = "Unknown error";
-          try {
-            const data = await res.json();
-            detail = data.detail || detail;
-          } catch {
-            const text = await res.text();
-            detail = text.slice(0, 200);
-          }
-          throw new Error(detail);
-        }
+        const res = await fetch(`${BASE_URL}/league/events/${leagueId}/admin-audit`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+        });
+        if (!res.ok) throw new Error("Failed to fetch audit logs");
         const data = await res.json();
         setLogs(data);
       } catch (err: any) {
@@ -46,30 +39,40 @@ export default function AdminLeagueAudit({ leagueId }: Props) {
   }, [leagueId]);
 
   return (
-    <div>
-      <h3 className="text-lg font-bold text-white mb-4">Admin Audit Log</h3>
-      {loading && <div className="text-white/60">Loading audit log...</div>}
-      {error && <div className="text-red-400">{error}</div>}
-      <table className="min-w-full bg-[#07111d] rounded-xl shadow-lg mt-4">
-        <thead>
-          <tr className="text-amber-400 text-xs uppercase">
-            <th className="px-4 py-2">Admin</th>
-            <th className="px-4 py-2">Action</th>
-            <th className="px-4 py-2">Details</th>
-            <th className="px-4 py-2">Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          {logs.map((log) => (
-            <tr key={log.id}>
-              <td className="px-4 py-2 text-center">Admin {log.admin_id}</td>
-              <td className="px-4 py-2 text-center">{log.action}</td>
-              <td className="px-4 py-2 text-center">{log.details}</td>
-              <td className="px-4 py-2 text-center">{new Date(log.created_at).toLocaleString()}</td>
+    <div className="bg-[#07111d] p-6 rounded-3xl border border-white/5">
+      <h3 className="text-lg font-black text-white uppercase tracking-widest italic mb-6">Neural Audit Trail</h3>
+
+      {error && <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-bold">{error}</div>}
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left">
+            <thead>
+            <tr className="text-white/40 text-[10px] font-black uppercase tracking-widest border-b border-white/5">
+                <th className="px-4 py-3">Privileged Node</th>
+                <th className="px-4 py-3">Action Type</th>
+                <th className="px-4 py-3">Data String</th>
+                <th className="px-4 py-3 text-right">Timestamp</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+            {logs.map((log) => (
+                <tr key={log.id} className="hover:bg-white/5 transition-colors">
+                <td className="px-4 py-4 text-white/60 text-[10px] font-black">SYS_ADMIN_{log.admin_id}</td>
+                <td className="px-4 py-4">
+                    <span className="text-amber-400 text-[9px] font-black uppercase tracking-widest italic bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">{log.action}</span>
+                </td>
+                <td className="px-4 py-4 text-white/40 text-[10px] font-bold truncate max-w-xs">{log.details}</td>
+                <td className="px-4 py-4 text-right text-white/20 text-[9px] font-bold">{new Date(log.created_at).toLocaleString()}</td>
+                </tr>
+            ))}
+            {logs.length === 0 && !loading && (
+                <tr>
+                    <td colSpan={4} className="py-10 text-center text-white/20 text-xs font-black uppercase tracking-widest">No Privileged Actions Logged</td>
+                </tr>
+            )}
+            </tbody>
+        </table>
+      </div>
     </div>
   );
 }

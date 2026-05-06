@@ -3,6 +3,7 @@ import "./globals.css";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import ClientNavbarWrapper from "@/components/ClientNavbarWrapper";
+import AnnouncementModal from "@/components/AnnouncementModal";
 import { LanguageProvider } from "@/context/LanguageContext";
 import AIButton from "@/components/ai/AIButton";
 import AIDrawer from "@/components/ai/AIDrawer";
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {showMainUI && <ClientNavbarWrapper />}
           {showMainUI && <AIButton />}
           {showMainUI && <AIDrawer />}
+          {showMainUI && <AnnouncementModal />}
           {children}
         </LanguageProvider>
       </body>

@@ -1,13 +1,14 @@
 const getBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_RUSH_API_URL) {
-    return process.env.NEXT_PUBLIC_RUSH_API_URL;
-  }
-
   if (typeof window !== "undefined") {
     // Check if running in Capacitor
     if ((window as any).Capacitor) {
+      // Prioritize live backend for native app
       return "https://risen-rush-backend.onrender.com";
     }
+  }
+
+  if (process.env.NEXT_PUBLIC_RUSH_API_URL) {
+    return process.env.NEXT_PUBLIC_RUSH_API_URL;
   }
 
   return "";
@@ -163,12 +164,21 @@ async function request(endpoint: string, options: RequestInit = {}) {
   }
 
   if (!res.ok) {
-    const message =
-      typeof data === "object" && data?.detail
-        ? data.detail
-        : typeof data === "string" && data
-          ? data
-          : "Request failed";
+    let message = "Request failed";
+    if (typeof data === "object" && data !== null) {
+      if (typeof data.detail === "string") {
+        message = data.detail;
+      } else if (Array.isArray(data.detail)) {
+        // Handle validation errors from FastAPI
+        message = data.detail.map((e: any) => e.msg || JSON.stringify(e)).join(", ");
+      } else if (data.detail) {
+        message = JSON.stringify(data.detail);
+      } else if (data.message) {
+        message = data.message;
+      }
+    } else if (typeof data === "string" && data) {
+      message = data;
+    }
     throw new Error(message);
   }
 
@@ -319,6 +329,29 @@ export async function finishRushSession(payload: {
   lives_remaining: number;
 }): Promise<FinishRushSessionResponse> {
   return request("/rush/session/finish", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+/* =========================
+   LEAGUE SESSIONS
+========================= */
+
+export async function startLeagueSession(matchId: number): Promise<StartRushSessionResponse> {
+  return request(`/rush/league/session/start?match_id=${matchId}`, {
+    method: "POST",
+  });
+}
+
+export async function finishLeagueSession(payload: {
+  session_id: number;
+  final_score: number;
+  duration_seconds: number;
+  level_reached: number;
+  lives_remaining: number;
+}) {
+  return request("/rush/league/session/finish", {
     method: "POST",
     body: JSON.stringify(payload),
   });

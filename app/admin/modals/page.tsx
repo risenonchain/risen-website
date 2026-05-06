@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BASE_URL } from "@/lib/api";
 
 interface ModalItem {
   id: number;
@@ -23,7 +24,9 @@ export default function AdminModalsPage() {
 
   const fetchModals = () => {
     setLoading(true);
-    fetch(process.env.NEXT_PUBLIC_RUSH_API_URL + "/modals/")
+    fetch(`${BASE_URL}/modals/`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+    })
       .then(res => res.json())
       .then(setModals)
       .catch(() => setError("Failed to load modals"))
@@ -47,7 +50,10 @@ export default function AdminModalsPage() {
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this modal?")) return;
     setSaving(true);
-    await fetch(process.env.NEXT_PUBLIC_RUSH_API_URL + "/modals/" + id, { method: "DELETE" });
+    await fetch(`${BASE_URL}/modals/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+    });
     fetchModals();
     setSaving(false);
   };
@@ -55,10 +61,13 @@ export default function AdminModalsPage() {
   const handleSave = async (data: any) => {
     setSaving(true);
     const method = editItem ? "PUT" : "POST";
-    const url = process.env.NEXT_PUBLIC_RUSH_API_URL + "/modals" + (editItem ? "/" + editItem.id : "/");
+    const url = `${BASE_URL}/modals` + (editItem ? "/" + editItem.id : "/");
     await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+      },
       body: JSON.stringify(data),
     });
     setShowForm(false);

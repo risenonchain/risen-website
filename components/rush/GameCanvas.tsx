@@ -30,6 +30,7 @@ type FinishData = {
 type Props = {
   isPlaying: boolean;
   isPremium?: boolean;
+  gameMode?: "regular" | "league";
   onGameOver: (data: FinishData) => void;
 };
 
@@ -60,7 +61,7 @@ type Particle = {
   maxLife: number;
 };
 
-export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }: Props) {
+export default function GameCanvas({ isPlaying, isPremium = false, gameMode = "regular", onGameOver }: Props) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number | null>(null);
@@ -196,14 +197,14 @@ export default function GameCanvas({ isPlaying, isPremium = false, onGameOver }:
       ctx.translate((Math.random() - 0.5) * intensity, (Math.random() - 0.5) * intensity);
     }
 
-    drawBackground(ctx, stateRef.current.level, multiplierActive);
+    drawBackground(ctx, stateRef.current.level, multiplierActive, gameMode);
     drawItems(ctx, itemsRef.current);
     drawParticles(ctx, particlesRef.current, now);
     drawHitEffects(ctx, hitEffectsRef.current, now);
     drawPlayerVault(ctx, playerRef.current, stateRef.current.isPremium);
 
     // Draw In-Game HUD (Score & Lives)
-    drawInGameHUD(ctx, stateRef.current.score, stateRef.current.lives, multiplierActive, stateRef.current.elapsedSeconds, stateRef.current.isPremium);
+    drawInGameHUD(ctx, stateRef.current.score, stateRef.current.lives, multiplierActive, stateRef.current.elapsedSeconds, stateRef.current.isPremium, gameMode);
 
     if (screenShakeUntilRef.current && screenShakeUntilRef.current > now) {
       ctx.restore();
@@ -763,15 +764,22 @@ function getHitColor(type: FallingItemType) {
 function drawBackground(
   ctx: CanvasRenderingContext2D,
   level: number,
-  multiplierActive: boolean
+  multiplierActive: boolean,
+  gameMode: "regular" | "league" = "regular"
 ) {
   const now = performance.now();
   const shift = (now / 60) % GAME_HEIGHT;
 
-  // Deep Space Gradient - Use 2 stops instead of 3 for speed
+  // Deep Space Gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-  gradient.addColorStop(0, "#010812");
-  gradient.addColorStop(1, "#01050a");
+  if (gameMode === "league") {
+    // Distinct League Background (Deep Gold/Black)
+    gradient.addColorStop(0, "#080601");
+    gradient.addColorStop(1, "#030200");
+  } else {
+    gradient.addColorStop(0, "#010812");
+    gradient.addColorStop(1, "#01050a");
+  }
 
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -1272,16 +1280,28 @@ function drawInGameHUD(
   lives: number,
   multiplierActive: boolean,
   elapsedSeconds: number,
-  isPremium: boolean = false
+  isPremium: boolean = false,
+  gameMode: "regular" | "league" = "regular"
 ) {
   ctx.save();
 
   // Top Area Shadow/Gradient for readability
-  const headGrad = ctx.createLinearGradient(0, 0, 0, 100);
-  headGrad.addColorStop(0, "rgba(0,0,0,0.6)");
+  const headGrad = ctx.createLinearGradient(0, 0, 0, 120);
+  headGrad.addColorStop(0, "rgba(0,0,0,0.7)");
   headGrad.addColorStop(1, "transparent");
   ctx.fillStyle = headGrad;
-  ctx.fillRect(0, 0, GAME_WIDTH, 100);
+  ctx.fillRect(0, 0, GAME_WIDTH, 120);
+
+  // League Indicator (Center Top)
+  if (gameMode === "league") {
+    ctx.textAlign = "center";
+    ctx.font = "black 12px Inter, Arial";
+    ctx.fillStyle = "#FBBF24";
+    ctx.shadowColor = "rgba(251, 191, 36, 0.4)";
+    ctx.shadowBlur = 10;
+    ctx.fillText("⚔️ NEURAL LEAGUE MATCH ACTIVE ⚔️", GAME_WIDTH / 2, 35);
+    ctx.shadowBlur = 0;
+  }
 
   // Level Progress Bar (at the very top)
   const levelProgress = (elapsedSeconds % 60) / 60;

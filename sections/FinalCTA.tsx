@@ -33,14 +33,12 @@ export default function FinalCTA() {
             {t("finalCta.primaryButton")}
           </a>
 
-          {/* SECONDARY BUTTON → TELEGRAM BOT */}
+          {/* SECONDARY BUTTON → APP STORE */}
           <a
-            href="https://t.me/RisenInfrastructureBot"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-10 py-4 border border-risen-primary text-risen-primary rounded-xl hover:bg-risen-primary hover:text-black transition-all duration-300"
+            href="/store"
+            className="px-10 py-4 border border-risen-primary text-risen-primary rounded-xl hover:bg-risen-primary hover:text-black transition-all duration-300 font-bold uppercase tracking-widest text-xs"
           >
-            {t("finalCta.secondaryButton")}
+            Explore App Store
           </a>
 
         </div>

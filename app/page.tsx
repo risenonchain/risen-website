@@ -81,6 +81,32 @@ export default function Home() {
     [t]
   );
 
+  const [newsItems, setNewsItems] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_RUSH_API_URL}/news/`);
+        if (res.ok) {
+          const data = await res.json();
+          const activeNews = data
+            .filter((item: any) => item.is_active)
+            .map((item: any) => item.summary);
+          if (activeNews.length > 0) {
+            setNewsItems(activeNews);
+          } else {
+            setNewsItems(tickerItems);
+          }
+        } else {
+          setNewsItems(tickerItems);
+        }
+      } catch (e) {
+        setNewsItems(tickerItems);
+      }
+    };
+    fetchNews();
+  }, [tickerItems]);
+
   const displayedAddress = isContractLive
     ? contractAddress
     : t("ca.placeholder");
@@ -290,15 +316,14 @@ export default function Home() {
                   </a>
 
                   <a
-                    href="https://t.me/RisenInfrastructureBot"
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    href="/store"
                     className={botBtn}
                   >
                     <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                      <path d="M12 2a3 3 0 0 1 3 3v1h1a4 4 0 0 1 4 4v5a7 7 0 0 1-6 6.92V24h-4v-2.08A7 7 0 0 1 4 15v-5a4 4 0 0 1 4-4h1V5a3 3 0 0 1 3-3Zm-2 4h4V5a2 2 0 1 0-4 0v1Zm-2 2a2 2 0 0 0-2 2v5a5 5 0 0 0 10 0v-5a2 2 0 0 0-2-2H8Zm1.5 4.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm5 0a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z" />
+                       <path d="M4 11V4h7v7H4zm1 1h6v7H5v-7zm7-8h7v6h-7V4zm1 7h6v8h-6v-8z" opacity=".3"/>
+                       <path d="M3 3v8h8V3H3zm9 0v8h8V3h-8zM3 12v8h8v-8H3zm9 0v8h8v-8h-8z"/>
                     </svg>
-                    {t("home.accessBot")}
+                    {t("home.appStore")}
                   </a>
                 </div>
 
@@ -467,16 +492,16 @@ export default function Home() {
           </div>
 
           <a
-            href="/rush"
-            className="shrink-0 hidden sm:inline-flex items-center gap-2 px-4 py-3 border-r border-white/10 text-[11px] sm:text-sm font-semibold uppercase tracking-widest text-white bg-[linear-gradient(180deg,rgba(46,219,255,0.16),rgba(46,219,255,0.05))] hover:bg-[linear-gradient(180deg,rgba(46,219,255,0.22),rgba(46,219,255,0.08))] transition-all duration-300 shadow-[0_0_18px_rgba(46,219,255,0.18)]"
+            href="/store"
+            className="shrink-0 hidden lg:inline-flex items-center gap-2 px-4 py-3 border-r border-white/10 text-[11px] sm:text-sm font-semibold uppercase tracking-widest text-white bg-white/5 hover:bg-white/10 transition-all duration-300 shadow-[0_0_18px_rgba(255,255,255,0.05)]"
           >
             <span className="inline-block w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)] animate-pulse" />
-            {t("ticker.playRush")}
+            {t("home.appStore")}
           </a>
 
           <div className="relative flex-1 overflow-hidden py-3">
             <div className="ticker-track whitespace-nowrap text-white/85 font-medium text-[11px] sm:text-sm">
-              {[...tickerItems, ...tickerItems].map((item, index) => (
+              {[...newsItems, ...newsItems].map((item, index) => (
                 <span key={`${item}-${index}`} className="inline-flex items-center">
                   <span className="mx-4 text-risen-primary">●</span>
                   <span>{item}</span>

@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { BASE_URL } from "@/lib/api";
 
 interface Fixture {
   id: number;
   round: number;
   player1_id: number;
   player2_id: number;
+  player1_username: string;
+  player2_username: string;
   scheduled_at: string | null;
   result_submitted: boolean;
 }
@@ -22,18 +25,10 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/league/events/${leagueId}/fixtures`);
-      if (!res.ok) {
-        let detail = "Unknown error";
-        try {
-          const data = await res.json();
-          detail = data.detail || detail;
-        } catch {
-          const text = await res.text();
-          detail = text.slice(0, 200);
-        }
-        throw new Error(detail);
-      }
+      const res = await fetch(`${BASE_URL}/league/events/${leagueId}/fixtures`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+      });
+      if (!res.ok) throw new Error("Failed to fetch fixtures");
       const data = await res.json();
       setFixtures(data);
     } catch (err: any) {
@@ -50,12 +45,16 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
   const [generating, setGenerating] = useState(false);
 
   async function handleGenerateFixtures() {
+    if (!confirm("This will overwrite/add new fixtures. Continue?")) return;
     setGenerating(true);
     setError("");
     try {
-      const res = await fetch(`/api/league/events/${leagueId}/fixtures/generate`, {
+      const res = await fetch(`${BASE_URL}/league/events/${leagueId}/fixtures/generate`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+        },
       });
       if (!res.ok) throw new Error((await res.json()).detail || "Failed to generate fixtures");
       await fetchFixtures();
@@ -67,41 +66,55 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
   }
 
   return (
-    <div>
-      <h3 className="text-lg font-bold text-white mb-4">Fixtures</h3>
-      <button
-        className="mb-4 bg-amber-400 text-black font-black px-6 py-2 rounded-xl shadow hover:bg-amber-300 transition"
-        onClick={handleGenerateFixtures}
-        disabled={generating}
-      >
-        {generating ? "Generating..." : "Generate Fixtures"}
-      </button>
-      {loading && <div className="text-white/60">Loading fixtures...</div>}
-      {error && <div className="text-red-400">{error}</div>}
-      <table className="min-w-full bg-[#07111d] rounded-xl shadow-lg mt-4">
-        <thead>
-          <tr className="text-amber-400 text-xs uppercase">
-            <th className="px-4 py-2">Round</th>
-            <th className="px-4 py-2">Player 1</th>
-            <th className="px-4 py-2">Player 2</th>
-            <th className="px-4 py-2">Scheduled</th>
-            <th className="px-4 py-2">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {fixtures.map((fix) => (
-            <tr key={fix.id}>
-              <td className="px-4 py-2 text-center">{fix.round}</td>
-              <td className="px-4 py-2 text-center">User {fix.player1_id}</td>
-              <td className="px-4 py-2 text-center">User {fix.player2_id}</td>
-              <td className="px-4 py-2 text-center">{fix.scheduled_at ? new Date(fix.scheduled_at).toLocaleString() : "TBD"}</td>
-              <td className="px-4 py-2 text-center font-bold">
-                {fix.result_submitted ? <span className="text-green-400">Completed</span> : <span className="text-yellow-400">Pending</span>}
-              </td>
+    <div className="bg-[#07111d] p-6 rounded-3xl border border-white/5">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-black text-white uppercase tracking-widest italic">League Fixtures</h3>
+        <button
+            className="bg-amber-400 text-black font-black px-6 py-2 rounded-xl shadow-lg hover:bg-amber-300 transition-all active:scale-95 text-xs uppercase tracking-widest"
+            onClick={handleGenerateFixtures}
+            disabled={generating}
+        >
+            {generating ? "Generating Matrix..." : "Auto-Generate Fixtures"}
+        </button>
+      </div>
+
+      {error && <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs font-bold">{error}</div>}
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-left">
+            <thead>
+            <tr className="text-white/40 text-[10px] font-black uppercase tracking-widest border-b border-white/5">
+                <th className="px-4 py-3">Round</th>
+                <th className="px-4 py-3">Neural Entity 1</th>
+                <th className="px-4 py-3">Neural Entity 2</th>
+                <th className="px-4 py-3">Sync Schedule</th>
+                <th className="px-4 py-3">Protocol Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+            {fixtures.map((fix) => (
+                <tr key={fix.id} className="hover:bg-white/5 transition-colors">
+                <td className="px-4 py-4 text-white font-black italic">R{fix.round}</td>
+                <td className="px-4 py-4 text-amber-400 text-sm font-black uppercase tracking-tighter">{fix.player1_username}</td>
+                <td className="px-4 py-4 text-amber-400 text-sm font-black uppercase tracking-tighter">{fix.player2_username}</td>
+                <td className="px-4 py-4 text-white/40 text-[10px] font-bold">{fix.scheduled_at ? new Date(fix.scheduled_at).toLocaleString() : "TBD"}</td>
+                <td className="px-4 py-4">
+                    {fix.result_submitted ? (
+                        <span className="text-emerald-400 text-[10px] font-black uppercase tracking-widest italic bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20">Completed</span>
+                    ) : (
+                        <span className="text-yellow-400 text-[10px] font-black uppercase tracking-widest italic bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">Pending Sync</span>
+                    )}
+                </td>
+                </tr>
+            ))}
+            {fixtures.length === 0 && !loading && (
+                <tr>
+                    <td colSpan={5} className="py-10 text-center text-white/20 text-xs font-black uppercase tracking-widest">No Fixtures Synchronized</td>
+                </tr>
+            )}
+            </tbody>
+        </table>
+      </div>
     </div>
   );
 }
