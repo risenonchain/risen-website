@@ -30,7 +30,7 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
     try {
       const res = await fetch(`${BASE_URL}/league/events/${leagueId}/group/progress`, {
           method: "POST",
-          headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+          headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
       });
       if (!res.ok) throw new Error((await res.json()).detail || "Failed to progress group stage");
       setAdminMsg("Group stage progressed. Winners advanced.");
@@ -47,7 +47,7 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
     try {
       const res = await fetch(`${BASE_URL}/league/events/${leagueId}/finals/generate`, {
           method: "POST",
-          headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+          headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
       });
       if (!res.ok) throw new Error((await res.json()).detail || "Failed to generate finals");
       setAdminMsg("Finals fixtures generated.");
@@ -65,7 +65,7 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
     try {
       const res = await fetch(`${BASE_URL}/league/events/${leagueId}/participants/${userId}/${status}`, {
           method: "POST",
-          headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+          headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
       });
       if (!res.ok) throw new Error((await res.json()).detail || `Failed to ${status} participant`);
       setAdminMsg(`Participant ${status}d.`);
@@ -86,7 +86,7 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
             method: "PATCH",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+                "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}`
             },
             body: JSON.stringify(liveConfig)
         });

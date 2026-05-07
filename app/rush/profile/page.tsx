@@ -378,6 +378,8 @@ function ProfileContent() {
           rank: currentRank ?? 0,
           is_premium: !!profileStats.is_premium,
           is_prime: !!profileStats.is_premium,
+          premium: !!profileStats.is_premium,
+          prime: !!profileStats.is_premium,
           avatar_path: activeAvatar || fallbackAvatar,
         }),
       });

@@ -24,7 +24,7 @@ export default function AdminLeagueAudit({ leagueId }: Props) {
       setError("");
       try {
         const res = await fetch(`${BASE_URL}/league/events/${leagueId}/admin-audit`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+            headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
         });
         if (!res.ok) throw new Error("Failed to fetch audit logs");
         const data = await res.json();

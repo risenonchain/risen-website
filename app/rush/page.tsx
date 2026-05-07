@@ -1235,6 +1235,8 @@ function ScorecardModule({ user, stats, isPremium }: any) {
                rank: stats.score_rank,
                is_premium: !!isPremium,
                is_prime: !!isPremium,
+               premium: !!isPremium,
+               prime: !!isPremium,
                avatar_path: user.avatar_url || user.generated_avatar_url || "https://risenonchain.net/images/default-avatar.png"
             })
          });

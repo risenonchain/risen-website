@@ -26,7 +26,7 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
     setError("");
     try {
       const res = await fetch(`${BASE_URL}/league/events/${leagueId}/fixtures`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
+        headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
       });
       if (!res.ok) throw new Error("Failed to fetch fixtures");
       const data = await res.json();
@@ -53,7 +53,7 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+            "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}`
         },
       });
       if (!res.ok) throw new Error((await res.json()).detail || "Failed to generate fixtures");
