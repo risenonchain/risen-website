@@ -5,12 +5,23 @@ class RushAudio {
   private enabled: boolean = true;
   private bgmInterval: any = null;
 
-  private init() {
-    if (this.ctx) return;
+  // Optimized initialization with latencyHint
+  init() {
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
+      return;
+    }
     try {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      this.ctx = new AudioCtx({ latencyHint: 'interactive' });
       const saved = localStorage.getItem("risen_rush_sound_enabled");
       this.enabled = saved === null ? true : saved === "true";
+
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume();
+      }
     } catch (e) {
       console.error("Audio initialization failed", e);
     }
@@ -19,13 +30,20 @@ class RushAudio {
   setEnabled(val: boolean) {
     this.enabled = val;
     if (!val) this.stopBGM();
+    else if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
   }
 
   private createGain(duration: number, volume: number = 0.1) {
     if (!this.ctx) return null;
+    // Ensure context is running before playing
+    if (this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(volume, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+    const now = this.ctx.currentTime;
+    gain.gain.setValueAtTime(volume, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
     gain.connect(this.ctx.destination);
     return gain;
   }
@@ -37,13 +55,14 @@ class RushAudio {
     const gain = this.createGain(0.15, 0.08);
     if (!gain) return;
 
+    const now = this.ctx.currentTime;
     osc.type = "sine";
-    osc.frequency.setValueAtTime(880, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1320, this.ctx.currentTime + 0.1);
+    osc.frequency.setValueAtTime(880, now);
+    osc.frequency.exponentialRampToValueAtTime(1320, now + 0.1);
 
     osc.connect(gain);
-    osc.start();
-    osc.stop(this.ctx.currentTime + 0.15);
+    osc.start(now);
+    osc.stop(now + 0.15);
   }
 
   playGolden() {
@@ -74,13 +93,14 @@ class RushAudio {
     const gain = this.createGain(0.4, 0.2);
     if (!gain) return;
 
+    const now = this.ctx.currentTime;
     osc.type = "sawtooth";
-    osc.frequency.setValueAtTime(110, this.ctx.currentTime);
-    osc.frequency.linearRampToValueAtTime(40, this.ctx.currentTime + 0.4);
+    osc.frequency.setValueAtTime(110, now);
+    osc.frequency.linearRampToValueAtTime(40, now + 0.4);
 
     osc.connect(gain);
-    osc.start();
-    osc.stop(this.ctx.currentTime + 0.4);
+    osc.start(now);
+    osc.stop(now + 0.4);
   }
 
   playLevelUp() {
@@ -108,13 +128,14 @@ class RushAudio {
     const gain = this.createGain(1.0, 0.15);
     if (!gain) return;
 
+    const now = this.ctx.currentTime;
     osc.type = "sine";
-    osc.frequency.setValueAtTime(220, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(55, this.ctx.currentTime + 1.0);
+    osc.frequency.setValueAtTime(220, now);
+    osc.frequency.exponentialRampToValueAtTime(55, now + 1.0);
 
     osc.connect(gain);
-    osc.start();
-    osc.stop(this.ctx.currentTime + 1.0);
+    osc.start(now);
+    osc.stop(now + 1.0);
   }
 
   startBGM() {
@@ -123,6 +144,8 @@ class RushAudio {
 
     const playPulse = () => {
       if (!this.ctx || !this.enabled) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
@@ -134,7 +157,7 @@ class RushAudio {
       osc.type = "sine";
       osc.frequency.setValueAtTime(110, now); // Deep tech bass
       osc.connect(gain);
-      osc.start();
+      osc.start(now);
       osc.stop(now + 0.5);
     };
 

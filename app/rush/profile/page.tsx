@@ -368,6 +368,7 @@ function ProfileContent() {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
+          "X-Auth-Token": token || "",
           "X-App-Version": "1.1.0",
           "X-Platform": (window as any).Capacitor ? "android" : "web"
         },
@@ -376,6 +377,7 @@ function ProfileContent() {
           score: profileStats.best_score ?? 0,
           rank: currentRank ?? 0,
           is_premium: !!profileStats.is_premium,
+          is_prime: !!profileStats.is_premium,
           avatar_path: activeAvatar || fallbackAvatar,
         }),
       });

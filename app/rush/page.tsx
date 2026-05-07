@@ -309,6 +309,9 @@ function RushContent() {
       setStartError(null);
       setSubmitError(null);
 
+      // Initialize/Resume Audio on user gesture
+      rushAudio.init();
+
       const isLeague = leagueMatchId && typeof leagueMatchId === 'number';
 
       if (!isLeague && !profileStats?.is_premium && trialsRemaining <= 0) {
@@ -1222,6 +1225,7 @@ function ScorecardModule({ user, stats, isPremium }: any) {
             headers: {
                "Content-Type": "application/json",
                "Authorization": `Bearer ${token}`,
+               "X-Auth-Token": token || "",
                "X-App-Version": "1.1.0",
                "X-Platform": (window as any).Capacitor ? "android" : "web"
             },
@@ -1230,6 +1234,7 @@ function ScorecardModule({ user, stats, isPremium }: any) {
                score: stats.best_score,
                rank: stats.score_rank,
                is_premium: !!isPremium,
+               is_prime: !!isPremium,
                avatar_path: user.avatar_url || user.generated_avatar_url || "https://risenonchain.net/images/default-avatar.png"
             })
          });
