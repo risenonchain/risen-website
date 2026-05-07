@@ -360,17 +360,22 @@ function ProfileContent() {
         throw new Error("NEXT_PUBLIC_AI_API_URL is not configured");
       }
 
-      const fallbackAvatar = "/images/default-avatar.png";
+      const fallbackAvatar = "https://risenonchain.net/images/default-avatar.png";
 
+      const token = localStorage.getItem("rush_token");
       const res = await fetch(`${API_URL}/ai/generate-scorecard`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+          "X-App-Version": "1.1.0",
+          "X-Platform": (window as any).Capacitor ? "android" : "web"
         },
         body: JSON.stringify({
           username: currentUser.username,
           score: profileStats.best_score ?? 0,
           rank: currentRank ?? 0,
+          is_premium: !!profileStats.is_premium,
           avatar_path: activeAvatar || fallbackAvatar,
         }),
       });

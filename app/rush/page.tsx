@@ -1216,16 +1216,20 @@ function ScorecardModule({ user, stats, isPremium }: any) {
          setLoading(true);
          setImg(null);
          const apiBase = process.env.NEXT_PUBLIC_AI_API_URL || "https://risen-ai-backend.onrender.com";
+         const token = localStorage.getItem("rush_token");
          const res = await fetch(`${apiBase}/ai/generate-scorecard`, {
             method: "POST",
             headers: {
                "Content-Type": "application/json",
-               "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+               "Authorization": `Bearer ${token}`,
+               "X-App-Version": "1.1.0",
+               "X-Platform": (window as any).Capacitor ? "android" : "web"
             },
             body: JSON.stringify({
                username: user.username,
                score: stats.best_score,
                rank: stats.score_rank,
+               is_premium: !!isPremium,
                avatar_path: user.avatar_url || user.generated_avatar_url || "https://risenonchain.net/images/default-avatar.png"
             })
          });
