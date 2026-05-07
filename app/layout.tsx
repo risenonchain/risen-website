@@ -40,8 +40,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LanguageProvider>
           {/* ONLY MAIN SITE */}
           {showMainUI && <ClientNavbarWrapper />}
-          {showMainUI && <AIButton />}
-          {showMainUI && <AIDrawer />}
+          {(showMainUI || isAI) && <AIButton />}
+          {(showMainUI || isAI) && <AIDrawer />}
           {showMainUI && <AnnouncementModal />}
           {children}
         </LanguageProvider>

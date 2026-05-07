@@ -56,7 +56,7 @@ export default function AdminLeagueEvents({ leagueId }: Props) {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}`
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, league_id: leagueId }),
       });
       if (!res.ok) throw new Error((await res.json()).detail || "Failed to create event");
       setShowForm(false);

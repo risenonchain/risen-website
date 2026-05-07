@@ -1220,6 +1220,8 @@ function ScorecardModule({ user, stats, isPremium }: any) {
          setImg(null);
          const apiBase = process.env.NEXT_PUBLIC_AI_API_URL || "https://risen-ai-backend.onrender.com";
          const token = localStorage.getItem("rush_token");
+         const adminToken = localStorage.getItem("risen_admin_token");
+
          const res = await fetch(`${apiBase}/ai/generate-scorecard`, {
             method: "POST",
             headers: {
@@ -1227,16 +1229,17 @@ function ScorecardModule({ user, stats, isPremium }: any) {
                "Authorization": `Bearer ${token}`,
                "X-Auth-Token": token || "",
                "X-App-Version": "1.1.0",
-               "X-Platform": (window as any).Capacitor ? "android" : "web"
+               "X-Platform": (window as any).Capacitor ? "android" : "web",
+               ...(adminToken ? { "X-Admin-Override": "true" } : {})
             },
             body: JSON.stringify({
                username: user.username,
                score: stats.best_score,
                rank: stats.score_rank,
-               is_premium: !!isPremium,
-               is_prime: !!isPremium,
-               premium: !!isPremium,
-               prime: !!isPremium,
+               is_premium: !!isPremium || !!adminToken,
+               is_prime: !!isPremium || !!adminToken,
+               premium: !!isPremium || !!adminToken,
+               prime: !!isPremium || !!adminToken,
                avatar_path: user.avatar_url || user.generated_avatar_url || "https://risenonchain.net/images/default-avatar.png"
             })
          });

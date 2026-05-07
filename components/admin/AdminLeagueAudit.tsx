@@ -23,12 +23,22 @@ export default function AdminLeagueAudit({ leagueId }: Props) {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`${BASE_URL}/league/events/${leagueId}/admin-audit`, {
+        // Attempt with /audit first, then fallback to /admin-audit if needed
+        const res = await fetch(`${BASE_URL}/league/events/${leagueId}/audit`, {
             headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
         });
-        if (!res.ok) throw new Error("Failed to fetch audit logs");
-        const data = await res.json();
-        setLogs(data);
+        if (!res.ok) {
+            // Fallback for older backend versions
+            const res2 = await fetch(`${BASE_URL}/league/events/${leagueId}/admin-audit`, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
+            });
+            if (!res2.ok) throw new Error("Failed to fetch audit logs");
+            const data = await res2.json();
+            setLogs(data);
+        } else {
+            const data = await res.json();
+            setLogs(data);
+        }
       } catch (err: any) {
         setError(err.message || "Unknown error");
       } finally {

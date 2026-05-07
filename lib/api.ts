@@ -228,8 +228,11 @@ export async function loginRushUser(
   },
   turnstileToken?: string | null
 ) {
-  // Use a raw string for body to avoid issues with URLSearchParams in some native environments
-  const body = `username=${encodeURIComponent(data.email)}&password=${encodeURIComponent(data.password)}`;
+  // Try sending Turnstile in both header and body for maximum compatibility
+  let body = `username=${encodeURIComponent(data.email)}&password=${encodeURIComponent(data.password)}`;
+  if (turnstileToken) {
+    body += `&turnstile_token=${encodeURIComponent(turnstileToken)}`;
+  }
 
   try {
     const res = await fetch(`${BASE_URL}/auth/login`, {

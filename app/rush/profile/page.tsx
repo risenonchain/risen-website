@@ -363,6 +363,7 @@ function ProfileContent() {
       const fallbackAvatar = "https://risenonchain.net/images/default-avatar.png";
 
       const token = localStorage.getItem("rush_token");
+      const adminToken = localStorage.getItem("risen_admin_token");
       const res = await fetch(`${API_URL}/ai/generate-scorecard`, {
         method: "POST",
         headers: {
@@ -370,16 +371,17 @@ function ProfileContent() {
           "Authorization": `Bearer ${token}`,
           "X-Auth-Token": token || "",
           "X-App-Version": "1.1.0",
-          "X-Platform": (window as any).Capacitor ? "android" : "web"
+          "X-Platform": (window as any).Capacitor ? "android" : "web",
+          ...(adminToken ? { "X-Admin-Override": "true" } : {})
         },
         body: JSON.stringify({
           username: currentUser.username,
           score: profileStats.best_score ?? 0,
           rank: currentRank ?? 0,
-          is_premium: !!profileStats.is_premium,
-          is_prime: !!profileStats.is_premium,
-          premium: !!profileStats.is_premium,
-          prime: !!profileStats.is_premium,
+          is_premium: !!profileStats.is_premium || !!adminToken,
+          is_prime: !!profileStats.is_premium || !!adminToken,
+          premium: !!profileStats.is_premium || !!adminToken,
+          prime: !!profileStats.is_premium || !!adminToken,
           avatar_path: activeAvatar || fallbackAvatar,
         }),
       });
