@@ -23,9 +23,7 @@ export default function AdminLeagueEvents({ leagueId }: Props) {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${BASE_URL}/league/events`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
-      });
+      const res = await fetch(`${BASE_URL}/league/events`);
       if (!res.ok) throw new Error("Failed to fetch events");
       const data = await res.json();
       setEvents(data);
@@ -50,15 +48,20 @@ export default function AdminLeagueEvents({ leagueId }: Props) {
     setFormError("");
     setFormLoading(true);
     try {
+      const token = localStorage.getItem("risen_admin_token") || localStorage.getItem("rush_token");
       const res = await fetch(`${BASE_URL}/league/events`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}`
+            "Authorization": `Bearer ${token}`,
+            "X-App-Version": "1.1.0"
         },
-        body: JSON.stringify({ ...form, league_id: leagueId }),
+        body: JSON.stringify(form), // Removed league_id: leagueId
       });
-      if (!res.ok) throw new Error((await res.json()).detail || "Failed to create event");
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || "Failed to create event");
+      }
       setShowForm(false);
       setForm({ name: "", start_date: "", end_date: "", is_live_visible: false, live_fee_usd: 30 });
       fetchEvents();
