@@ -127,27 +127,35 @@ export default function AIChat() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full mx-auto bg-[#02070d] overflow-hidden">
+    <div className="flex flex-col h-full w-full mx-auto bg-[#02070d]/40 backdrop-blur-sm overflow-hidden">
       {/* Chat messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 custom-scroll">
+      <div className="flex-1 overflow-y-auto px-4 py-8 space-y-8 custom-scroll relative">
+        {/* Background Visuals */}
+        <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
+           <div className="h-full w-full bg-[radial-gradient(circle_at_center,white_1px,transparent_1px)] bg-[size:40px_40px]" />
+        </div>
+
         {messages.length === 0 && (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 opacity-20">
-                <div className="text-6xl mb-4">🧠</div>
-                <div className="text-xs font-black uppercase tracking-[0.4em]">Neural Core Standby</div>
-                <div className="text-[10px] mt-2 font-bold max-w-[200px]">Awaiting cognitive input...</div>
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 relative">
+                <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(46,219,255,0.05),transparent_70%)] animate-pulse" />
+                <div className="relative">
+                  <div className="text-6xl mb-6 animate-bounce duration-[3s] grayscale opacity-20">🧠</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 italic">Neural Core Standby</div>
+                  <div className="text-[9px] mt-3 font-bold text-white/5 uppercase tracking-[0.2em] max-w-[250px] leading-relaxed">Awaiting cognitive synchronization via elite uplink...</div>
+                </div>
             </div>
         )}
         {messages.map((msg, i) => (
           <AIMessage key={i} {...msg} />
         ))}
         {loading && (
-            <div className="flex items-start gap-3 animate-pulse">
-                <div className="h-8 w-8 rounded-lg bg-risen-primary/20 flex items-center justify-center text-xs">AI</div>
-                <div className="px-4 py-3 rounded-2xl bg-white/5 border border-white/5">
-                    <div className="flex gap-1.5">
-                        <div className="w-1 h-1 bg-white/40 rounded-full animate-bounce" />
-                        <div className="w-1 h-1 bg-white/40 rounded-full animate-bounce [animation-delay:0.2s]" />
-                        <div className="w-1 h-1 bg-white/40 rounded-full animate-bounce [animation-delay:0.4s]" />
+            <div className="flex items-start gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
+                <div className="h-9 w-9 rounded-xl bg-risen-primary/10 border border-risen-primary/30 flex items-center justify-center text-[10px] font-black text-risen-primary shadow-[0_0_20px_rgba(46,219,255,0.1)]">AI</div>
+                <div className="px-6 py-4 rounded-[28px] bg-white/5 border border-white/5 rounded-tl-none">
+                    <div className="flex gap-2">
+                        <div className="w-1.5 h-1.5 bg-risen-primary/40 rounded-full animate-bounce" />
+                        <div className="w-1.5 h-1.5 bg-risen-primary/40 rounded-full animate-bounce [animation-delay:0.2s]" />
+                        <div className="w-1.5 h-1.5 bg-risen-primary/40 rounded-full animate-bounce [animation-delay:0.4s]" />
                     </div>
                 </div>
             </div>
@@ -156,17 +164,21 @@ export default function AIChat() {
       </div>
 
       {/* Input area */}
-      <div className="p-4 border-t border-white/5 bg-[#030913]">
+      <div className="p-6 border-t border-white/5 bg-[#030913]/90 backdrop-blur-xl relative">
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+
         {remainingPrompts !== null && remainingPrompts < 5 && (
-            <div className="mb-2 text-center">
-                <span className="text-[9px] font-black text-amber-400 uppercase tracking-widest">
+            <div className="mb-4 text-center">
+                <span className="text-[9px] font-black text-amber-400 uppercase tracking-[0.3em] bg-amber-400/10 px-4 py-1 rounded-full border border-amber-400/20 italic">
                     Low Sync Capacity: {remainingPrompts} Prompts Remaining
                 </span>
             </div>
         )}
         <AIInput onSend={sendMessage} onUpload={handleUpload} />
-        <div className="mt-2 text-center">
-            <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.5em]">RISEN_COGNITIVE_LAYER_V1.2</span>
+        <div className="mt-4 text-center flex items-center justify-center gap-4 opacity-20">
+            <div className="h-px w-10 bg-white/20" />
+            <span className="text-[8px] font-black text-white uppercase tracking-[0.6em] italic">Neural_Uplink_Encrypted</span>
+            <div className="h-px w-10 bg-white/20" />
         </div>
       </div>
 

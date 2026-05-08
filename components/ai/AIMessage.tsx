@@ -34,18 +34,24 @@ export default function AIMessage({ content, image, role }: Props) {
 
       <div className={`flex flex-col max-w-[85%] ${isUser ? "items-end" : "items-start"}`}>
         {/* Message Bubble */}
-        <div className={`relative px-5 py-4 rounded-[28px] text-[13px] leading-relaxed transition-all duration-500 ${
+        <div className={`relative px-6 py-5 rounded-[32px] text-[13px] leading-relaxed transition-all duration-700 ${
             isUser
-              ? "bg-[#07111d] text-white/90 border border-white/5 rounded-tr-none"
-              : "bg-[#04101a] text-white/85 border border-risen-primary/20 rounded-tl-none shadow-2xl"
+              ? "bg-[#07111d] text-white/90 border border-white/10 rounded-tr-none shadow-xl"
+              : "bg-[#04101a] text-white/85 border border-risen-primary/30 rounded-tl-none shadow-[0_0_40px_rgba(0,0,0,0.5)]"
           }`}
         >
+          {/* Subtle Scanning effect for AI messages */}
+          {!isUser && (
+            <div className="absolute top-0 left-0 w-full h-[2px] bg-risen-primary/20 animate-[scan_3s_linear_infinite] rounded-full" />
+          )}
+
           {image && (
-            <div className="relative group">
+            <div className="relative group overflow-hidden rounded-2xl mb-4">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
                 <img
                     src={image}
                     alt="Neural Output"
-                    className="rounded-2xl mb-4 w-full border border-white/10 shadow-2xl animate-in zoom-in duration-500"
+                    className="rounded-2xl w-full border border-white/10 shadow-2xl transition-transform duration-700 group-hover:scale-105"
                 />
                 <a
                     href={image}
@@ -76,11 +82,18 @@ export default function AIMessage({ content, image, role }: Props) {
                 {copied ? "Node Copied ✓" : "Copy Node"}
               </button>
               {!isUser && (
-                  <span className="text-[8px] font-black uppercase tracking-widest text-white/10">Decrypted</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/10">Decryption Protocol V2.1</span>
               )}
           </div>
         )}
       </div>
+      <style jsx>{`
+        @keyframes scan {
+          0% { top: 0%; opacity: 0; }
+          50% { opacity: 0.5; }
+          100% { top: 100%; opacity: 0; }
+        }
+      `}</style>
     </div>
   );
 }
