@@ -58,7 +58,7 @@ export default function AvatarForge({ onBack }: Props) {
     <div className="h-screen w-full flex flex-col bg-[#02040a] relative overflow-hidden font-sans">
       {/* Visual Flair */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,rgba(46,219,255,0.05),transparent_60%)] pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
       {/* Blueprint Grid Lines */}
       <div className="absolute inset-0 opacity-10 pointer-events-none z-0">

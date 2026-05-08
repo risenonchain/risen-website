@@ -29,7 +29,7 @@ export default function AcademicRoom({ onBack }: Props) {
     <div className="h-screen w-full flex bg-[#01070e] relative overflow-hidden font-sans">
       {/* Visual Flair */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(251,191,36,0.03),transparent_50%)] pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
       {/* Sidebar - Syllabus */}
       <div className="hidden lg:flex w-80 h-full border-r border-white/5 bg-[#020912]/90 backdrop-blur-3xl flex-col p-6 z-20">
@@ -109,7 +109,7 @@ export default function AcademicRoom({ onBack }: Props) {
         </header>
 
         <div className="flex-1 overflow-hidden relative">
-          <div className="absolute inset-0 bg-[url('/grain.png')] opacity-[0.03] pointer-events-none" />
+          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] pointer-events-none" />
           <AIChat />
         </div>
       </div>

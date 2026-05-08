@@ -70,7 +70,7 @@ export default function MarketWarRoom({ onBack }: Props) {
     <div className="h-screen w-full flex flex-col bg-[#01050a] relative overflow-hidden font-sans">
       {/* Visual Flair */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(239,68,68,0.03),transparent_70%)] pointer-events-none" />
-      <div className="absolute inset-0 opacity-[0.03] bg-[url('/grid.svg')] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
       {/* Scanning Laser Line */}
       <motion.div

@@ -13,7 +13,7 @@ export default function NeuralHub({ onBack }: Props) {
       {/* Visual Flair */}
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-risen-primary/40 to-transparent animate-pulse z-20" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(46,219,255,0.05),transparent_60%)] pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.02] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
       {/* Header */}
       <div className="flex items-center justify-between px-8 py-5 border-b border-white/5 bg-[#030913]/90 backdrop-blur-2xl relative z-10">

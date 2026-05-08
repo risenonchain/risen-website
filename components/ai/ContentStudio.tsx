@@ -65,7 +65,7 @@ export default function ContentStudio({ onBack }: Props) {
     <div className="h-screen w-full flex flex-col bg-[#02050b] relative overflow-hidden font-sans">
       {/* Visual Flair */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(168,85,247,0.05),transparent_60%)] pointer-events-none" />
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-[0.03] pointer-events-none" />
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
 
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#020812]/90 backdrop-blur-xl z-20">

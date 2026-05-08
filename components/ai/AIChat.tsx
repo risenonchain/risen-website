@@ -41,17 +41,27 @@ export default function AIChat() {
     setLoading(true);
 
     try {
+      const apiBase = process.env.NEXT_PUBLIC_AI_API_URL || "https://risen-ai-backend.onrender.com";
+      const token = localStorage.getItem("rush_token");
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_AI_API_URL}/ai/chat`,
+        `${apiBase}/ai/chat`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
+            "Authorization": `Bearer ${token}`,
+            "X-Auth-Token": token || "",
+            "X-App-Version": "1.1.0",
+            "X-Platform": (window as any).Capacitor ? "android" : "web",
           },
           body: JSON.stringify({ message: text, session_id: "default", context: {} }),
         }
       );
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || `Neural Error: ${res.status}`);
+      }
 
       const data = await res.json();
 
@@ -82,12 +92,12 @@ export default function AIChat() {
             },
         ]);
       }
-    } catch (err) {
+    } catch (err: any) {
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content: "⚠️ Neural link interrupted. Please try again.",
+          content: `⚠️ Neural link interrupted. ${err.message || "Please try again."}`,
         },
       ]);
     } finally {
@@ -103,10 +113,11 @@ export default function AIChat() {
     ]);
     setLoading(true);
     try {
+      const apiBase = process.env.NEXT_PUBLIC_AI_API_URL || "https://risen-ai-backend.onrender.com";
       const formData = new FormData();
       formData.append("file", file);
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_AI_API_URL}/ai/upload`,
+        `${apiBase}/ai/upload`,
         {
             method: "POST",
             headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` },
