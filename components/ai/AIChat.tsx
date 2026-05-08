@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import AIMessage from "./AIMessage";
 import AIInput from "./AIInput";
+import { BASE_URL } from "@/lib/api";
 
 type Message = {
   role: "user" | "assistant";
@@ -68,10 +70,16 @@ export default function AIChat() {
           { role: "assistant", image: finalUrl },
         ]);
       } else {
-        const reply = data.data?.content || data; // Handle both direct string or nested content
+        const reply = data.data?.content || data.detail || (typeof data === 'string' ? data : null);
+
         setMessages((prev) => [
             ...prev,
-            { role: "assistant", content: typeof reply === 'string' ? reply : "Protocol communication error." },
+            {
+              role: "assistant",
+              content: typeof reply === 'string'
+                ? reply
+                : "⚠️ **Neural Protocol Error.** The Cognitive Layer returned an unprocessable data packet (Status 422). Please verify your identity and retry the link."
+            },
         ]);
       }
     } catch (err) {
@@ -151,12 +159,52 @@ export default function AIChat() {
         {loading && (
             <div className="flex items-start gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
                 <div className="h-9 w-9 rounded-xl bg-risen-primary/10 border border-risen-primary/30 flex items-center justify-center text-[10px] font-black text-risen-primary shadow-[0_0_20px_rgba(46,219,255,0.1)]">AI</div>
-                <div className="px-6 py-4 rounded-[28px] bg-white/5 border border-white/5 rounded-tl-none">
-                    <div className="flex gap-2">
-                        <div className="w-1.5 h-1.5 bg-risen-primary/40 rounded-full animate-bounce" />
-                        <div className="w-1.5 h-1.5 bg-risen-primary/40 rounded-full animate-bounce [animation-delay:0.2s]" />
-                        <div className="w-1.5 h-1.5 bg-risen-primary/40 rounded-full animate-bounce [animation-delay:0.4s]" />
-                    </div>
+                <div className="flex flex-col gap-2 max-w-[85%]">
+                  <div className="px-6 py-5 rounded-[32px] bg-[#04101a] border border-risen-primary/30 rounded-tl-none shadow-2xl relative overflow-hidden">
+                      {/* Premium Thinking Animation */}
+                      <div className="flex items-center gap-3">
+                          <div className="relative h-4 w-4">
+                              <div className="absolute inset-0 border-2 border-risen-primary/20 rounded-full" />
+                              <div className="absolute inset-0 border-2 border-risen-primary border-t-transparent rounded-full animate-spin" />
+                          </div>
+                          <div className="flex gap-1">
+                              <motion.div
+                                  animate={{ opacity: [0.2, 1, 0.2] }}
+                                  transition={{ repeat: Infinity, duration: 1.5, times: [0, 0.5, 1] }}
+                                  className="text-[10px] font-black uppercase tracking-[0.2em] text-risen-primary/60 italic"
+                              >
+                                  Synthesizing
+                              </motion.div>
+                              <motion.span
+                                  animate={{ opacity: [0, 1, 0] }}
+                                  transition={{ repeat: Infinity, duration: 1.5, delay: 0 }}
+                                  className="text-risen-primary/60"
+                              >.</motion.span>
+                              <motion.span
+                                  animate={{ opacity: [0, 1, 0] }}
+                                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.3 }}
+                                  className="text-risen-primary/60"
+                              >.</motion.span>
+                              <motion.span
+                                  animate={{ opacity: [0, 1, 0] }}
+                                  transition={{ repeat: Infinity, duration: 1.5, delay: 0.6 }}
+                                  className="text-risen-primary/60"
+                              >.</motion.span>
+                          </div>
+                      </div>
+
+                      {/* Pulsing Neural Lines */}
+                      <div className="absolute bottom-0 left-0 w-full h-[2px] overflow-hidden">
+                          <motion.div
+                              animate={{ x: ["-100%", "100%"] }}
+                              transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                              className="w-1/3 h-full bg-gradient-to-r from-transparent via-risen-primary to-transparent"
+                          />
+                      </div>
+                  </div>
+                  <div className="px-2">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-white/10 animate-pulse">Neural Pathing Active...</span>
+                  </div>
                 </div>
             </div>
         )}

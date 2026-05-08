@@ -82,7 +82,7 @@ export default function AIMessage({ content, image, role }: Props) {
                 {copied ? "Node Copied ✓" : "Copy Node"}
               </button>
               {!isUser && (
-                  <span className="text-[8px] font-black uppercase tracking-widest text-white/10">Decryption Protocol V2.1</span>
+                  <span className="text-[8px] font-black uppercase tracking-widest text-white/10 group-hover:text-white/20 transition-colors">Decryption Protocol V2.1 Synchronized</span>
               )}
           </div>
         )}

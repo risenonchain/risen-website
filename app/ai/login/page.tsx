@@ -73,57 +73,91 @@ export default function AILoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-risen-navy to-[#18102a] relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(46,219,255,0.08),transparent_70%)] pointer-events-none z-0" />
-      <div className="absolute inset-0 opacity-10 bg-[linear-gradient(#2EDBFF_1px,transparent_1px),linear-gradient(90deg,#2EDBFF_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none z-0" />
+    <div className="min-h-screen flex items-center justify-center bg-[#010913] text-white relative overflow-hidden font-sans">
+
+      {/* 🌌 DYNAMIC BACKGROUND */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(46,219,255,0.12),transparent_70%)] pointer-events-none" />
+      <div className="absolute inset-0 opacity-10 bg-[linear-gradient(#2EDBFF_1px,transparent_1px),linear-gradient(90deg,#2EDBFF_1px,transparent_1px)] bg-[size:50px_50px] pointer-events-none" />
+
+      {/* GLOWING ORBS */}
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-risen-primary/10 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] animate-pulse [animation-delay:2s]" />
 
       <form
         onSubmit={handleSubmit}
-        className="relative z-10 bg-[#101828]/90 p-10 rounded-3xl shadow-2xl w-full max-w-md border border-risen-primary/20 backdrop-blur-xl flex flex-col items-center"
+        className="relative z-10 bg-[#030913]/60 p-10 rounded-[40px] shadow-2xl w-full max-w-md border border-white/5 backdrop-blur-3xl flex flex-col items-center"
       >
-        <Image src="/logo.png" alt="RISEN Logo" width={64} height={64} className="mb-4" />
-        <h2 className="text-3xl font-extrabold text-white mb-2 text-center tracking-tight drop-shadow">RISEN AI Portal</h2>
-        <div className="text-white/80 mb-6 text-center text-base font-medium">
-          Secure access to the RISEN AI ecosystem.<br />
-          <span className="text-risen-primary text-sm uppercase tracking-widest font-black">Authentication Node</span>
+        <div className="relative mb-8 group">
+           <div className="absolute inset-0 rounded-full blur-2xl bg-risen-primary/20 group-hover:bg-risen-primary/40 transition-colors animate-pulse" />
+           <div className="relative h-20 w-20 rounded-full border-2 border-white/10 bg-[#020B1A] flex items-center justify-center overflow-hidden shadow-[0_0_40px_rgba(46,219,255,0.1)]">
+              <Image src="/logo.png" alt="RISEN Logo" width={48} height={48} className="z-10" />
+              <div className="absolute inset-0 border-[1px] border-dashed border-risen-primary/20 rounded-full animate-[spin_20s_linear_infinite]" />
+           </div>
         </div>
-        <input
-          type="email"
-          placeholder="Email address"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          className="w-full mb-4 px-4 py-2 rounded-lg bg-[#0a101a] border border-risen-primary/20 text-white focus:outline-none focus:ring-2 focus:ring-risen-primary/40 transition"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          className="w-full mb-4 px-4 py-2 rounded-lg bg-[#0a101a] border border-risen-primary/20 text-white focus:outline-none focus:ring-2 focus:ring-risen-primary/40 transition"
-          required
-        />
+
+        <h2 className="text-3xl font-black text-white mb-2 text-center uppercase tracking-tighter italic">Cognitive Portal</h2>
+        <div className="text-risen-primary/60 mb-8 text-center text-[10px] uppercase tracking-[0.4em] font-black italic">
+          Neural Network Authorization
+        </div>
+
+        <div className="w-full space-y-4">
+           <div className="relative group">
+              <input
+                type="email"
+                placeholder="IDENTITY_EMAIL"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full px-6 py-4 rounded-2xl bg-[#07111d] border border-white/5 text-white text-xs font-black uppercase tracking-widest outline-none transition-all focus:border-risen-primary/40 focus:bg-[#0a1829] placeholder:text-white/10"
+                required
+              />
+           </div>
+
+           <div className="relative group">
+              <input
+                type="password"
+                placeholder="ACCESS_KEY"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-6 py-4 rounded-2xl bg-[#07111d] border border-white/5 text-white text-xs font-black uppercase tracking-widest outline-none transition-all focus:border-risen-primary/40 focus:bg-[#0a1829] placeholder:text-white/10"
+                required
+              />
+           </div>
+        </div>
 
         {turnstileEnabled && (
-          <div className="mb-4">
+          <div className="mt-6 mb-2 scale-90 opacity-80 hover:opacity-100 transition-opacity">
             <div ref={widgetRef} />
           </div>
         )}
 
-        {error && <div className="text-red-400 mb-4 text-center font-semibold text-sm">{error}</div>}
+        {error && (
+          <div className="mt-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-black uppercase tracking-widest text-center animate-shake">
+            {error}
+          </div>
+        )}
 
         <button
           type="submit"
-          className="w-full py-3 rounded-lg bg-gradient-to-r from-risen-primary to-cyan-700 text-white font-bold text-lg shadow-lg hover:from-cyan-400 hover:to-cyan-700 transition disabled:opacity-60 active:scale-95"
+          className="w-full mt-8 py-5 rounded-2xl bg-risen-primary text-black font-black uppercase text-[11px] tracking-[0.3em] shadow-[0_0_40px_rgba(46,219,255,0.2)] hover:shadow-[0_0_60px_rgba(46,219,255,0.4)] hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 relative overflow-hidden group"
           disabled={loading}
         >
-          {loading ? "AUTHENTICATING..." : "Login"}
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+          <span className="relative z-10">{loading ? "Synchronizing..." : "Initialize Session"}</span>
         </button>
 
-        <div className="mt-6 text-xs text-white/40 text-center uppercase tracking-widest font-bold">
-          All actions are monitored for security.
+        <div className="mt-10 text-[8px] font-black text-white/10 text-center uppercase tracking-[0.6em]">
+          Uplink Monitor: Active
         </div>
       </form>
+
+      <style jsx>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
+      `}</style>
     </div>
   );
 }
