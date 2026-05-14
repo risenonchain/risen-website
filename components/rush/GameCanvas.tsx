@@ -198,7 +198,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, gameMode = "r
     }
 
     drawBackground(ctx, stateRef.current.level, multiplierActive, gameMode);
-    drawItems(ctx, itemsRef.current);
+    drawItems(ctx, itemsRef.current, stateRef.current.isPremium);
     drawParticles(ctx, particlesRef.current, now);
     drawHitEffects(ctx, hitEffectsRef.current, now);
     drawPlayerVault(ctx, playerRef.current, stateRef.current.isPremium);
@@ -465,7 +465,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, gameMode = "r
           stateRef.current = applyCatchEffect(item.type, stateRef.current, performance.now());
 
           const gained = stateRef.current.score - prevScore;
-          const hitText = formatHitText(item.type, gained);
+          const hitText = formatHitText(item.type, gained, stateRef.current.isPremium);
 
           if (isBadItem(item.type)) {
             screenFlashRef.current = { type: "bad", until: performance.now() + 120 };
@@ -743,14 +743,14 @@ function shouldShowCornerGain(type: FallingItemType, gained: number) {
   return gained !== 0;
 }
 
-function formatHitText(type: FallingItemType, gained: number) {
-  if (type === "normal_rsn") return `+${Math.max(gained, 5)}`;
-  if (type === "golden_rsn") return `+${Math.max(gained, 20)}`;
-  if (type === "multiplier") return "2X";
+function formatHitText(type: FallingItemType, gained: number, isPremium: boolean = false) {
+  if (type === "normal_rsn") return `+${gained}`;
+  if (type === "golden_rsn") return `+${gained}`;
+  if (type === "multiplier") return isPremium ? "3X" : "2X";
   if (type === "streak") return "STREAK";
-  if (type === "red_crash_orb") return `${Math.min(gained, -120)}`;
-  if (type === "heavy_drop") return `${Math.min(gained, -80)}`;
-  return `${Math.min(gained, -100)}`;
+  if (type === "red_crash_orb") return `${gained}`;
+  if (type === "heavy_drop") return `${gained}`;
+  return `${gained}`;
 }
 
 function getHitColor(type: FallingItemType) {
@@ -936,7 +936,7 @@ function drawPlayerVault(ctx: CanvasRenderingContext2D, player: Player, isPremiu
   ctx.restore();
 }
 
-function drawItems(ctx: CanvasRenderingContext2D, items: FallingItem[]) {
+function drawItems(ctx: CanvasRenderingContext2D, items: FallingItem[], isPremium: boolean = false) {
   for (const item of items) {
     if (item.type === "normal_rsn") {
       drawRSNCoin(ctx, item, false);
@@ -949,7 +949,7 @@ function drawItems(ctx: CanvasRenderingContext2D, items: FallingItem[]) {
     }
 
     if (item.type === "multiplier") {
-      drawEnergyOrb(ctx, item, "#7dd3fc", "2X");
+      drawEnergyOrb(ctx, item, "#7dd3fc", "2X", isPremium);
       continue;
     }
 
@@ -1020,7 +1020,8 @@ function drawEnergyOrb(
   ctx: CanvasRenderingContext2D,
   item: FallingItem,
   color: string,
-  label: string
+  label: string,
+  isPremium: boolean = false
 ) {
   const cx = item.x + item.size / 2;
   const cy = item.y + item.size / 2;
@@ -1062,7 +1063,10 @@ function drawEnergyOrb(
   ctx.fillStyle = "#ffffff";
   ctx.font = "bold 11px Arial";
   ctx.textAlign = "center";
-  ctx.fillText(label, 0, 4);
+
+  // Use correct label for multiplier based on premium status
+  const displayLabel = label === "2X" ? (isPremium ? "3X" : "2X") : label;
+  ctx.fillText(displayLabel, 0, 4);
 
   ctx.restore();
 }
@@ -1332,7 +1336,7 @@ function drawInGameHUD(
   if (multiplierActive) {
     ctx.font = "bold 14px Inter, Arial";
     ctx.fillStyle = "#7dd3fc";
-    ctx.fillText("● 2X MULTIPLIER", 30, 110);
+    ctx.fillText(`● ${isPremium ? '3X' : '2X'} MULTIPLIER`, 30, 110);
   }
 
   // Top Right: Health/Status

@@ -4,6 +4,7 @@ import { fetchCurrentRushUser, MeResponse, BASE_URL } from "@/lib/api";
 
 interface Fixture {
   id: number;
+  match_id: number | null;
   round: number;
   player1_id: number;
   player2_id: number;
@@ -45,25 +46,13 @@ export default function LeagueFixtures({ leagueId }: Props) {
     init();
   }, [leagueId]);
 
-  const handlePlay = async (fixtureId: number) => {
-    // In a real app, we'd find the match_id associated with this fixture
-    // For now, we assume match_id = fixture_id or we fetch it
-    try {
-        const res = await fetch(`${BASE_URL}/league/events/${leagueId}/matches`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
-        });
-        const matches = await res.json();
-        const match = matches.find((m: any) => m.fixture_id === fixtureId);
-        if (!match) {
-            alert("No match record found for this fixture. Contact Admin.");
-            return;
-        }
-
-        // Trigger game start with league match id
-        window.dispatchEvent(new CustomEvent("risen-rush-start-league", { detail: { matchId: match.id } }));
-    } catch (e) {
-        alert("Sync Error");
+  const handlePlay = async (fixtureId: number, matchId: number | null) => {
+    if (!matchId) {
+        alert("No match record found for this fixture. Contact Admin.");
+        return;
     }
+    // Trigger game start with league match id
+    window.dispatchEvent(new CustomEvent("risen-rush-start-league", { detail: { matchId: matchId } }));
   };
 
   if (loading) return <div className="text-center text-white/60">Loading fixtures...</div>;
@@ -116,7 +105,7 @@ export default function LeagueFixtures({ leagueId }: Props) {
                        </div>
                      ) : isParticipant ? (
                        <button
-                         onClick={() => handlePlay(fix.id)}
+                         onClick={() => handlePlay(fix.id, fix.match_id)}
                          className="bg-amber-400 text-black text-[9px] font-black px-4 py-2 rounded-xl uppercase tracking-widest shadow-lg active:scale-95 transition-all hover:bg-amber-300"
                        >
                          Play
@@ -171,7 +160,7 @@ export default function LeagueFixtures({ leagueId }: Props) {
 
                {!fix.result_submitted && isParticipant && (
                  <button
-                   onClick={() => handlePlay(fix.id)}
+                   onClick={() => handlePlay(fix.id, fix.match_id)}
                    className="w-full mt-6 bg-amber-400 text-black py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg active:scale-95 transition-all"
                  >
                    Initialize Neural Match

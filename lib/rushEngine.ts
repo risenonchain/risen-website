@@ -198,34 +198,41 @@ export function applyCatchEffect(
   let comboCount = state.comboCount;
   let multiplierActiveUntil = state.multiplierActiveUntil;
 
+  // Elite (Premium) gets 3x multiplier, others get 2x
+  const multiplierPower = state.isPremium ? 3 : 2;
   const activeMultiplier =
-    multiplierActiveUntil && multiplierActiveUntil > nowMs ? 2 : 1;
+    multiplierActiveUntil && multiplierActiveUntil > nowMs ? multiplierPower : 1;
 
   // Level 15+ value bonus
   const levelBonus = state.level >= 15 ? 2.5 : 1;
 
-  // Premium 1.1x boost
-  const premiumMultiplier = state.isPremium ? 1.1 : 1;
+  // Base Points logic: Golden (100 for Prime, 20 for Regular), Normal (20 for Prime, 5 for Regular)
+  let baseNormal = state.isPremium ? 20 : 5;
+  let baseGolden = state.isPremium ? 100 : 20;
 
   if (itemType === "normal_rsn") {
     comboCount += 1;
-    score += Math.round(5 * activeMultiplier * getComboMultiplier(comboCount) * levelBonus * premiumMultiplier);
+    score += Math.round(baseNormal * activeMultiplier * getComboMultiplier(comboCount) * levelBonus);
   }
 
   if (itemType === "golden_rsn") {
     comboCount += 1;
-    score += Math.round(20 * activeMultiplier * getComboMultiplier(comboCount) * levelBonus * premiumMultiplier);
+    score += Math.round(baseGolden * activeMultiplier * getComboMultiplier(comboCount) * levelBonus);
   }
 
   if (itemType === "multiplier") {
     comboCount += 1;
     multiplierActiveUntil = nowMs + 5000;
-    score += Math.round(25 * activeMultiplier * levelBonus * premiumMultiplier);
+    // Multiplier item pickup bonus
+    const pickupBonus = state.isPremium ? 50 : 25;
+    score += Math.round(pickupBonus * activeMultiplier * levelBonus);
   }
 
   if (itemType === "streak") {
     comboCount += 2;
-    score += Math.round(40 * activeMultiplier * getComboMultiplier(comboCount) * levelBonus * premiumMultiplier);
+    // Streak bonus logic: Prime gets higher base
+    const baseStreak = state.isPremium ? 100 : 40;
+    score += Math.round(baseStreak * activeMultiplier * getComboMultiplier(comboCount) * levelBonus);
   }
 
   if (itemType === "red_crash_orb") {

@@ -43,12 +43,13 @@ export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId 
         const active = leagues.find((l: any) => l.is_active);
         if (active) {
             setActiveLeagueId(active.id);
-            // Also check registration status for this league
-            const regRes = await fetch(`${BASE_URL}/league/events/${active.id}/registrations`, {
+            // Check status using the new endpoint
+            const statusRes = await fetch(`${BASE_URL}/league/events/${active.id}/my-status`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
             });
-            if (regRes.ok) {
-                // Wait, this endpoint is admin only. We need a user-specific registration check.
+            if (statusRes.ok) {
+                const data = await statusRes.json();
+                setLeagueStatus(data.status);
             }
         }
       } catch (e) {
@@ -60,27 +61,8 @@ export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId 
     fetchActiveLeague();
   }, [propLeagueId]);
 
-  // We need a better way to check registration status for the current user
-  useEffect(() => {
-    if (!activeLeagueId) return;
-    async function checkStatus() {
-        try {
-            const res = await fetch(`${BASE_URL}/league/events/${activeLeagueId}/participants`, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
-            });
-            if (res.ok) {
-                const participants = await res.json();
-                // Check if current user is in participants
-                const me = await fetchCurrentRushUser();
-                const found = participants.find((p: any) => String(p.user_id) === me.id);
-                if (found) {
-                    setLeagueStatus(found.status || "registered");
-                }
-            }
-        } catch (e) {}
-    }
-    checkStatus();
-  }, [activeLeagueId]);
+  // Removed redundant checkStatus effect
+
 
   const leagueId = activeLeagueId || 1;
 

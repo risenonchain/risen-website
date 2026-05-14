@@ -65,6 +65,26 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
     }
   }
 
+  async function handleForceComplete(matchId: number, winnerId?: number) {
+    if (!confirm(`Force complete match ${matchId}?`)) return;
+    setGenerating(true);
+    setError("");
+    try {
+      const res = await fetch(`${BASE_URL}/league/events/${leagueId}/fixtures/${matchId}/force-complete${winnerId ? `?winner_id=${winnerId}` : ""}`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}`
+        },
+      });
+      if (!res.ok) throw new Error((await res.json()).detail || "Failed to force complete match");
+      await fetchFixtures();
+    } catch (err: any) {
+      setError(err.message || "Unknown error");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
   return (
     <div className="bg-[#07111d] p-6 rounded-3xl border border-white/5">
       <div className="flex items-center justify-between mb-6">
@@ -89,6 +109,7 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
                 <th className="px-4 py-3">Neural Entity 2</th>
                 <th className="px-4 py-3">Sync Schedule</th>
                 <th className="px-4 py-3">Protocol Status</th>
+                <th className="px-4 py-3">Actions</th>
             </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -105,8 +126,33 @@ export default function AdminLeagueFixtures({ leagueId }: Props) {
                         <span className="text-yellow-400 text-[10px] font-black uppercase tracking-widest italic bg-yellow-400/10 px-3 py-1 rounded-full border border-yellow-400/20">Pending Sync</span>
                     )}
                 </td>
+                <td className="px-4 py-4">
+                    {!fix.result_submitted && (
+                        <div className="flex gap-2">
+                             <button
+                                onClick={() => handleForceComplete(fix.id, fix.player1_id)}
+                                className="text-[8px] bg-white/5 hover:bg-white/10 px-2 py-1 rounded border border-white/10 uppercase font-black"
+                             >
+                                Win P1
+                             </button>
+                             <button
+                                onClick={() => handleForceComplete(fix.id, fix.player2_id)}
+                                className="text-[8px] bg-white/5 hover:bg-white/10 px-2 py-1 rounded border border-white/10 uppercase font-black"
+                             >
+                                Win P2
+                             </button>
+                             <button
+                                onClick={() => handleForceComplete(fix.id)}
+                                className="text-[8px] bg-red-500/10 text-red-400 hover:bg-red-500/20 px-2 py-1 rounded border border-red-500/20 uppercase font-black"
+                             >
+                                Draw
+                             </button>
+                        </div>
+                    )}
+                </td>
                 </tr>
             ))}
+
             {fixtures.length === 0 && !loading && (
                 <tr>
                     <td colSpan={5} className="py-10 text-center text-white/20 text-xs font-black uppercase tracking-widest">No Fixtures Synchronized</td>

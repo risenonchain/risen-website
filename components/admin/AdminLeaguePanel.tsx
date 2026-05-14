@@ -24,16 +24,16 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminMsg, setAdminMsg] = useState("");
 
-  async function handleProgressGroup() {
+  async function handleInitializeGroup() {
     setAdminLoading(true);
     setAdminMsg("");
     try {
-      const res = await fetch(`${BASE_URL}/league/events/${leagueId}/group/progress`, {
+      const res = await fetch(`${BASE_URL}/league/events/${leagueId}/group/generate`, {
           method: "POST",
           headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
       });
-      if (!res.ok) throw new Error((await res.json()).detail || "Failed to progress group stage");
-      setAdminMsg("Group stage progressed. Winners advanced.");
+      if (!res.ok) throw new Error((await res.json()).detail || "Failed to initialize groups");
+      setAdminMsg("Groups initialized and fixtures generated.");
     } catch (err: any) {
       setAdminMsg(err.message || "Unknown error");
     } finally {
@@ -41,16 +41,16 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
     }
   }
 
-  async function handleGenerateFinals() {
+  async function handleProgressKnockout() {
     setAdminLoading(true);
     setAdminMsg("");
     try {
-      const res = await fetch(`${BASE_URL}/league/events/${leagueId}/finals/generate`, {
+      const res = await fetch(`${BASE_URL}/league/events/${leagueId}/knockout/generate`, {
           method: "POST",
           headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
       });
-      if (!res.ok) throw new Error((await res.json()).detail || "Failed to generate finals");
-      setAdminMsg("Finals fixtures generated.");
+      if (!res.ok) throw new Error((await res.json()).detail || "Failed to progress knockout stage");
+      setAdminMsg("Next knockout round generated.");
     } catch (err: any) {
       setAdminMsg(err.message || "Unknown error");
     } finally {
@@ -137,17 +137,17 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
                 <div className="flex gap-4">
                     <button
                         className="bg-amber-400 text-black font-black px-6 py-3 rounded-2xl shadow-lg hover:bg-amber-300 transition-all active:scale-95 text-[10px] uppercase tracking-widest"
-                        onClick={handleProgressGroup}
+                        onClick={handleInitializeGroup}
                         disabled={adminLoading}
                     >
-                        Progress Group Stage
+                        Initialize Group Stage
                     </button>
                     <button
                         className="bg-risen-primary text-black font-black px-6 py-3 rounded-2xl shadow-lg hover:bg-blue-400 transition-all active:scale-95 text-[10px] uppercase tracking-widest"
-                        onClick={handleGenerateFinals}
+                        onClick={handleProgressKnockout}
                         disabled={adminLoading}
                     >
-                        Generate Finals Matrix
+                        Progress Next Round (Knockout)
                     </button>
                 </div>
             </div>
