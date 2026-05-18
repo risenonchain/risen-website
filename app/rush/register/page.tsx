@@ -46,6 +46,11 @@ function RegisterContent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
@@ -166,6 +171,11 @@ function RegisterContent() {
       return;
     }
 
+    if (!agreedToTerms) {
+      setError("Please agree to the Terms and Privacy Policy");
+      return;
+    }
+
     if (turnstileEnabled && !turnstileToken) {
       setError("Please complete the verification challenge.");
       return;
@@ -181,6 +191,8 @@ function RegisterContent() {
           username: finalUsername,
           password,
           referral_code: referralCodeFromUrl || undefined,
+          agreed_to_terms: agreedToTerms,
+          marketing_consent: marketingConsent,
         },
         turnstileToken
       );
@@ -374,6 +386,56 @@ function RegisterContent() {
                   </div>
                 ) : null}
 
+                <div className="space-y-4 pt-2">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-5 items-center">
+                      <input
+                        id="agreedToTerms"
+                        name="agreedToTerms"
+                        type="checkbox"
+                        checked={agreedToTerms}
+                        onChange={(e) => setAgreedToTerms(e.target.checked)}
+                        required
+                        className="h-4 w-4 rounded border-white/10 bg-white/5 text-risen-primary focus:ring-risen-primary/30"
+                      />
+                    </div>
+                    <div className="text-xs text-white/60 leading-normal">
+                      I agree to the{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowTermsModal(true)}
+                        className="font-semibold text-risen-primary hover:text-white"
+                      >
+                        Terms of Service
+                      </button>{" "}
+                      and{" "}
+                      <button
+                        type="button"
+                        onClick={() => setShowPrivacyModal(true)}
+                        className="font-semibold text-risen-primary hover:text-white"
+                      >
+                        Privacy Policy
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-5 items-center">
+                      <input
+                        id="marketingConsent"
+                        name="marketingConsent"
+                        type="checkbox"
+                        checked={marketingConsent}
+                        onChange={(e) => setMarketingConsent(e.target.checked)}
+                        className="h-4 w-4 rounded border-white/10 bg-white/5 text-risen-primary focus:ring-risen-primary/30"
+                      />
+                    </div>
+                    <div className="text-xs text-white/60 leading-normal">
+                      I want to receive marketing emails and updates about RISEN Rush.
+                    </div>
+                  </div>
+                </div>
+
                 {error ? (
                   <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
                     {error}
@@ -426,6 +488,108 @@ export default function RushRegisterPage() {
       }
     >
       <RegisterContent />
+
+      <LegalModal
+        isOpen={showTermsModal}
+        onClose={() => setShowTermsModal(false)}
+        title="Terms of Service"
+      >
+        <div className="space-y-4">
+          <p>
+            Welcome to RISEN Rush. By using our service, you agree to these terms.
+          </p>
+          <h4 className="font-bold text-white">1. Account Security</h4>
+          <p>
+            You are responsible for maintaining the confidentiality of your account credentials.
+          </p>
+          <h4 className="font-bold text-white">2. Point System</h4>
+          <p>
+            Points earned in RISEN Rush are subject to our verification and may be modified if fraudulent activity is detected.
+            The RISEN value for RISEN Rush points is determined solely by the market value of the RISEN token.
+          </p>
+          <h4 className="font-bold text-white">3. Conduct</h4>
+          <p>
+            Any attempt to manipulate the game or system using bots or exploits will result in permanent account suspension.
+          </p>
+          <h4 className="font-bold text-white">4. Liability</h4>
+          <p>
+            RISEN Rush is provided "as is" without any warranties of any kind.
+          </p>
+        </div>
+      </LegalModal>
+
+      <LegalModal
+        isOpen={showPrivacyModal}
+        onClose={() => setShowPrivacyModal(false)}
+        title="Privacy Policy"
+      >
+        <div className="space-y-4">
+          <p>
+            Your privacy is important to us. This policy explains how we handle your data.
+          </p>
+          <h4 className="font-bold text-white">1. Data Collection</h4>
+          <p>
+            We collect your email, username, and game performance data to provide and improve our services.
+          </p>
+          <h4 className="font-bold text-white">2. Marketing Consent</h4>
+          <p>
+            If you opt-in, we will send you updates and marketing materials. You can unsubscribe at any time.
+          </p>
+          <h4 className="font-bold text-white">3. Data Security</h4>
+          <p>
+            We implement industry-standard security measures to protect your information.
+          </p>
+          <h4 className="font-bold text-white">4. Third-Party Services</h4>
+          <p>
+            We use Cloudflare Turnstile for bot protection and may use other third-party services for analytics and payment processing.
+          </p>
+        </div>
+      </LegalModal>
     </Suspense>
+  );
+}
+
+function LegalModal({
+  isOpen,
+  title,
+  onClose,
+  children,
+}: {
+  isOpen: boolean;
+  title: string;
+  onClose: () => void;
+  children: React.ReactNode;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+      <div className="relative w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-[32px] border border-white/10 bg-[#07111d] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/5 p-6">
+          <h3 className="text-xl font-bold">{title}</h3>
+          <button
+            onClick={onClose}
+            className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="overflow-y-auto p-6 text-sm text-white/70 leading-relaxed custom-scroll max-h-[calc(80vh-80px)]">
+          {children}
+        </div>
+      </div>
+      <style jsx>{`
+        .custom-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+      `}</style>
+    </div>
   );
 }

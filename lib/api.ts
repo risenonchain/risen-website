@@ -92,6 +92,14 @@ export type WalletResponse = {
   vault_trials: number;
 };
 
+export type HistoryEntry = {
+  month: string;
+  best_score: number;
+  best_level: number;
+};
+
+export type HistoryResponse = HistoryEntry[];
+
 export type StartRushSessionResponse = {
   session_id: number;
   session_token: string;
@@ -209,6 +217,8 @@ export async function registerRushUser(
     email: string;
     password: string;
     referral_code?: string;
+    agreed_to_terms: boolean;
+    marketing_consent: boolean;
   },
   turnstileToken?: string | null
 ) {
@@ -415,6 +425,10 @@ export async function fetchMyRedemptionRequests(): Promise<
   RedemptionRequestResponse[]
 > {
   return request("/profile/redemptions");
+}
+
+export async function fetchMyNeuralHistory(): Promise<HistoryResponse> {
+  return request("/profile/history");
 }
 
 export async function claimAdReward(): Promise<WalletResponse> {

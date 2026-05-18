@@ -12,6 +12,7 @@ const LeagueLiveBroadcast = dynamic(() => import("./LeagueLiveBroadcast"), { ssr
 type Props = {
   isPremium?: boolean;
   leagueId?: number;
+  onHome?: () => void;
 };
 
 const TABS = [
@@ -24,7 +25,7 @@ const TABS = [
 
 type LeagueStatus = "none" | "registered" | "disqualified" | "eliminated";
 
-export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId }: Props) {
+export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId, onHome }: Props) {
   const [tab, setTab] = useState("standings");
   const [registering, setRegistering] = useState(false);
   const [error, setError] = useState("");
@@ -195,6 +196,17 @@ export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId 
             )}
           </div>
         </>
+      )}
+
+      {onHome && (
+        <div className="mt-10 pb-6 px-6">
+          <button
+            onClick={onHome}
+            className="w-full py-5 rounded-2xl bg-white/5 border border-white/10 text-white/60 font-black uppercase text-[10px] tracking-[0.4em] hover:bg-white/10 hover:text-white transition-all active:scale-95 shadow-lg"
+          >
+            ← Back to Lobby
+          </button>
+        </div>
       )}
 
       <style jsx>{`

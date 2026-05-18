@@ -15,6 +15,7 @@ const SIDEBAR_LINKS = [
   { label: "Redemptions", icon: BadgeDollarSign, href: "/admin/redemptions" },
   { label: "News", icon: Newspaper, href: "/admin/news" },
   { label: "League Management", icon: Trophy, href: "/admin/league" },
+  { label: "Analytics & Seasons", icon: LayoutDashboard, href: "/admin/analytics" },
   { label: "Modal Management", icon: Calendar, href: "/admin/modals" },
   { label: "Audit Logs", icon: ScrollText, href: "/admin/audit" },
 ];

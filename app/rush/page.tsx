@@ -30,11 +30,13 @@ import {
   changeRushPassword,
   fetchRushReferralInfo,
   fetchMyRedemptionRequests,
+  fetchMyNeuralHistory,
   createRedemptionRequest,
   startLeagueSession,
   finishLeagueSession,
   ReferralInfoResponse,
   RedemptionRequestResponse,
+  HistoryResponse,
   BASE_URL
 } from "@/lib/api";
 
@@ -998,6 +1000,9 @@ function LobbyView({
                {/* AI Scorecard Node */}
                <ScorecardModule user={user} stats={stats} isPremium={isPremium} />
 
+               {/* Neural History Node */}
+               <HistoryModule />
+
                {/* Settings Sub-Module */}
                <EditProfileModule user={user} stats={stats} onReload={onReloadAll} />
 
@@ -1014,7 +1019,7 @@ function LobbyView({
 
       {/* Contest Panel */}
       <OverlayPanel isOpen={activePanel === 'contest'} title="Risen League" onClose={() => setActivePanel(null)}>
-        <LeaguePanel isPremium={stats?.is_premium} />
+        <LeaguePanel isPremium={stats?.is_premium} onHome={() => setActivePanel(null)} />
       </OverlayPanel>
 
       {/* Config Panel */}
@@ -1225,6 +1230,40 @@ function ReferralModule({ stats }: any) {
         }} className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-black uppercase text-[10px] tracking-[0.2em] active:scale-95">Copy Neural Link</button>
      </div>
   );
+}
+
+function HistoryModule() {
+   const [history, setHistory] = useState<HistoryResponse>([]);
+   const [loading, setLoading] = useState(true);
+
+   useEffect(() => {
+      fetchMyNeuralHistory().then(setHistory).catch(() => {}).finally(() => setLoading(false));
+   }, []);
+
+   return (
+      <div className="p-7 rounded-[40px] border border-white/5 bg-[#030913] space-y-4 shadow-inner">
+         <div className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-2">Neural History (Last 12 Months)</div>
+
+         <div className="max-h-[250px] overflow-y-auto pr-2 custom-scroll space-y-3">
+            {loading ? (
+               <div className="py-10 text-center italic text-white/10 uppercase tracking-widest text-[9px]">Scanning Logs...</div>
+            ) : history.length > 0 ? history.map((h, i) => (
+               <div key={i} className="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center justify-between">
+                  <div>
+                     <div className="text-[8px] font-black text-white/20 uppercase mb-1">Lifecycle</div>
+                     <div className="text-[10px] font-black text-amber-400 italic">{h.month}</div>
+                  </div>
+                  <div className="text-right">
+                     <div className="text-[8px] font-black text-white/20 uppercase mb-1">Peak Stats</div>
+                     <div className="text-[10px] font-black text-white italic">{h.best_score.toLocaleString()} PTS / LVL {h.best_level}</div>
+                  </div>
+               </div>
+            )) : (
+               <div className="py-10 text-center italic text-white/10 uppercase tracking-widest text-[9px]">No historical data found</div>
+            )}
+         </div>
+      </div>
+   );
 }
 
 function EditProfileModule({ user, stats, onReload }: any) {
