@@ -472,22 +472,6 @@ function RegisterContent() {
           </div>
         </div>
       </div>
-    </main>
-  );
-}
-
-export default function RushRegisterPage() {
-  return (
-    <Suspense
-      fallback={
-        <main className="flex min-h-screen items-center justify-center bg-[#02070d] text-white">
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white/70">
-            Loading register page...
-          </div>
-        </main>
-      }
-    >
-      <RegisterContent />
 
       <LegalModal
         isOpen={showTermsModal}
@@ -545,6 +529,22 @@ export default function RushRegisterPage() {
           </p>
         </div>
       </LegalModal>
+    </main>
+  );
+}
+
+export default function RushRegisterPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-[#02070d] text-white">
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-sm text-white/70">
+            Loading register page...
+          </div>
+        </main>
+      }
+    >
+      <RegisterContent />
     </Suspense>
   );
 }
