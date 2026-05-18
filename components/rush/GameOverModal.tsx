@@ -44,7 +44,7 @@ export default function GameOverModal({
               <h3 className="text-xl font-black text-white uppercase tracking-tighter italic">Risen Prime Elite</h3>
               <p className="text-xs text-white/60 mt-1 leading-relaxed">
                 Unlock <span className="text-amber-400 font-bold">Unlimited Trials</span>,
-                <span className="text-amber-400 font-bold"> 1.1x Points</span>, and enter the
+                <span className="text-amber-400 font-bold"> Enhanced Multipliers</span>, and enter the
                 <span className="text-amber-400 font-bold"> Global League</span>.
               </p>
               <button

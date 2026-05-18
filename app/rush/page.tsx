@@ -10,6 +10,7 @@ import LeaguePanel from "@/components/rush/LeaguePanel";
 import NotificationToast from "@/components/NotificationToast";
 import { initializeAdMob, showRewardedAd } from "@/lib/admob";
 import { rushAudio } from "@/lib/rushAudio";
+import { applyAndroidFinetuning } from "@/lib/androidFinetuning";
 import {
   claimAdReward,
   clearRushAuth,
@@ -99,6 +100,7 @@ function RushContent() {
   const [liveElapsedSeconds, setLiveElapsedSeconds] = useState(0);
   const [liveComboMultiplier, setLiveComboMultiplier] = useState(1);
   const [liveMultiplierActive, setLiveMultiplierActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const [finalScore, setFinalScore] = useState(0);
   const [finalLevel, setFinalLevel] = useState(1);
@@ -171,6 +173,55 @@ function RushContent() {
       rushAudio.setEnabled(next);
     }
   }, [soundEnabled]);
+
+  const pauseGame = useCallback(() => {
+    setIsPaused(true);
+  }, []);
+
+  const resumeGame = useCallback(() => {
+    setIsPaused(false);
+  }, []);
+
+  const togglePause = useCallback(() => {
+    setIsPaused(prev => !prev);
+  }, []);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        score: number;
+        lives: number;
+        level: number;
+        elapsedSeconds: number;
+        comboMultiplier: number;
+        multiplierActive: boolean;
+        isPaused: boolean;
+      }>;
+
+      setLiveScore(customEvent.detail.score);
+      setLiveLives(customEvent.detail.lives);
+      setLiveLevel(customEvent.detail.level);
+      setLiveElapsedSeconds(customEvent.detail.elapsedSeconds);
+      setLiveComboMultiplier(customEvent.detail.comboMultiplier);
+      setLiveMultiplierActive(customEvent.detail.multiplierActive);
+      setIsPaused(customEvent.detail.isPaused);
+    };
+
+    window.addEventListener("risen-rush-update", handler as EventListener);
+    return () => {
+      window.removeEventListener("risen-rush-update", handler as EventListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cleanup: () => void = () => {};
+    if (typeof window !== "undefined" && (window as any).Capacitor) {
+      applyAndroidFinetuning(isPaused, togglePause).then(fn => {
+        if (fn) cleanup = fn;
+      });
+    }
+    return () => cleanup();
+  }, [isPaused, togglePause]);
 
   const loadWallet = useCallback(async () => {
     try {
@@ -273,6 +324,7 @@ function RushContent() {
         elapsedSeconds: number;
         comboMultiplier: number;
         multiplierActive: boolean;
+        isPaused: boolean;
       }>;
 
       setLiveScore(customEvent.detail.score);
@@ -281,6 +333,7 @@ function RushContent() {
       setLiveElapsedSeconds(customEvent.detail.elapsedSeconds);
       setLiveComboMultiplier(customEvent.detail.comboMultiplier);
       setLiveMultiplierActive(customEvent.detail.multiplierActive);
+      setIsPaused(customEvent.detail.isPaused);
     };
 
     window.addEventListener("risen-rush-update", handler as EventListener);
@@ -775,28 +828,28 @@ function LobbyView({
                  <InfoItem
                     color="#facc15"
                     label="Standard RSN"
-                    value="+5 Pts"
+                    value={isPremium ? "+10 Pts" : "+5 Pts"}
                     desc="Common network token. Essential for stability."
                     icon="●"
                  />
                  <InfoItem
                     color="#fde68a"
                     label="Golden Protocol"
-                    value="+20 Pts"
+                    value={isPremium ? "+30 Pts" : "+20 Pts"}
                     desc="Rare high-value node. Highly recommended."
                     icon="★"
                  />
                  <InfoItem
                     color="#7dd3fc"
-                    label="2X Multiplier"
-                    value="+25 Pts"
-                    desc="Active for 5s. Double all incoming data."
+                    label={isPremium ? "3X Multiplier" : "2X Multiplier"}
+                    value={isPremium ? "+35 Pts" : "+25 Pts"}
+                    desc="Active for 5s. Multiplies all incoming data."
                     icon="⚡"
                  />
                  <InfoItem
                     color="#c4b5fd"
                     label="Streak Surge"
-                    value="+40 Pts"
+                    value={isPremium ? "+60 Pts" : "+40 Pts"}
                     desc="Instant combo boost. Maximum efficiency."
                     icon="◈"
                  />
@@ -831,6 +884,13 @@ function LobbyView({
                  <div className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400 mb-2">Combo Logic</div>
                  <p className="text-[11px] text-white/60 leading-relaxed uppercase italic font-bold">
                     Catch consecutive nodes to unlock 1.2x (3 catches), 1.5x (6 catches), and 2x (10+ catches) multipliers. Missing a good node or hitting a hazard resets the combo.
+                 </p>
+              </div>
+
+              <div className="mt-4 p-6 rounded-[35px] border border-risen-primary/10 bg-risen-primary/5">
+                 <div className="text-[10px] font-black uppercase tracking-[0.3em] text-risen-primary mb-2">Deep Depth Sync (Lvl 15+)</div>
+                 <p className="text-[11px] text-white/60 leading-relaxed uppercase italic font-bold">
+                    Levels 15 and above trigger a 2.5x points multiplier but face significantly faster hazards and increased corruption rolls.
                  </p>
               </div>
 

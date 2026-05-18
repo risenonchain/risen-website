@@ -206,9 +206,9 @@ export function applyCatchEffect(
   // Level 15+ value bonus
   const levelBonus = state.level >= 15 ? 2.5 : 1;
 
-  // Base Points logic: Golden (100 for Prime, 20 for Regular), Normal (20 for Prime, 5 for Regular)
-  let baseNormal = state.isPremium ? 20 : 5;
-  let baseGolden = state.isPremium ? 100 : 20;
+  // Base Points logic: Golden (30 for Prime, 20 for Regular), Normal (10 for Prime, 5 for Regular)
+  let baseNormal = state.isPremium ? 10 : 5;
+  let baseGolden = state.isPremium ? 30 : 20;
 
   if (itemType === "normal_rsn") {
     comboCount += 1;
@@ -224,14 +224,14 @@ export function applyCatchEffect(
     comboCount += 1;
     multiplierActiveUntil = nowMs + 5000;
     // Multiplier item pickup bonus
-    const pickupBonus = state.isPremium ? 50 : 25;
+    const pickupBonus = state.isPremium ? 35 : 25;
     score += Math.round(pickupBonus * activeMultiplier * levelBonus);
   }
 
   if (itemType === "streak") {
     comboCount += 2;
     // Streak bonus logic: Prime gets higher base
-    const baseStreak = state.isPremium ? 100 : 40;
+    const baseStreak = state.isPremium ? 60 : 40;
     score += Math.round(baseStreak * activeMultiplier * getComboMultiplier(comboCount) * levelBonus);
   }
 

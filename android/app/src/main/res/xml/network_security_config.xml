@@ -3,6 +3,7 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">app.risenonchain.net</domain>
         <domain includeSubdomains="true">risen-rush-backend.onrender.com</domain>
+        <domain includeSubdomains="true">risen-ai-backend.onrender.com</domain>
         <domain includeSubdomains="true">paystack.com</domain>
     </domain-config>
 </network-security-config>
