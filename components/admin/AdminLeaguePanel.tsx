@@ -23,53 +23,6 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
   const [tab, setTab] = useState("events");
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminMsg, setAdminMsg] = useState("");
-  const [seasonName, setSeasonName] = useState("");
-
-  async function handleResetSeason() {
-    if (!seasonName) return alert("Please enter a season name");
-    if (!confirm("CRITICAL ACTION: This will ARCHIVE the current leaderboard and start a FRESH season. Players keep their points, but rankings reset to zero. Continue?")) return;
-
-    setAdminLoading(true);
-    setAdminMsg("");
-    try {
-      const res = await fetch(`${BASE_URL}/admin/seasons/reset`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}`
-        },
-        body: JSON.stringify({ name: seasonName })
-      });
-      if (res.ok) {
-        alert("Season Reset Successful. Leaderboard is now fresh.");
-        setSeasonName("");
-      }
-    } catch (e) {
-      alert("Reset failed");
-    } finally {
-      setAdminLoading(false);
-    }
-  };
-
-  async function handleHardReset() {
-    if (!confirm("☢️ NUCLEAR OPTION: This will PERMANENTLY DELETE all global game sessions and RESET all user best scores to zero. This cannot be undone. Are you absolutely sure?")) return;
-    if (!confirm("FINAL CONFIRMATION: Wipe all non-league scores and reset user records?")) return;
-
-    setAdminLoading(true);
-    setAdminMsg("");
-    try {
-      const res = await fetch(`${BASE_URL}/admin/leaderboard/hard-reset`, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
-      });
-      if (!res.ok) throw new Error((await res.json()).detail || "Hard reset failed");
-      alert("System Wiped Clean. Leaderboard is now empty.");
-    } catch (err: any) {
-      alert(err.message || "Unknown error");
-    } finally {
-      setAdminLoading(false);
-    }
-  }
 
   async function handleInitializeGroup() {
     setAdminLoading(true);
@@ -299,41 +252,6 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
                   >
                     Eliminate
                   </button>
-              </div>
-            </div>
-
-            {/* Season Control (Moved from Reports) */}
-            <div className="p-6 rounded-[30px] border border-amber-400/20 bg-amber-400/5">
-              <h3 className="text-lg font-black text-white mb-2 uppercase italic tracking-widest text-amber-400">Manual Season Initialization</h3>
-              <p className="text-white/30 text-[10px] font-bold uppercase mb-6 leading-relaxed">
-                Starting a new season will archive the current leaderboard. Players retain their points, but the active rankings reset to zero.
-              </p>
-
-              <div className="flex flex-col md:flex-row gap-4">
-                <input
-                  value={seasonName}
-                  onChange={e => setSeasonName(e.target.value)}
-                  placeholder="ENTER NEW SEASON NAME"
-                  className="flex-1 bg-black/40 border border-white/10 rounded-2xl p-4 text-[10px] font-black uppercase text-white outline-none focus:border-amber-400/50"
-                />
-                <button
-                  disabled={adminLoading}
-                  onClick={handleResetSeason}
-                  className="px-8 py-4 bg-amber-400 text-black font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50"
-                >
-                  {adminLoading ? "INITIALIZING..." : "START NEW SEASON"}
-                </button>
-              </div>
-
-              <div className="mt-8 pt-8 border-t border-white/5">
-                <button
-                  onClick={handleHardReset}
-                  disabled={adminLoading}
-                  className="flex items-center gap-2 text-red-500/50 hover:text-red-500 text-[10px] font-black uppercase tracking-widest transition-colors"
-                >
-                  <span className="h-2 w-2 rounded-full bg-red-500" />
-                  Nuclear Reset: Wipe All Records
-                </button>
               </div>
             </div>
             {adminMsg && (

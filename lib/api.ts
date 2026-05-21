@@ -27,6 +27,15 @@ export type MeResponse = {
   wallet_address?: string;
   avatar_url?: string;
   generated_avatar_url?: string;
+  is_premium?: boolean;
+  premium_expires_at?: string;
+};
+
+export type AnnouncementResponse = {
+  id: number;
+  message: string;
+  is_active: boolean;
+  created_at: string;
 };
 
 export type LeaderboardEntry = {
@@ -291,6 +300,10 @@ export async function loginRushUser(
 
 export async function fetchCurrentRushUser(): Promise<MeResponse> {
   return request("/auth/me");
+}
+
+export async function fetchActiveAnnouncement(): Promise<AnnouncementResponse | null> {
+  return request("/announcements/active");
 }
 
 /* =========================

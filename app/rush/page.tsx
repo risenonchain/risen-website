@@ -34,6 +34,8 @@ import {
   createRedemptionRequest,
   startLeagueSession,
   finishLeagueSession,
+  fetchActiveAnnouncement,
+  AnnouncementResponse,
   ReferralInfoResponse,
   RedemptionRequestResponse,
   HistoryResponse,
@@ -71,6 +73,7 @@ function RushContent() {
   const [profileStats, setProfileStats] = useState<ProfileStatsResponse | null>(null);
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const [activeAnnouncement, setActiveAnnouncement] = useState<AnnouncementResponse | null>(null);
 
   const [activePanel, setActivePanel] = useState<"info" | "settings" | "contest" | "profile" | "ranks" | null>(null);
   const [rankTab, setRankTab] = useState<"score" | "level">("score");
@@ -270,12 +273,14 @@ function RushContent() {
     }
 
     try {
-      const [me, stats] = await Promise.all([
+      const [me, stats, announcement] = await Promise.all([
         fetchCurrentRushUser(),
         fetchRushProfileStats(),
+        fetchActiveAnnouncement()
       ]);
       setCurrentUser(me);
       setProfileStats(stats);
+      setActiveAnnouncement(announcement);
       localStorage.setItem("risen_rush_username", me.username);
       await loadWallet();
     } catch {
@@ -640,6 +645,7 @@ function RushContent() {
           vaultTrials={vaultTrialsRemaining}
           totalTrials={trialsRemaining}
           isPremium={profileStats?.is_premium}
+          announcement={activeAnnouncement}
           onStart={handleStart}
           isStarting={isStarting}
           startError={startError}
@@ -678,6 +684,7 @@ function LobbyView({
   vaultTrials,
   totalTrials,
   isPremium,
+  announcement,
   onStart,
   isStarting,
   startError,
@@ -700,9 +707,39 @@ function LobbyView({
   onVerifyManual,
   isPaymentLoading
 }: any) {
+  // Calculate premium days left
+  const daysLeft = isPremium && user?.premium_expires_at ? Math.max(0, Math.ceil((new Date(user.premium_expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : null;
+
   return (
     <div className="relative flex flex-col w-full min-h-screen pb-32 md:pb-44 overflow-y-auto font-sans">
       <div className={`absolute inset-0 -z-10 ${isPremium ? "bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.12),transparent_30%)]" : "bg-[radial-gradient(circle_at_top_right,rgba(46,219,255,0.14),transparent_30%)]"}`} />
+
+      {/* Announcements Bar */}
+      {(announcement || daysLeft !== null) && (
+        <div className="w-full bg-black/40 backdrop-blur-md border-b border-white/5 py-3 px-6 overflow-hidden">
+          <div className="max-w-7xl mx-auto flex items-center gap-6 overflow-hidden whitespace-nowrap">
+            <div className="flex-1 flex items-center gap-4 animate-[marquee_20s_linear_infinite]">
+              {daysLeft !== null && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,1)]" />
+                  <span className="text-[10px] font-black uppercase text-amber-400 tracking-widest italic">
+                    Prime Membership: {daysLeft} Days Remaining
+                  </span>
+                </div>
+              )}
+              {announcement && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="h-1.5 w-1.5 rounded-full bg-risen-primary shadow-[0_0_10px_rgba(46,219,255,1)]" />
+                  <span className="text-[10px] font-black uppercase text-white/70 tracking-[0.2em]">
+                    System Announcement: {announcement.message}
+                  </span>
+                </div>
+              )}
+              {/* Duplicate for seamless loop if needed, but for now simple marquee is fine */}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Header */}
       <div className="w-full max-w-7xl mx-auto px-6 py-8 flex items-center justify-between">
@@ -1062,6 +1099,10 @@ function LobbyView({
       </OverlayPanel>
 
       <style jsx>{`
+        @keyframes marquee {
+          0% { transform: translateX(100%); }
+          100% { transform: translateX(-100%); }
+        }
         @keyframes scan {
           0% { top: 0%; }
           100% { top: 100%; }
