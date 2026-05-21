@@ -7,6 +7,7 @@ interface LeagueEvent {
   start_date: string;
   end_date: string;
   is_active: boolean;
+  current_stage: string;
   created_at: string;
 }
 
@@ -171,6 +172,7 @@ export default function AdminLeagueEvents({ leagueId }: Props) {
             <tr className="text-white/40 text-[10px] font-black uppercase tracking-widest border-b border-white/5">
                 <th className="px-4 py-3">Event Name</th>
                 <th className="px-4 py-3 text-center">Lifecycle</th>
+                <th className="px-4 py-3 text-center">Stage</th>
                 <th className="px-4 py-3 text-center">Status</th>
                 <th className="px-4 py-3 text-right">Protocol Action</th>
             </tr>
@@ -182,6 +184,9 @@ export default function AdminLeagueEvents({ leagueId }: Props) {
                 <td className="px-4 py-4 text-center">
                     <div className="text-[10px] text-white font-bold">{new Date(event.start_date).toLocaleDateString()}</div>
                     <div className="text-[8px] text-white/20 font-black uppercase tracking-widest mt-1">To {new Date(event.end_date).toLocaleDateString()}</div>
+                </td>
+                <td className="px-4 py-4 text-center">
+                    <span className="text-amber-400 text-[9px] font-black uppercase tracking-widest bg-amber-400/10 px-2 py-1 rounded border border-amber-400/20">{event.current_stage || 'N/A'}</span>
                 </td>
                 <td className="px-4 py-4 text-center">
                     {event.is_active ? (

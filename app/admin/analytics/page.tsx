@@ -7,8 +7,6 @@ import { BarChart3, Download, RefreshCcw, Users, Gamepad2, ShieldAlert } from "l
 export default function AnalyticsPage() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [resetting, setRegistering] = useState(false);
-  const [seasonName, setSeasonName] = useState("");
 
   const fetchStats = async () => {
     try {
@@ -31,7 +29,7 @@ export default function AnalyticsPage() {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `risen_users_${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `risen_report_${new Date().toISOString().split('T')[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -43,10 +41,10 @@ export default function AnalyticsPage() {
 
   const handleResetSeason = async () => {
     if (!seasonName) return alert("Please enter a season name");
-    if (!confirm("CRITICAL ACTION: This will clear the current leaderboard for all players. Continue?")) return;
+    if (!confirm("CRITICAL ACTION: This will ARCHIVE the current leaderboard and start a FRESH season. Players keep their points, but rankings reset to zero. Continue?")) return;
 
     try {
-      setRegistering(true);
+      setResetting(true);
       const res = await fetch(`${BASE_URL}/admin/seasons/reset`, {
         method: "POST",
         headers: {
@@ -63,14 +61,14 @@ export default function AnalyticsPage() {
     } catch (e) {
       alert("Reset failed");
     } finally {
-      setRegistering(false);
+      setResetting(false);
     }
   };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-black uppercase italic tracking-tighter text-white">Neural Analytics</h1>
+        <h1 className="text-3xl font-black uppercase italic tracking-tighter text-white">Neural Reports</h1>
         <button
             onClick={handleExport}
             className="flex items-center gap-2 px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-emerald-500/20 transition-all"
@@ -81,40 +79,20 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Overview Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard label="Total Entities" value={stats?.total_users ?? 0} icon={Users} color="text-risen-primary" />
         <StatCard label="Neural Cycles" value={stats?.total_sessions ?? 0} icon={Gamepad2} color="text-amber-400" />
         <StatCard label="Prime Protocols" value={stats?.premium_users ?? 0} icon={ShieldAlert} color="text-purple-400" />
-        <StatCard label="Vaulted Points" value={stats?.total_points_in_vaults?.toLocaleString() ?? 0} icon={BarChart3} color="text-emerald-400" />
       </div>
 
-      {/* Season Control */}
-      <div className="rounded-[40px] border border-white/5 bg-[#101828] p-10 relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 p-8 opacity-5">
-            <RefreshCcw className="w-32 h-32 rotate-12" />
-        </div>
-
-        <div className="relative z-10">
-            <h2 className="text-xl font-black uppercase italic text-amber-400 mb-2">Manual Season Initialization</h2>
-            <p className="text-white/40 text-sm font-bold uppercase max-w-2xl mb-8 leading-relaxed">
-                Starting a new season will archive the current leaderboard. Players will retain their total points and profiles, but the active rankings will reset to zero.
-            </p>
-
-            <div className="flex flex-col md:flex-row gap-4">
-                <input
-                    value={seasonName}
-                    onChange={e => setSeasonName(e.target.value)}
-                    placeholder="ENTER NEW SEASON NAME (e.g. JUNE_2026_GENESIS)"
-                    className="flex-1 bg-white/5 border border-white/10 rounded-2xl p-5 text-xs font-black uppercase outline-none focus:border-amber-400/50"
-                />
-                <button
-                    disabled={resetting}
-                    onClick={handleResetSeason}
-                    className="px-10 py-5 bg-amber-400 text-black font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-lg hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
-                >
-                    {resetting ? "INITIALIZING..." : "START NEW SEASON"}
-                </button>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatCard label="Vaulted Points" value={stats?.total_points_in_vaults?.toLocaleString() ?? 0} icon={BarChart3} color="text-emerald-400" />
+        <StatCard label="Users Today" value={stats?.users_today ?? 0} icon={Users} color="text-cyan-400" />
+        <StatCard label="Sessions Today" value={stats?.sessions_today ?? 0} icon={RefreshCcw} color="text-rose-400" />
+        <div className="rounded-3xl border border-amber-400/20 bg-amber-400/5 p-8 shadow-inner relative overflow-hidden group">
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-amber-400/40 mb-2">Active Season</div>
+            <div className={`text-xl font-black italic tracking-tighter text-amber-400 truncate`}>{stats?.active_season?.name ?? "None"}</div>
+            <div className="text-[8px] text-white/20 font-bold uppercase mt-1">Since {stats?.active_season?.start_at ? new Date(stats.active_season.start_at).toLocaleDateString() : 'N/A'}</div>
         </div>
       </div>
     </div>

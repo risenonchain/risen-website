@@ -23,6 +23,53 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
   const [tab, setTab] = useState("events");
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminMsg, setAdminMsg] = useState("");
+  const [seasonName, setSeasonName] = useState("");
+
+  async function handleResetSeason() {
+    if (!seasonName) return alert("Please enter a season name");
+    if (!confirm("CRITICAL ACTION: This will ARCHIVE the current leaderboard and start a FRESH season. Players keep their points, but rankings reset to zero. Continue?")) return;
+
+    setAdminLoading(true);
+    setAdminMsg("");
+    try {
+      const res = await fetch(`${BASE_URL}/admin/seasons/reset`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}`
+        },
+        body: JSON.stringify({ name: seasonName })
+      });
+      if (res.ok) {
+        alert("Season Reset Successful. Leaderboard is now fresh.");
+        setSeasonName("");
+      }
+    } catch (e) {
+      alert("Reset failed");
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  async function handleHardReset() {
+    if (!confirm("☢️ NUCLEAR OPTION: This will PERMANENTLY DELETE all global game sessions and RESET all user best scores to zero. This cannot be undone. Are you absolutely sure?")) return;
+    if (!confirm("FINAL CONFIRMATION: Wipe all non-league scores and reset user records?")) return;
+
+    setAdminLoading(true);
+    setAdminMsg("");
+    try {
+      const res = await fetch(`${BASE_URL}/admin/leaderboard/hard-reset`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
+      });
+      if (!res.ok) throw new Error((await res.json()).detail || "Hard reset failed");
+      alert("System Wiped Clean. Leaderboard is now empty.");
+    } catch (err: any) {
+      alert(err.message || "Unknown error");
+    } finally {
+      setAdminLoading(false);
+    }
+  }
 
   async function handleInitializeGroup() {
     setAdminLoading(true);
@@ -51,6 +98,24 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
       });
       if (!res.ok) throw new Error((await res.json()).detail || "Failed to progress knockout stage");
       setAdminMsg("Next knockout round generated.");
+    } catch (err: any) {
+      setAdminMsg(err.message || "Unknown error");
+    } finally {
+      setAdminLoading(false);
+    }
+  }
+
+  async function handleFinishLeague() {
+    if (!confirm("Are you sure you want to FINISH this league? It will be deactivated.")) return;
+    setAdminLoading(true);
+    setAdminMsg("");
+    try {
+      const res = await fetch(`${BASE_URL}/league/events/${leagueId}/finish`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${localStorage.getItem("risen_admin_token")}` }
+      });
+      if (!res.ok) throw new Error((await res.json()).detail || "Failed to finish league");
+      setAdminMsg("League finished and deactivated.");
     } catch (err: any) {
       setAdminMsg(err.message || "Unknown error");
     } finally {
@@ -114,14 +179,23 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
         ))}
       </div>
 
-      <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center gap-4">
-        <label className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Active League ID:</label>
-        <input
-          type="number"
-          value={leagueId}
-          readOnly
-          className="w-20 px-3 py-1.5 rounded-xl bg-[#07111d] text-amber-400 font-black border border-amber-400/30 text-sm"
-        />
+      <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+            <label className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Active League ID:</label>
+            <input
+            type="number"
+            value={leagueId}
+            readOnly
+            className="w-20 px-3 py-1.5 rounded-xl bg-[#07111d] text-amber-400 font-black border border-amber-400/30 text-sm"
+            />
+        </div>
+        <div className="flex items-center gap-4">
+            <label className="text-[10px] font-black uppercase tracking-widest text-white/40 italic">Protocol Stage:</label>
+            <div className="px-4 py-1.5 rounded-xl bg-amber-400/10 text-amber-400 font-black border border-amber-400/20 text-xs uppercase italic">
+                {/* Stage will be loaded by sub-components or we can fetch it here */}
+                SYNCED
+            </div>
+        </div>
       </div>
 
       <div className="min-h-[300px]">
@@ -148,6 +222,13 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
                         disabled={adminLoading}
                     >
                         Progress Next Round (Knockout)
+                    </button>
+                    <button
+                        className="bg-red-500 text-white font-black px-6 py-3 rounded-2xl shadow-lg hover:bg-red-400 transition-all active:scale-95 text-[10px] uppercase tracking-widest"
+                        onClick={handleFinishLeague}
+                        disabled={adminLoading}
+                    >
+                        Finish League
                     </button>
                 </div>
             </div>
@@ -218,6 +299,41 @@ export default function AdminLeaguePanel({ leagueId }: AdminLeaguePanelProps) {
                   >
                     Eliminate
                   </button>
+              </div>
+            </div>
+
+            {/* Season Control (Moved from Reports) */}
+            <div className="p-6 rounded-[30px] border border-amber-400/20 bg-amber-400/5">
+              <h3 className="text-lg font-black text-white mb-2 uppercase italic tracking-widest text-amber-400">Manual Season Initialization</h3>
+              <p className="text-white/30 text-[10px] font-bold uppercase mb-6 leading-relaxed">
+                Starting a new season will archive the current leaderboard. Players retain their points, but the active rankings reset to zero.
+              </p>
+
+              <div className="flex flex-col md:flex-row gap-4">
+                <input
+                  value={seasonName}
+                  onChange={e => setSeasonName(e.target.value)}
+                  placeholder="ENTER NEW SEASON NAME"
+                  className="flex-1 bg-black/40 border border-white/10 rounded-2xl p-4 text-[10px] font-black uppercase text-white outline-none focus:border-amber-400/50"
+                />
+                <button
+                  disabled={adminLoading}
+                  onClick={handleResetSeason}
+                  className="px-8 py-4 bg-amber-400 text-black font-black rounded-2xl uppercase text-[10px] tracking-widest shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50"
+                >
+                  {adminLoading ? "INITIALIZING..." : "START NEW SEASON"}
+                </button>
+              </div>
+
+              <div className="mt-8 pt-8 border-t border-white/5">
+                <button
+                  onClick={handleHardReset}
+                  disabled={adminLoading}
+                  className="flex items-center gap-2 text-red-500/50 hover:text-red-500 text-[10px] font-black uppercase tracking-widest transition-colors"
+                >
+                  <span className="h-2 w-2 rounded-full bg-red-500" />
+                  Nuclear Reset: Wipe All Records
+                </button>
               </div>
             </div>
             {adminMsg && (
