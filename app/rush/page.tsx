@@ -1199,17 +1199,22 @@ function NavIcon({ label, icon, active, onClick }: any) {
 function OverlayPanel({ isOpen, title, onClose, children }: any) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-end justify-center px-4 pb-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center px-0 sm:px-4 bg-black/90 backdrop-blur-xl" onClick={onClose}>
       <div
-        className="w-full max-w-md bg-[#07111d] rounded-[50px] border border-white/10 p-8 pt-6 shadow-2xl animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)] overflow-hidden"
+        className="w-full max-w-md h-[92vh] sm:h-auto sm:max-h-[85vh] bg-[#07111d] rounded-t-[40px] sm:rounded-[50px] border-t sm:border border-white/10 p-0 shadow-2xl animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)] overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
       >
-        <div className="h-1.5 w-14 bg-white/10 rounded-full mx-auto mb-8 shadow-inner" />
-        <div className="flex items-center justify-between mb-8 px-2">
-           <h2 className="text-xl font-black uppercase tracking-[0.3em] text-white italic drop-shadow-md">{title}</h2>
-           <button onClick={onClose} className="h-11 w-11 rounded-2xl bg-white/5 flex items-center justify-center text-sm border border-white/10 transition-all hover:bg-white/10 active:scale-90">✕</button>
+        <div className="shrink-0 pt-6 pb-2">
+            <div className="h-1 w-12 bg-white/10 rounded-full mx-auto mb-6 shadow-inner sm:hidden" />
+            <div className="flex items-center justify-between mb-2 px-8">
+                <h2 className="text-lg font-black uppercase tracking-[0.2em] text-white italic drop-shadow-md">{title}</h2>
+                <button onClick={onClose} className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center text-xs border border-white/10 transition-all hover:bg-white/10 active:scale-90">✕</button>
+            </div>
         </div>
-        {children}
+
+        <div className="flex-1 min-h-0 overflow-hidden">
+            {children}
+        </div>
       </div>
       <style jsx>{`
         @keyframes slideUp {
