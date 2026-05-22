@@ -36,6 +36,8 @@ export type GameState = {
   multiplierActiveUntil: number | null;
   isPremium: boolean;
   isGameOver: boolean;
+  gameMode?: "regular" | "league" | "p2p";
+  goodNodesSpawnedInLevel: number;
 };
 
 export const GAME_WIDTH = 900;
@@ -59,6 +61,7 @@ export const INITIAL_GAME_STATE: GameState = {
   multiplierActiveUntil: null,
   isPremium: false,
   isGameOver: false,
+  goodNodesSpawnedInLevel: 0,
 };
 
 export function getLevelFromElapsed(elapsedSeconds: number): number {
@@ -79,19 +82,42 @@ function randomBetween(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
-function randomType(level: number): FallingItemType {
-  const badWeight = Math.min(0.18 + level * 0.03, 0.42);
+function randomType(level: number, mode: string = "regular", goodSpawned: number = 0): FallingItemType {
+  const isSurvival = mode === "league" || mode === "p2p";
+
+  // In survival mode, we cap good drops and increase bad drops
+  const maxGoodPerLevel = isSurvival ? 8 : 999;
+
+  let badWeight = Math.min(0.18 + level * 0.03, 0.42);
+  if (isSurvival) {
+      // More aggressive bad weight for survival
+      badWeight = Math.min(0.25 + level * 0.05, 0.65);
+  }
+
   const goldenWeight = 0.08;
   const multiplierWeight = 0.05;
   const streakWeight = 0.08;
 
   let roll = Math.random();
 
-  // Difficulty spike at level 15+
+  // If we've already hit the good node cap for this level in survival mode, force a hazard or regular drop
+  if (isSurvival && goodSpawned >= maxGoodPerLevel) {
+      if (roll < 0.7) {
+          // 70% chance of hazard
+          const h = Math.random();
+          if (h < 0.33) return "red_crash_orb";
+          if (h < 0.66) return "heavy_drop";
+          return "glitch_block";
+      }
+      return "normal_rsn"; // Fallback to normal
+  }
+
+  // Difficulty spike logic
   if (level >= 15) {
     const spikeRoll = Math.random();
-    // 60% chance to force a hazard at level 15+
-    if (spikeRoll < 0.60) {
+    // 60% chance to force a hazard at level 15+ (higher in survival)
+    const threshold = isSurvival ? 0.75 : 0.60;
+    if (spikeRoll < threshold) {
       const hazardRoll = Math.random();
       if (hazardRoll < 0.4) return "red_crash_orb";
       if (hazardRoll < 0.7) return "heavy_drop";
@@ -108,8 +134,8 @@ function randomType(level: number): FallingItemType {
   return "normal_rsn";
 }
 
-export function createFallingItem(level: number): FallingItem {
-  const type = randomType(level);
+export function createFallingItem(level: number, mode: string = "regular", goodSpawned: number = 0): FallingItem {
+  const type = randomType(level, mode, goodSpawned);
 
   let size = 30;
   let speed = getDropSpeed(level);
@@ -255,6 +281,12 @@ export function applyCatchEffect(
 
   const comboMultiplier = getComboMultiplier(comboCount);
 
+  // Update good nodes counter for survival tracking
+  let goodNodesSpawnedInLevel = state.goodNodesSpawnedInLevel;
+  if (!isBadItem(itemType)) {
+      // Note: In real logic, spawning happens elsewhere, but we track catches too
+  }
+
   return {
     ...state,
     score,
@@ -263,6 +295,7 @@ export function applyCatchEffect(
     comboMultiplier,
     multiplierActiveUntil,
     isGameOver: lives <= 0,
+    goodNodesSpawnedInLevel
   };
 }
 

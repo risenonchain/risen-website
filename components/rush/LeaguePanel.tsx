@@ -8,6 +8,7 @@ const LeagueFixtures = dynamic(() => import("./LeagueFixtures"), { ssr: false })
 const LeagueTopScores = dynamic(() => import("./LeagueTopScores"), { ssr: false });
 const LeagueDeepestRunners = dynamic(() => import("./LeagueDeepestRunners"), { ssr: false });
 const LeagueLiveBroadcast = dynamic(() => import("./LeagueLiveBroadcast"), { ssr: false });
+const LeagueChallenges = dynamic(() => import("./LeagueChallenges"), { ssr: false });
 
 type Props = {
   isPremium?: boolean;
@@ -18,6 +19,7 @@ type Props = {
 const TABS = [
   { key: "standings", label: "Standings" },
   { key: "fixtures", label: "Fixtures" },
+  { key: "p2p", label: "P2P Challenges", primeOnly: true },
   { key: "topScores", label: "Top Scores" },
   { key: "deepestRunners", label: "Deepest Runners" },
   { key: "live", label: "Live Broadcast" },
@@ -163,20 +165,23 @@ export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId,
 
           {/* Tabs Navigation - Hide or Lockdown if no fixtures yet */}
           <div className="flex flex-wrap justify-center gap-2 mb-8 px-4">
-            {TABS.map((t) => (
-              <button
-                key={t.key}
-                disabled={leagueStatus === "none"}
-                className={`px-4 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all border-2 ${
-                    tab === t.key
-                    ? "bg-amber-400 text-black border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)]"
-                    : "bg-[#030913] text-white/40 border-white/5 hover:border-amber-400/30 hover:text-amber-400 disabled:opacity-20 disabled:grayscale"
-                }`}
-                onClick={() => setTab(t.key)}
-              >
-                {t.label}
-              </button>
-            ))}
+            {TABS.map((t) => {
+              if (t.primeOnly && !isPremium) return null;
+              return (
+                <button
+                  key={t.key}
+                  disabled={leagueStatus === "none"}
+                  className={`px-4 py-2.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all border-2 ${
+                      tab === t.key
+                      ? "bg-amber-400 text-black border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)]"
+                      : "bg-[#030913] text-white/40 border-white/5 hover:border-amber-400/30 hover:text-amber-400 disabled:opacity-20 disabled:grayscale"
+                  }`}
+                  onClick={() => setTab(t.key)}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
           </div>
 
           {/* Tab Content */}
@@ -189,6 +194,7 @@ export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId,
                 <>
                     {tab === "standings" && <LeagueTable leagueId={leagueId} />}
                     {tab === "fixtures" && <LeagueFixtures leagueId={leagueId} />}
+                    {tab === "p2p" && <LeagueChallenges leagueId={leagueId} />}
                     {tab === "topScores" && <LeagueTopScores leagueId={leagueId} />}
                     {tab === "deepestRunners" && <LeagueDeepestRunners leagueId={leagueId} />}
                     {tab === "live" && <LeagueLiveBroadcast leagueId={leagueId} />}

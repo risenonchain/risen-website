@@ -36,6 +36,7 @@ import {
   finishLeagueSession,
   fetchActiveAnnouncement,
   AnnouncementResponse,
+  LeagueChallengeOut,
   ReferralInfoResponse,
   RedemptionRequestResponse,
   HistoryResponse,
@@ -74,6 +75,7 @@ function RushContent() {
   const [wallet, setWallet] = useState<WalletResponse | null>(null);
   const [walletError, setWalletError] = useState<string | null>(null);
   const [activeAnnouncement, setActiveAnnouncement] = useState<AnnouncementResponse | null>(null);
+  const [pendingChallenges, setPendingChallenges] = useState<LeagueChallengeOut[]>([]);
 
   const [activePanel, setActivePanel] = useState<"info" | "settings" | "contest" | "profile" | "ranks" | null>(null);
   const [rankTab, setRankTab] = useState<"score" | "level">("score");
@@ -159,6 +161,26 @@ function RushContent() {
 
     const interval = setInterval(checkUpcomingMatches, 120000); // Every 2 minutes
     checkUpcomingMatches(); // Initial check
+
+    // Check pending P2P challenges
+    const fetchChallenges = async () => {
+        try {
+            const res = await fetch(`${BASE_URL}/league/challenges/pending`, {
+                headers: { "Authorization": `Bearer ${localStorage.getItem("rush_token")}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setPendingChallenges(data);
+                if (data.length > 0) {
+                    setNotification({
+                        message: `P2P INBOUND: You have ${data.length} pending challenge(s) in the League Matrix.`,
+                        type: "info"
+                    });
+                }
+            }
+        } catch (e) {}
+    };
+    fetchChallenges();
 
     return () => clearInterval(interval);
   }, [currentUser]);

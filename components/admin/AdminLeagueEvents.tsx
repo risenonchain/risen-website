@@ -90,16 +90,39 @@ export default function AdminLeagueEvents({ leagueId }: Props) {
     }
   }
 
+  const initializeBlitzTest = () => {
+    const today = new Date();
+    const threeDaysLater = new Date();
+    threeDaysLater.setDate(today.getDate() + 3);
+
+    setForm({
+        name: "NEURAL_TEST_BLITZ_" + Math.floor(Math.random() * 1000),
+        start_date: today.toISOString().split('T')[0],
+        end_date: threeDaysLater.toISOString().split('T')[0],
+        is_live_visible: true,
+        live_fee_usd: 10
+    });
+    setShowForm(true);
+  };
+
   return (
     <div className="bg-[#07111d] p-6 rounded-3xl border border-white/5">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-black text-white uppercase tracking-widest italic">League Events</h3>
-        <button
-            className="bg-amber-400 text-black font-black px-6 py-2 rounded-xl shadow-lg hover:bg-amber-300 transition-all active:scale-95 text-xs uppercase tracking-widest"
-            onClick={() => setShowForm(!showForm)}
-        >
-            {showForm ? "Cancel Protocol" : "Initialize New Event"}
-        </button>
+        <div className="flex gap-3">
+            <button
+                className="bg-risen-primary/10 border border-risen-primary/20 text-risen-primary font-black px-4 py-2 rounded-xl hover:bg-risen-primary/20 transition-all text-[9px] uppercase tracking-widest"
+                onClick={initializeBlitzTest}
+            >
+                ⚡ Blitz Test Protocol
+            </button>
+            <button
+                className="bg-amber-400 text-black font-black px-6 py-2 rounded-xl shadow-lg hover:bg-amber-300 transition-all active:scale-95 text-xs uppercase tracking-widest"
+                onClick={() => setShowForm(!showForm)}
+            >
+                {showForm ? "Cancel Protocol" : "Initialize New Event"}
+            </button>
+        </div>
       </div>
 
       {showForm && (

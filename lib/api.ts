@@ -31,6 +31,19 @@ export type MeResponse = {
   premium_expires_at?: string;
 };
 
+export type LeagueChallengeOut = {
+  id: number;
+  league_id: number;
+  challenger_id: number;
+  challenger_username?: string;
+  challenged_id: number;
+  challenged_username?: string;
+  scheduled_at: string;
+  status: string;
+  created_at: string;
+  expires_at: string;
+};
+
 export type AnnouncementResponse = {
   id: number;
   message: string;
@@ -300,6 +313,10 @@ export async function loginRushUser(
 
 export async function fetchCurrentRushUser(): Promise<MeResponse> {
   return request("/auth/me");
+}
+
+export async function fetchRushUsers(): Promise<MeResponse[]> {
+  return request("/rush/players");
 }
 
 export async function fetchActiveAnnouncement(): Promise<AnnouncementResponse | null> {
