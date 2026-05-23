@@ -11,7 +11,7 @@ type Props = {
   isSubmitting: boolean;
   submitError: string | null;
   isPremium?: boolean;
-  gameMode?: "regular" | "league";
+  gameMode?: "regular" | "league" | "p2p";
   onGoPremium?: () => void;
 };
 
@@ -58,7 +58,7 @@ export default function GameOverModal({
         )}
 
         <div className="text-[11px] uppercase tracking-[0.4em] text-red-400 font-black mb-2 italic">
-          {gameMode === "league" ? "League Match Complete" : "Session Terminated"}
+          {gameMode === "league" ? "League Match Complete" : gameMode === "p2p" ? "P2P Challenge Complete" : "Session Terminated"}
         </div>
 
         <h2 className="text-4xl font-black text-white uppercase tracking-tighter italic mb-8">Game Over</h2>
@@ -80,12 +80,12 @@ export default function GameOverModal({
         ) : null}
 
         <div className="mt-10 grid grid-cols-2 gap-4">
-          {gameMode === "league" ? (
+          {gameMode === "league" || gameMode === "p2p" ? (
             <button
               onClick={onHome}
               className="col-span-2 inline-flex items-center justify-center rounded-2xl bg-amber-400 px-6 py-4 font-black text-black uppercase tracking-widest text-xs transition-all active:scale-95 shadow-[0_0_20px_rgba(251,191,36,0.3)]"
             >
-              Return to League Hub
+              {gameMode === "p2p" ? "Return to Challenge Hub" : "Return to League Hub"}
             </button>
           ) : (
             <>

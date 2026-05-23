@@ -30,7 +30,7 @@ type FinishData = {
 type Props = {
   isPlaying: boolean;
   isPremium?: boolean;
-  gameMode?: "regular" | "league";
+  gameMode?: "regular" | "league" | "p2p";
   onGameOver: (data: FinishData) => void;
 };
 
@@ -445,7 +445,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, gameMode = "r
 
       const spawnInterval = getSpawnInterval(stateRef.current.level);
       if (performance.now() - lastSpawnTimeRef.current >= spawnInterval) {
-        itemsRef.current.push(createFallingItem(stateRef.current.level));
+        itemsRef.current.push(createFallingItem(stateRef.current.level, stateRef.current.gameMode));
         lastSpawnTimeRef.current = performance.now();
       }
 
@@ -584,7 +584,7 @@ export default function GameCanvas({ isPlaying, isPremium = false, gameMode = "r
     const isSmallScreen =
       typeof window !== "undefined" ? window.innerWidth < 640 : false;
 
-    stateRef.current = { ...INITIAL_GAME_STATE, isPremium };
+    stateRef.current = { ...INITIAL_GAME_STATE, isPremium, gameMode };
     playerRef.current = {
       ...INITIAL_PLAYER,
       width: isSmallScreen ? 185 : 160,
@@ -765,14 +765,14 @@ function drawBackground(
   ctx: CanvasRenderingContext2D,
   level: number,
   multiplierActive: boolean,
-  gameMode: "regular" | "league" = "regular"
+  gameMode: "regular" | "league" | "p2p" = "regular"
 ) {
   const now = performance.now();
   const shift = (now / 60) % GAME_HEIGHT;
 
   // Deep Space Gradient
   const gradient = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-  if (gameMode === "league") {
+  if (gameMode === "league" || gameMode === "p2p") {
     // Distinct League Background (Deep Gold/Black)
     gradient.addColorStop(0, "#080601");
     gradient.addColorStop(1, "#030200");
@@ -1285,7 +1285,7 @@ function drawInGameHUD(
   multiplierActive: boolean,
   elapsedSeconds: number,
   isPremium: boolean = false,
-  gameMode: "regular" | "league" = "regular"
+  gameMode: "regular" | "league" | "p2p" = "regular"
 ) {
   ctx.save();
 
@@ -1297,13 +1297,13 @@ function drawInGameHUD(
   ctx.fillRect(0, 0, GAME_WIDTH, 120);
 
   // League Indicator (Center Top)
-  if (gameMode === "league") {
+  if (gameMode === "league" || gameMode === "p2p") {
     ctx.textAlign = "center";
     ctx.font = "black 12px Inter, Arial";
     ctx.fillStyle = "#FBBF24";
     ctx.shadowColor = "rgba(251, 191, 36, 0.4)";
     ctx.shadowBlur = 10;
-    ctx.fillText("⚔️ NEURAL LEAGUE MATCH ACTIVE ⚔️", GAME_WIDTH / 2, 35);
+    ctx.fillText(gameMode === "p2p" ? "⚔️ P2P PROTOCOL ACTIVE ⚔️" : "⚔️ NEURAL LEAGUE MATCH ACTIVE ⚔️", GAME_WIDTH / 2, 35);
     ctx.shadowBlur = 0;
   }
 

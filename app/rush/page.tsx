@@ -95,7 +95,7 @@ function RushContent() {
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [sessionId, setSessionId] = useState<number | null>(null);
-  const [gameMode, setGameMode] = useState<"regular" | "league">("regular");
+  const [gameMode, setGameMode] = useState<"regular" | "league" | "p2p">("regular");
 
   const [trialsRemaining, setTrialsRemaining] = useState(3);
   const [dailyTrialsRemaining, setDailyTrialsRemaining] = useState(3);
@@ -416,7 +416,7 @@ function RushContent() {
 
       let result;
       if (p2pChallengeId) {
-          setGameMode("p2p" as any);
+          setGameMode("p2p");
           const res = await fetch(`${BASE_URL}/rush/league/challenge/${p2pChallengeId}/start`, {
               method: "POST",
               headers: { "Authorization": `Bearer ${localStorage.getItem("rush_token")}` }
@@ -482,7 +482,7 @@ function RushContent() {
           lives_remaining: data.livesRemaining,
         };
 
-        if (gameMode === "league") {
+        if (gameMode === "league" || gameMode === "p2p") {
           await finishLeagueSession(payload);
         } else {
           await finishRushSession(payload);
@@ -586,7 +586,7 @@ function RushContent() {
     setIsPlaying(false);
     setSessionId(null);
     setStartError(null);
-    if (gameMode === "league") {
+    if (gameMode === "league" || gameMode === "p2p") {
       setActivePanel("contest");
     }
   };
