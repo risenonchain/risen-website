@@ -1,7 +1,14 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { BASE_URL, fetchRushUsers, MeResponse, LeagueChallengeOut } from "@/lib/api";
-import { Users, Send, Check, X, Clock } from "lucide-react";
+import {
+  fetchRushUsers,
+  MeResponse,
+  LeagueChallengeOut,
+  fetchMyChallenges,
+  sendLeagueChallenge,
+  respondToChallenge
+} from "@/lib/api";
+import { Users, Send, Check, X, Clock, ChevronDown, AlertCircle } from "lucide-react";
 
 type Props = { leagueId: number };
 
@@ -12,7 +19,7 @@ export default function LeagueChallenges({ leagueId }: Props) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
-  const [showSendForm, setShowSendSendForm] = useState(false);
+  const [showSendForm, setShowSendForm] = useState(false);
   const [selectedPlayerId, setSelectedPlayerId] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
 
@@ -20,16 +27,15 @@ export default function LeagueChallenges({ leagueId }: Props) {
     setLoading(true);
     setError("");
     try {
-      const [pData, cRes] = await Promise.all([
+      const [pData, cData] = await Promise.all([
         fetchRushUsers(),
-        fetch(`${BASE_URL}/league/challenges/my`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
-        })
+        fetchMyChallenges()
       ]);
       setPlayers(pData);
-      if (cRes.ok) setChallenges(await cRes.json());
+      setChallenges(cData);
     } catch (err: any) {
-      setError(err.message || "Sync Error");
+      console.error("P2P Sync Error:", err);
+      setError(err.message || "Establishing Neural Link Failed");
     } finally {
       setLoading(false);
     }
@@ -47,20 +53,12 @@ export default function LeagueChallenges({ leagueId }: Props) {
     if (!selectedPlayerId || !scheduledTime) return;
     setSending(true);
     try {
-        const res = await fetch(`${BASE_URL}/league/challenges/send`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
-            },
-            body: JSON.stringify({
-                league_id: leagueId,
-                challenged_id: Number(selectedPlayerId),
-                scheduled_at: new Date(scheduledTime).toISOString()
-            })
+        await sendLeagueChallenge({
+            league_id: leagueId,
+            challenged_id: Number(selectedPlayerId),
+            scheduled_at: new Date(scheduledTime).toISOString()
         });
-        if (!res.ok) throw new Error("Failed to send protocol");
-        setShowSendSendForm(false);
+        setShowSendForm(false);
         init();
         alert("Challenge Pushed to Neural Network.");
     } catch (e: any) {
@@ -72,16 +70,11 @@ export default function LeagueChallenges({ leagueId }: Props) {
 
   async function handleRespond(challengeId: number, action: "accept" | "reject") {
     try {
-        const res = await fetch(`${BASE_URL}/league/challenges/${challengeId}/respond`, {
-            method: "PATCH",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${localStorage.getItem("rush_token")}`
-            },
-            body: JSON.stringify({ action })
-        });
-        if (res.ok) init();
-    } catch (e) {}
+        await respondToChallenge(challengeId, action);
+        init();
+    } catch (e: any) {
+        alert(e.message);
+    }
   }
 
   if (loading) return <div className="py-10 text-white/20 text-[10px] font-black uppercase tracking-widest animate-pulse">Establishing Neural Link...</div>;
@@ -94,29 +87,48 @@ export default function LeagueChallenges({ leagueId }: Props) {
             <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1 italic">Direct Node Engagement</p>
         </div>
         <button
-            onClick={() => setShowSendSendForm(!showSendForm)}
-            className="flex items-center gap-2 bg-amber-400 text-black px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-amber-400/10 active:scale-95 transition-all"
+            onClick={() => setShowSendForm(!showSendForm)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${showSendForm ? 'bg-white/10 text-white' : 'bg-amber-400 text-black shadow-lg shadow-amber-400/10'} active:scale-95`}
         >
-            <Send className="w-3 h-3" />
-            Initialize
+            {showSendForm ? <X className="w-3 h-3" /> : <Send className="w-3 h-3" />}
+            {showSendForm ? "Cancel" : "Initialize"}
         </button>
       </div>
 
+      {error && (
+        <div className="mx-2 p-5 rounded-[30px] bg-red-500/5 border border-red-500/20 flex items-center gap-4 text-red-400 animate-in fade-in zoom-in duration-300">
+           <AlertCircle className="w-5 h-5 shrink-0" />
+           <div className="flex-1">
+              <div className="text-[10px] font-black uppercase tracking-widest">Connection Error</div>
+              <div className="text-[9px] font-bold opacity-70 mt-1">{error}</div>
+           </div>
+           <button onClick={init} className="text-[8px] font-black underline uppercase tracking-widest">Retry</button>
+        </div>
+      )}
+
       {showSendForm && (
-        <form onSubmit={handleSendChallenge} className="p-7 rounded-[35px] bg-[#030913] border border-amber-400/20 space-y-5 animate-in slide-in-from-top duration-500 shadow-2xl">
+        <form onSubmit={handleSendChallenge} className="mx-2 p-7 rounded-[35px] bg-[#030913] border border-amber-400/20 space-y-5 animate-in slide-in-from-top duration-500 shadow-2xl">
             <div className="space-y-2">
                 <label className="text-[9px] font-black text-white/30 uppercase ml-2 tracking-[0.2em]">Select Opponent Node</label>
-                <select
-                    value={selectedPlayerId}
-                    onChange={e => setSelectedPlayerId(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-[11px] font-black uppercase text-white outline-none focus:border-amber-400/50 transition-all appearance-none"
-                    required
-                >
-                    <option value="">SCAN NETWORK...</option>
-                    {players.map(p => (
-                        <option key={p.id} value={p.id}>{p.username} {p.is_premium ? '— PRIME' : ''}</option>
-                    ))}
-                </select>
+                <div className="relative">
+                    <select
+                        value={selectedPlayerId}
+                        onChange={e => setSelectedPlayerId(e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pr-12 text-[11px] font-black uppercase text-white outline-none focus:border-amber-400/50 transition-all appearance-none cursor-pointer"
+                        required
+                    >
+                        <option value="" className="bg-[#07111d] text-white/40">{players.length === 0 ? "SCANNING NETWORK..." : "SELECT TARGET..."}</option>
+                        {players.map(p => (
+                            <option key={p.id} value={p.id} className="bg-[#07111d] text-white">
+                                {p.username} {p.is_premium ? '— PRIME' : ''}
+                            </option>
+                        ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none" />
+                </div>
+                {players.length === 0 && !error && (
+                    <p className="text-[8px] font-black text-amber-400/40 uppercase ml-2 italic tracking-widest">Searching for available entities...</p>
+                )}
             </div>
             <div className="space-y-2">
                 <label className="text-[9px] font-black text-white/30 uppercase ml-2 tracking-[0.2em]">Temporal Schedule</label>
@@ -130,7 +142,7 @@ export default function LeagueChallenges({ leagueId }: Props) {
             </div>
             <button
                 type="submit"
-                disabled={sending}
+                disabled={sending || !selectedPlayerId}
                 className="w-full py-5 bg-amber-400 text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-2xl shadow-xl shadow-amber-400/10 active:scale-95 transition-all disabled:opacity-50"
             >
                 {sending ? "TRANSMITTING..." : "COMMIT CHALLENGE"}

@@ -319,6 +319,28 @@ export async function fetchRushUsers(): Promise<MeResponse[]> {
   return request("/rush/players");
 }
 
+export async function fetchMyChallenges(): Promise<LeagueChallengeOut[]> {
+  return request("/league/challenges/my");
+}
+
+export async function sendLeagueChallenge(data: {
+  league_id: number;
+  challenged_id: number;
+  scheduled_at: string;
+}) {
+  return request("/league/challenges/send", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function respondToChallenge(challengeId: number, action: "accept" | "reject") {
+  return request(`/league/challenges/${challengeId}/respond`, {
+    method: "PATCH",
+    body: JSON.stringify({ action }),
+  });
+}
+
 export async function fetchActiveAnnouncement(): Promise<AnnouncementResponse | null> {
   return request("/announcements/active");
 }
