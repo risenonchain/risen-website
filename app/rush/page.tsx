@@ -304,6 +304,7 @@ function RushContent() {
       setProfileStats(stats);
       setActiveAnnouncement(announcement);
       localStorage.setItem("risen_rush_username", me.username);
+      localStorage.setItem("risen_rush_id", String(me.id));
       await loadWallet();
     } catch {
       clearRushAuth();
@@ -376,7 +377,16 @@ function RushContent() {
       handleStart(event.detail.matchId);
     };
     window.addEventListener("risen-rush-start-league", startLeagueHandler);
-    return () => window.removeEventListener("risen-rush-start-league", startLeagueHandler);
+
+    const startP2PHandler = (event: any) => {
+      handleStart(undefined, event.detail.challengeId);
+    };
+    window.addEventListener("risen-rush-start-p2p", startP2PHandler);
+
+    return () => {
+        window.removeEventListener("risen-rush-start-league", startLeagueHandler);
+        window.removeEventListener("risen-rush-start-p2p", startP2PHandler);
+    };
   }, []);
 
   useEffect(() => {
@@ -385,7 +395,7 @@ function RushContent() {
     return () => window.removeEventListener("risen-rush-go-premium", goPremiumHandler);
   }, []);
 
-  const handleStart = async (leagueMatchId?: number) => {
+  const handleStart = async (leagueMatchId?: number, p2pChallengeId?: number) => {
     try {
       setIsStarting(true);
       setStartError(null);
@@ -394,7 +404,7 @@ function RushContent() {
       // Initialize/Resume Audio on user gesture
       rushAudio.init();
 
-      const isLeague = leagueMatchId && typeof leagueMatchId === 'number';
+      const isLeague = (leagueMatchId && typeof leagueMatchId === 'number') || (p2pChallengeId && typeof p2pChallengeId === 'number');
 
       if (!isLeague && !profileStats?.is_premium && trialsRemaining <= 0) {
         setStartError("No trials remaining. Watch an ad to get back in the game!");
@@ -405,7 +415,15 @@ function RushContent() {
       rushAudio.stopBGM();
 
       let result;
-      if (isLeague) {
+      if (p2pChallengeId) {
+          setGameMode("p2p" as any);
+          const res = await fetch(`${BASE_URL}/rush/league/challenge/${p2pChallengeId}/start`, {
+              method: "POST",
+              headers: { "Authorization": `Bearer ${localStorage.getItem("rush_token")}` }
+          });
+          if (!res.ok) throw new Error("Failed to start P2P protocol");
+          result = await res.json();
+      } else if (leagueMatchId) {
         setGameMode("league");
         result = await startLeagueSession(leagueMatchId);
       } else {
@@ -1201,7 +1219,7 @@ function OverlayPanel({ isOpen, title, onClose, children }: any) {
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center px-0 sm:px-4 bg-black/90 backdrop-blur-xl" onClick={onClose}>
       <div
-        className="w-full max-w-md h-[92vh] sm:h-auto sm:max-h-[85vh] bg-[#07111d] rounded-t-[40px] sm:rounded-[50px] border-t sm:border border-white/10 p-0 shadow-2xl animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)] overflow-hidden flex flex-col"
+        className="w-full max-w-md h-[92vh] sm:h-[85vh] bg-[#07111d] rounded-t-[40px] sm:rounded-[50px] border-t sm:border border-white/10 p-0 shadow-2xl animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)] overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         <div className="shrink-0 pt-6 pb-2">
@@ -1212,16 +1230,17 @@ function OverlayPanel({ isOpen, title, onClose, children }: any) {
             </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scroll px-2 pb-10">
             {children}
         </div>
+
+        <style jsx>{`
+            @keyframes slideUp {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        `}</style>
       </div>
-      <style jsx>{`
-        @keyframes slideUp {
-          from { transform: translateY(100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }

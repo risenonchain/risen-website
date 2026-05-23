@@ -82,11 +82,17 @@ function randomBetween(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
 
-function randomType(level: number, mode: string = "regular", goodSpawned: number = 0): FallingItemType {
+function randomType(level: number, mode: string = "regular", seed: number = 0): FallingItemType {
   const isSurvival = mode === "league" || mode === "p2p";
 
-  // In survival mode, we cap good drops and increase bad drops
-  const maxGoodPerLevel = isSurvival ? 8 : 999;
+  // Use the seed to synchronize probabilities if provided
+  // Simple seedable random if seed > 0
+  const seededRandom = () => {
+    if (seed === 0) return Math.random();
+    // Deterministic random using sine for sync
+    const x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+  };
 
   let badWeight = Math.min(0.18 + level * 0.03, 0.42);
   if (isSurvival) {
@@ -98,27 +104,15 @@ function randomType(level: number, mode: string = "regular", goodSpawned: number
   const multiplierWeight = 0.05;
   const streakWeight = 0.08;
 
-  let roll = Math.random();
-
-  // If we've already hit the good node cap for this level in survival mode, force a hazard or regular drop
-  if (isSurvival && goodSpawned >= maxGoodPerLevel) {
-      if (roll < 0.7) {
-          // 70% chance of hazard
-          const h = Math.random();
-          if (h < 0.33) return "red_crash_orb";
-          if (h < 0.66) return "heavy_drop";
-          return "glitch_block";
-      }
-      return "normal_rsn"; // Fallback to normal
-  }
+  let roll = seededRandom();
 
   // Difficulty spike logic
   if (level >= 15) {
-    const spikeRoll = Math.random();
+    const spikeRoll = seededRandom();
     // 60% chance to force a hazard at level 15+ (higher in survival)
     const threshold = isSurvival ? 0.75 : 0.60;
     if (spikeRoll < threshold) {
-      const hazardRoll = Math.random();
+      const hazardRoll = seededRandom();
       if (hazardRoll < 0.4) return "red_crash_orb";
       if (hazardRoll < 0.7) return "heavy_drop";
       return "glitch_block";
@@ -134,8 +128,8 @@ function randomType(level: number, mode: string = "regular", goodSpawned: number
   return "normal_rsn";
 }
 
-export function createFallingItem(level: number, mode: string = "regular", goodSpawned: number = 0): FallingItem {
-  const type = randomType(level, mode, goodSpawned);
+export function createFallingItem(level: number, mode: string = "regular", seed: number = 0): FallingItem {
+  const type = randomType(level, mode, seed);
 
   let size = 30;
   let speed = getDropSpeed(level);

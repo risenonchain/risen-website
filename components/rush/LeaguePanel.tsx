@@ -18,6 +18,7 @@ type Props = {
 
 const TABS = [
   { key: "standings", label: "Standings" },
+  { key: "rules", label: "League Rules" },
   { key: "fixtures", label: "Fixtures" },
   { key: "p2p", label: "P2P Challenges", primeOnly: true },
   { key: "topScores", label: "Top Scores" },
@@ -207,6 +208,7 @@ export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId,
                 )}
 
                 {tab === "standings" && leagueStatus !== "registered" && <LeagueTable leagueId={leagueId} />}
+                {tab === "rules" && <LeagueRules />}
                 {tab === "fixtures" && <LeagueFixtures leagueId={leagueId} />}
                 {tab === "p2p" && <LeagueChallenges leagueId={leagueId} />}
                 {tab === "topScores" && <LeagueTopScores leagueId={leagueId} />}
@@ -236,4 +238,82 @@ export default function LeaguePanel({ isPremium = false, leagueId: propLeagueId,
       `}</style>
     </div>
   );
+}
+
+function LeagueRules() {
+  return (
+    <div className="space-y-8 px-2 pb-10 text-left animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="space-y-4">
+        <h4 className="text-amber-400 font-black uppercase text-[10px] tracking-[0.4em] italic flex items-center gap-2">
+            <span className="h-1 w-1 rounded-full bg-amber-400" /> Entry Protocol
+        </h4>
+        <div className="p-6 rounded-[30px] bg-[#030913] border border-white/5 shadow-inner">
+            <p className="text-[11px] text-white/60 leading-relaxed uppercase italic font-bold">
+                Participation in the Neural League requires an active <span className="text-amber-400">PRIME ELITE</span> protocol. Registration opens at the start of each monthly cycle.
+            </p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-risen-primary font-black uppercase text-[10px] tracking-[0.4em] italic flex items-center gap-2">
+            <span className="h-1 w-1 rounded-full bg-risen-primary" /> Survival Parameters
+        </h4>
+        <div className="p-6 rounded-[30px] bg-[#030913] border border-white/5 shadow-inner space-y-4">
+            <div className="flex gap-4">
+                <div className="h-8 w-8 rounded-xl bg-risen-primary/10 border border-risen-primary/20 flex items-center justify-center shrink-0">
+                    <span className="text-xs">⚔️</span>
+                </div>
+                <div>
+                    <div className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Seeded Randomness</div>
+                    <p className="text-[9px] text-white/30 uppercase font-bold leading-tight">Opponents face identical drop probabilities to ensure mathematical fairness.</p>
+                </div>
+            </div>
+            <div className="flex gap-4">
+                <div className="h-8 w-8 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center shrink-0">
+                    <span className="text-xs">⚠️</span>
+                </div>
+                <div>
+                    <div className="text-[10px] font-black text-white uppercase tracking-widest mb-1">Hazard Surge</div>
+                    <p className="text-[9px] text-white/30 uppercase font-bold leading-tight">Corruption nodes appear twice as frequently as in standard sync cycles.</p>
+                </div>
+            </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h4 className="text-white/40 font-black uppercase text-[10px] tracking-[0.4em] italic flex items-center gap-2">
+            <span className="h-1 w-1 rounded-full bg-white/20" /> Technical Directives
+        </h4>
+        <div className="grid grid-cols-1 gap-3">
+            <RuleCard
+                title="Scoring Matrix"
+                desc="Win: 3 Pts | Draw: 1 Pt | Loss: 0 Pts. Points update only after both nodes complete sync."
+            />
+            <RuleCard
+                title="Vital Reserve"
+                desc="Groups: 2 Lives provided. Knockouts & Finals: 1 Life. Pure survival logic active."
+            />
+            <RuleCard
+                title="Activation Window"
+                desc="Once an opponent starts, you have a 10-minute window to join. Failure results in a 3-0 default loss."
+            />
+        </div>
+      </div>
+
+      <div className="p-6 rounded-[35px] bg-amber-400/5 border border-amber-400/10 text-center">
+          <p className="text-[9px] text-amber-400/60 font-black uppercase tracking-widest italic leading-relaxed">
+            Manipulating the matrix or using bots will result in permanent identity termination and wallet blacklisting.
+          </p>
+      </div>
+    </div>
+  );
+}
+
+function RuleCard({ title, desc }: { title: string, desc: string }) {
+    return (
+        <div className="p-5 rounded-[25px] bg-white/5 border border-white/5 group hover:border-white/10 transition-all">
+            <div className="text-[10px] font-black text-white uppercase tracking-widest mb-1">{title}</div>
+            <p className="text-[9px] text-white/40 uppercase font-bold leading-relaxed">{desc}</p>
+        </div>
+    );
 }

@@ -22,7 +22,7 @@ export default function LeagueChallenges({ leagueId }: Props) {
     try {
       const [pData, cRes] = await Promise.all([
         fetchRushUsers(),
-        fetch(`${BASE_URL}/league/challenges/pending`, {
+        fetch(`${BASE_URL}/league/challenges/my`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("rush_token")}` }
         })
       ]);
@@ -36,6 +36,11 @@ export default function LeagueChallenges({ leagueId }: Props) {
   }
 
   useEffect(() => { init(); }, [leagueId]);
+
+  const handlePlay = (challengeId: number) => {
+    // Trigger P2P game start
+    window.dispatchEvent(new CustomEvent("risen-rush-start-p2p", { detail: { challengeId } }));
+  };
 
   async function handleSendChallenge(e: React.FormEvent) {
     e.preventDefault();
@@ -133,21 +138,44 @@ export default function LeagueChallenges({ leagueId }: Props) {
         </form>
       )}
 
+      {/* Accepted Challenges - Ready to Play */}
+      {challenges.filter(c => c.status === 'accepted').length > 0 && (
+        <div className="space-y-5 px-2">
+            <div className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.4em] px-2 flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Live Protocols
+            </div>
+            {challenges.filter(c => c.status === 'accepted').map(c => (
+                <div key={c.id} className="p-6 rounded-[35px] bg-[#030913] border border-emerald-500/20 flex items-center justify-between group transition-all shadow-lg relative overflow-hidden">
+                    <div className="text-left">
+                        <div className="text-[12px] font-black text-white uppercase italic tracking-tighter">
+                            {c.challenger_id === Number(localStorage.getItem("risen_rush_id")) ? c.challenged_username : c.challenger_username}
+                        </div>
+                        <div className="text-[8px] font-bold text-emerald-400/60 uppercase mt-1 tracking-widest italic">Node Link Verified</div>
+                    </div>
+                    <button
+                        onClick={() => handlePlay(c.id)}
+                        className="bg-emerald-500 text-white font-black px-6 py-3 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                    >
+                        Deploy
+                    </button>
+                </div>
+            ))}
+        </div>
+      )}
+
       {/* Pending Inbound */}
       <div className="space-y-5 px-2">
         <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] px-2 flex items-center gap-3">
             <Clock className="w-3.5 h-3.5 text-amber-400/50" /> Pending Inbound
         </div>
 
-        {challenges.length === 0 ? (
-            <div className="py-16 border border-dashed border-white/5 rounded-[40px] text-center bg-white/[0.01]">
-                <div className="text-white/5 text-4xl mb-4 grayscale">📡</div>
-                <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.3em]">Network Quiet: No Challenges</span>
+        {challenges.filter(c => c.status === 'pending' && c.challenged_id === Number(localStorage.getItem("risen_rush_id"))).length === 0 ? (
+            <div className="py-12 border border-dashed border-white/5 rounded-[40px] text-center bg-white/[0.01]">
+                <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.3em]">No Inbound Requests</span>
             </div>
         ) : (
-            challenges.map(c => (
+            challenges.filter(c => c.status === 'pending' && c.challenged_id === Number(localStorage.getItem("risen_rush_id"))).map(c => (
                 <div key={c.id} className="p-6 rounded-[35px] bg-[#030913] border border-white/5 flex items-center justify-between group hover:border-amber-400/30 transition-all shadow-lg relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-amber-400/0 to-amber-400/[0.02] opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="text-left relative z-10">
                         <div className="text-[12px] font-black text-white uppercase italic tracking-tighter">{c.challenger_username}</div>
                         <div className="flex items-center gap-2 mt-1.5">
@@ -174,6 +202,28 @@ export default function LeagueChallenges({ leagueId }: Props) {
                 </div>
             ))
         )}
+      </div>
+
+      {/* Outbound Syncs */}
+      <div className="space-y-5 px-2">
+          <div className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] px-2 flex items-center gap-3">
+              <Send className="w-3.5 h-3.5" /> Outbound Syncs
+          </div>
+          {challenges.filter(c => c.status === 'pending' && c.challenger_id === Number(localStorage.getItem("risen_rush_id"))).length === 0 ? (
+              <div className="py-12 border border-dashed border-white/5 rounded-[40px] text-center bg-white/[0.01]">
+                  <span className="text-[10px] font-black text-white/10 uppercase tracking-[0.3em]">No Active Transmissions</span>
+              </div>
+          ) : (
+              challenges.filter(c => c.status === 'pending' && c.challenger_id === Number(localStorage.getItem("risen_rush_id"))).map(c => (
+                  <div key={c.id} className="p-6 rounded-[35px] bg-[#030913] border border-white/5 flex items-center justify-between opacity-60">
+                      <div className="text-left">
+                          <div className="text-[11px] font-black text-white uppercase italic">{c.challenged_username}</div>
+                          <div className="text-[8px] font-bold text-white/20 uppercase mt-1">Pending Ack...</div>
+                      </div>
+                      <div className="text-[8px] font-black text-amber-400 uppercase tracking-widest italic">Awaiting Sync</div>
+                  </div>
+              ))
+          )}
       </div>
 
       <div className="mx-4 p-6 rounded-[35px] bg-amber-400/5 border border-amber-400/10">
