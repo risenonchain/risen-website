@@ -11,12 +11,14 @@ import {
   Settings,
   ShieldAlert,
   Menu,
-  X
+  X,
+  Wallet
 } from "lucide-react";
 
 const navItems = [
   { name: "Dashboard", href: "/guardian", icon: LayoutDashboard },
   { name: "Contract Scanner", href: "/guardian/scanner", icon: Search },
+  { name: "Wallet Intelligence", href: "/guardian/wallet", icon: Wallet },
   { name: "Watch Center", href: "/guardian/watchlist", icon: Eye },
   { name: "Alert Center", href: "/guardian/alerts", icon: Bell },
 ];
@@ -81,10 +83,12 @@ export default function GuardianSidebar() {
           <div className="p-4 border-t border-slate-900">
             <Link
               href="/"
-              className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-slate-300 text-sm transition-colors"
+              className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:text-white text-sm transition-all group"
             >
-              <ShieldAlert size={18} />
-              <span>Exit Guardian</span>
+              <div className="p-1.5 bg-slate-900 group-hover:bg-blue-500/10 rounded-lg transition-colors">
+                <ShieldAlert size={16} className="group-hover:text-blue-400" />
+              </div>
+              <span className="font-medium">Back to Website</span>
             </Link>
           </div>
         </div>

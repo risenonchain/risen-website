@@ -7,22 +7,28 @@ import {
   History,
   TrendingUp,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  User
 } from "lucide-react";
 import Link from "next/link";
-import { fetchGuardianAlerts, GuardianAlertResponse } from "@/lib/api";
+import { fetchGuardianAlerts, GuardianAlertResponse, fetchCurrentRushUser, MeResponse } from "@/lib/api";
 
 export default function GuardianDashboard() {
   const [alerts, setAlerts] = useState<GuardianAlertResponse[]>([]);
+  const [user, setUser] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const data = await fetchGuardianAlerts();
-        setAlerts(data.slice(0, 5));
+        const [alertsData, userData] = await Promise.all([
+            fetchGuardianAlerts(),
+            fetchCurrentRushUser()
+        ]);
+        setAlerts(alertsData.slice(0, 5));
+        setUser(userData);
       } catch (err) {
-        console.error("Failed to load alerts", err);
+        console.error("Failed to load dashboard data", err);
       } finally {
         setLoading(false);
       }
@@ -35,7 +41,10 @@ export default function GuardianDashboard() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Security Overview</h1>
+          <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+              Security Overview
+              {user && <span className="text-blue-500/50 text-sm font-medium border-l border-slate-800 pl-3">Node: {user.username}</span>}
+          </h1>
           <p className="text-slate-500 mt-1">Real-time intelligence for your blockchain assets.</p>
         </div>
         <Link

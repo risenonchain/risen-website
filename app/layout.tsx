@@ -23,8 +23,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const isAdmin = pathname.startsWith("/admin");
   const isRush = pathname.startsWith("/rush");
   const isAI = pathname.startsWith("/ai");
+  const isGuardian = pathname.startsWith("/guardian");
 
-  const showMainUI = !isAdmin && !isRush && !isAI;
+  const showMainUI = !isAdmin && !isRush && !isAI && !isGuardian;
 
   return (
     <html lang="en">

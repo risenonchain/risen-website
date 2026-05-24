@@ -581,6 +581,10 @@ export async function explainGuardianScan(scanId: number): Promise<{ explanation
   return request(`/guardian/scan/${scanId}/explain`);
 }
 
+export async function analyzeWallet(address: string): Promise<any> {
+  return request(`/guardian/wallet/analyze/${address}`);
+}
+
 /* =========================
    TURNSTILE
 ========================= */

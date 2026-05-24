@@ -1,8 +1,23 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import GuardianSidebar from "@/components/guardian/GuardianSidebar";
+import { hasRushToken } from "@/lib/api";
 
 export default function GuardianLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!hasRushToken() && pathname !== "/guardian/login") {
+      router.replace("/guardian/login");
+    }
+  }, [pathname, router]);
+
+  const isLoginPage = pathname === "/guardian/login";
+
+  if (isLoginPage) return <>{children}</>;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-blue-500/30">
       <GuardianSidebar />
