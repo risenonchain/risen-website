@@ -84,30 +84,30 @@ export default function MarketWarRoom({ onBack }: Props) {
         <div className="flex items-center gap-6">
           <button
             onClick={onBack}
-            className="h-11 w-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group"
+            className="h-11 w-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all group"
           >
-            <span className="text-white/20 group-hover:text-white">✕</span>
+            <span className="text-white/40 group-hover:text-white">✕</span>
           </button>
-          <div className="h-10 w-px bg-white/5" />
+          <div className="h-10 w-px bg-white/10" />
           <div>
             <h2 className="text-sm font-black uppercase tracking-[0.4em] text-white flex items-center gap-3 italic">
                <span className="text-red-500 animate-pulse">🛰️</span> Market Surveillance Room
             </h2>
             <div className="flex items-center gap-2 mt-1">
                 <div className="h-1.5 w-1.5 rounded-full bg-red-600 animate-ping" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-red-500/60 italic">Real-Time Smart Money Uplink Active</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-red-500/80 italic">Real-Time Smart Money Uplink Active</span>
             </div>
           </div>
         </div>
 
         <div className="hidden lg:flex items-center gap-10">
            <div className="flex flex-col items-end">
-              <span className="text-[8px] font-black text-white/30 uppercase tracking-[0.3em]">Surveillance_Feed</span>
-              <span className="text-[11px] font-black text-red-500/80 uppercase tracking-widest font-mono">{STREAM_DATA[streamIndex]}</span>
+              <span className="text-[8px] font-black text-white/40 uppercase tracking-[0.3em]">Surveillance_Feed</span>
+              <span className="text-[11px] font-black text-red-500 uppercase tracking-widest font-mono">{STREAM_DATA[streamIndex]}</span>
            </div>
            <div className="h-12 w-48 rounded-2xl bg-black/60 border border-red-500/20 flex flex-col justify-center px-5 shadow-[inset_0_0_20px_rgba(239,68,68,0.05)]">
               <div className="flex justify-between items-center mb-1">
-                 <span className="text-[8px] font-black text-white/30 uppercase tracking-widest">Sentiment</span>
+                 <span className="text-[8px] font-black text-white/40 uppercase tracking-widest">Sentiment</span>
                  <span className={`text-[10px] font-black uppercase tracking-widest italic ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
                     {isPositive ? 'Bullish' : 'Bearish'}
                  </span>
@@ -126,8 +126,8 @@ export default function MarketWarRoom({ onBack }: Props) {
       {/* Main Content Layout */}
       <div className="flex-1 flex overflow-hidden relative z-10">
         {/* Left Stats Column (Terminal Feel) */}
-        <div className="hidden xl:flex w-80 flex-col border-r border-white/5 p-8 bg-black/40 backdrop-blur-xl">
-           <div className="text-[10px] font-black uppercase tracking-[0.6em] text-white/10 mb-10 px-2 italic flex items-center gap-3">
+        <div className="hidden xl:flex w-80 flex-col border-r border-white/10 p-8 bg-black/40 backdrop-blur-xl">
+           <div className="text-[10px] font-black uppercase tracking-[0.6em] text-white/20 mb-10 px-2 italic flex items-center gap-3">
               <div className="h-1 w-1 bg-red-500" /> Live_Market_Data
            </div>
 
@@ -144,7 +144,7 @@ export default function MarketWarRoom({ onBack }: Props) {
               <div className="text-[9px] font-black text-red-500 mb-3 uppercase tracking-widest italic relative z-10 flex items-center gap-2">
                  <span className="h-1 w-1 bg-red-500 rounded-full animate-ping" /> Strategic Alert
               </div>
-              <p className="text-[10px] font-bold text-white/40 leading-relaxed uppercase italic relative z-10">
+              <p className="text-[10px] font-bold text-white/60 leading-relaxed uppercase italic relative z-10">
                 {isPositive
                   ? "Ecosystem exhibiting sustained architectural strength. On-chain volume confirms high-fidelity engagement across key sectors."
                   : "Localized volatility detected in the neural matrix. Monitor liquidity nodes for potential re-entry optimization points."
@@ -173,8 +173,8 @@ export default function MarketWarRoom({ onBack }: Props) {
 function MarketStat({ label, value, color }: { label: string; value: string; color: string; }) {
   return (
     <div className="group cursor-default transition-all duration-300 hover:translate-x-2">
-       <div className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] mb-2 group-hover:text-white/40 transition-colors flex items-center gap-2">
-          <div className="h-px w-3 bg-white/10" /> {label}
+       <div className="text-[9px] font-black text-white/40 uppercase tracking-[0.2em] mb-2 group-hover:text-white/60 transition-colors flex items-center gap-2">
+          <div className="h-px w-3 bg-white/20" /> {label}
        </div>
        <div className="flex items-center gap-3">
           <div className="h-2 w-2 rounded-full shadow-[0_0_10px_rgba(0,0,0,0.5)]" style={{ backgroundColor: color }} />

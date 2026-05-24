@@ -132,6 +132,41 @@ export type StartRushSessionResponse = {
   trial_source?: string;
 };
 
+export type GuardianContractScanResponse = {
+  id: number;
+  address: string;
+  network: string;
+  risk_score?: number;
+  is_honeypot?: boolean;
+  buy_tax?: number;
+  sell_tax?: number;
+  owner_address?: string;
+  is_proxy?: boolean;
+  has_mint_function?: boolean;
+  is_open_source?: boolean;
+  created_at: string;
+};
+
+export type GuardianWatchlistResponse = {
+  id: number;
+  target_address: string;
+  target_type: string;
+  label?: string;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type GuardianAlertResponse = {
+  id: number;
+  severity: string;
+  category: string;
+  title: string;
+  message: string;
+  related_address?: string;
+  is_read: boolean;
+  created_at: string;
+};
+
 export type FinishRushSessionResponse = {
   message: string;
   points_added: number;
@@ -507,6 +542,43 @@ export async function fetchRushTopScoreLeaderboard(): Promise<LeaderboardEntry[]
 export async function fetchRushTopLevelLeaderboard(): Promise<LeaderboardEntry[]> {
   const data = await request("/leaderboard/top-level");
   return mapLeaderboard(data);
+}
+
+/* =========================
+   GUARDIAN
+========================= */
+
+export async function scanContract(address: string, network: string = "bsc"): Promise<GuardianContractScanResponse> {
+  return request(`/guardian/scan/${address}?network=${network}`);
+}
+
+export async function fetchGuardianWatchlist(): Promise<GuardianWatchlistResponse[]> {
+  return request("/guardian/watchlist");
+}
+
+export async function addToGuardianWatchlist(data: {
+  target_address: string;
+  target_type: "contract" | "wallet";
+  label?: string;
+}): Promise<GuardianWatchlistResponse> {
+  return request("/guardian/watchlist", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function fetchGuardianAlerts(unreadOnly = false): Promise<GuardianAlertResponse[]> {
+  return request(`/guardian/alerts?unread_only=${unreadOnly}`);
+}
+
+export async function markGuardianAlertRead(alertId: number) {
+  return request(`/guardian/alerts/${alertId}/read`, {
+    method: "PATCH",
+  });
+}
+
+export async function explainGuardianScan(scanId: number): Promise<{ explanation: string }> {
+  return request(`/guardian/scan/${scanId}/explain`);
 }
 
 /* =========================

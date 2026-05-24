@@ -158,9 +158,9 @@ export default function AIChat() {
             <div className="h-full flex flex-col items-center justify-center text-center p-8 relative">
                 <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(46,219,255,0.05),transparent_70%)] animate-pulse" />
                 <div className="relative">
-                  <div className="text-6xl mb-6 animate-bounce duration-[3s] grayscale opacity-20">🧠</div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 italic">Neural Core Standby</div>
-                  <div className="text-[9px] mt-3 font-bold text-white/5 uppercase tracking-[0.2em] max-w-[250px] leading-relaxed">Awaiting cognitive synchronization via elite uplink...</div>
+                  <div className="text-6xl mb-6 animate-bounce duration-[3s] grayscale opacity-40">🧠</div>
+                  <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/30 italic">Neural Core Standby</div>
+                  <div className="text-[9px] mt-3 font-bold text-white/20 uppercase tracking-[0.2em] max-w-[250px] leading-relaxed">Awaiting cognitive synchronization via elite uplink...</div>
                 </div>
             </div>
         )}

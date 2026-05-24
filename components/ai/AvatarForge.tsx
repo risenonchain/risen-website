@@ -66,29 +66,29 @@ export default function AvatarForge({ onBack }: Props) {
       </div>
 
       {/* Header */}
-      <header className="flex items-center justify-between px-8 py-5 border-b border-white/5 bg-[#020612]/90 backdrop-blur-2xl z-20 relative">
+      <header className="flex items-center justify-between px-8 py-5 border-b border-white/10 bg-[#020612]/90 backdrop-blur-2xl z-20 relative">
         <div className="flex items-center gap-6">
           <button
             onClick={onBack}
-            className="h-11 w-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all group"
+            className="h-11 w-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all group"
           >
-            <span className="text-white/20 group-hover:text-white">✕</span>
+            <span className="text-white/40 group-hover:text-white">✕</span>
           </button>
-          <div className="h-10 w-px bg-white/5" />
+          <div className="h-10 w-px bg-white/10" />
           <div>
             <h2 className="text-sm font-black uppercase tracking-[0.4em] text-white italic">
                <span className="text-risen-primary">💎</span> Persona Forge
             </h2>
             <div className="flex items-center gap-2 mt-1">
                 <div className="h-1.5 w-1.5 rounded-full bg-risen-primary animate-pulse" />
-                <span className="text-[9px] font-black uppercase tracking-widest text-white/20 italic">High-Fidelity Neural Synthesis Active</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-white/40 italic">High-Fidelity Neural Synthesis Active</span>
             </div>
           </div>
         </div>
 
         <div className="hidden md:flex items-center gap-10">
            <div className="text-right">
-              <div className="text-[8px] font-black text-white/20 uppercase tracking-widest">Protocol</div>
+              <div className="text-[8px] font-black text-white/40 uppercase tracking-widest">Protocol</div>
               <div className="text-[11px] font-black text-risen-primary uppercase tracking-widest italic">Matrix_Render_V2.1</div>
            </div>
            <div className="h-12 w-12 rounded-[22px] border-2 border-risen-primary/30 bg-risen-primary/5 flex items-center justify-center text-xl shadow-[0_0_30px_rgba(46,219,255,0.1)] transition-transform hover:rotate-12">👤</div>
@@ -111,7 +111,7 @@ export default function AvatarForge({ onBack }: Props) {
 
         {/* Presets Sidebar - Right side */}
         <div className="hidden lg:flex w-80 flex-col p-8 bg-[#01060e] backdrop-blur-xl">
-           <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 mb-10 px-2 italic flex items-center gap-3">
+           <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 mb-10 px-2 italic flex items-center gap-3">
               <div className="h-1 w-1 bg-risen-primary" /> Matrix_Presets
            </div>
 
@@ -123,18 +123,18 @@ export default function AvatarForge({ onBack }: Props) {
                   className={`w-full p-5 rounded-[28px] border transition-all duration-500 text-left flex flex-col gap-2 group relative overflow-hidden ${
                     activePreset === preset.id
                     ? "bg-risen-primary/10 border-risen-primary/40 shadow-[0_0_20px_rgba(46,219,255,0.08)]"
-                    : "bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10"
+                    : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10"
                   }`}
                 >
                   <div className="flex items-center justify-between relative z-10">
-                     <span className={`text-xl transition-all duration-500 group-hover:scale-110 ${activePreset === preset.id ? "grayscale-0" : "grayscale opacity-30"}`}>{preset.icon}</span>
-                     <span className={`text-[8px] font-black uppercase tracking-widest ${activePreset === preset.id ? "text-risen-primary" : "text-white/10"}`}>Core Sector</span>
+                     <span className={`text-xl transition-all duration-500 group-hover:scale-110 ${activePreset === preset.id ? "grayscale-0" : "grayscale opacity-40"}`}>{preset.icon}</span>
+                     <span className={`text-[8px] font-black uppercase tracking-widest ${activePreset === preset.id ? "text-risen-primary" : "text-white/20"}`}>Core Sector</span>
                   </div>
                   <div className="relative z-10">
-                    <span className={`text-[11px] font-black uppercase tracking-widest italic ${activePreset === preset.id ? "text-white" : "text-white/40 group-hover:text-white/60"}`}>
+                    <span className={`text-[11px] font-black uppercase tracking-widest italic ${activeTopic === item.id ? "text-white" : "text-white/40 group-hover:text-white/60"}`}>
                       {preset.label}
                     </span>
-                    <div className="text-[9px] font-bold text-white/10 leading-relaxed mt-1 uppercase italic group-hover:text-white/20">
+                    <div className="text-[9px] font-bold text-white/20 leading-relaxed mt-1 uppercase italic group-hover:text-white/40">
                       {preset.desc}
                     </div>
                   </div>
@@ -145,12 +145,12 @@ export default function AvatarForge({ onBack }: Props) {
               ))}
            </div>
 
-           <div className="mt-8 p-6 rounded-[35px] border border-white/10 bg-white/5 relative group overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-risen-primary/30 to-transparent" />
-              <div className="text-[9px] font-black text-risen-primary/60 mb-3 uppercase tracking-widest italic flex items-center gap-2 relative z-10">
+           <div className="mt-8 p-6 rounded-[35px] border border-white/20 bg-white/5 relative group overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-risen-primary/40 to-transparent" />
+              <div className="text-[9px] font-black text-risen-primary/80 mb-3 uppercase tracking-widest italic flex items-center gap-2 relative z-10">
                  <span className="h-1 w-1 bg-risen-primary rounded-full animate-pulse" /> Forge Advisory
               </div>
-              <p className="text-[10px] font-bold text-white/20 leading-relaxed uppercase italic relative z-10 text-center">
+              <p className="text-[10px] font-bold text-white/40 leading-relaxed uppercase italic relative z-10 text-center">
                 Persona synthesis utilizes advanced DALL-E architectures. Generation requires approximately 12.4s of neural compute.
               </p>
            </div>

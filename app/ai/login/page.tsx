@@ -96,7 +96,7 @@ export default function AILoginPage() {
         </div>
 
         <h2 className="text-3xl font-black text-white mb-2 text-center uppercase tracking-tighter italic">Cognitive Portal</h2>
-        <div className="text-risen-primary/60 mb-8 text-center text-[10px] uppercase tracking-[0.4em] font-black italic">
+        <div className="text-risen-primary/80 mb-8 text-center text-[10px] uppercase tracking-[0.4em] font-black italic">
           Neural Network Authorization
         </div>
 
@@ -107,7 +107,7 @@ export default function AILoginPage() {
                 placeholder="IDENTITY_EMAIL"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full px-6 py-4 rounded-2xl bg-[#07111d] border border-white/5 text-white text-xs font-black uppercase tracking-widest outline-none transition-all focus:border-risen-primary/40 focus:bg-[#0a1829] placeholder:text-white/10"
+                className="w-full px-6 py-4 rounded-2xl bg-[#07111d] border border-white/20 text-white text-xs font-black uppercase tracking-widest outline-none transition-all focus:border-risen-primary/60 focus:bg-[#0a1829] placeholder:text-white/40"
                 required
               />
            </div>
@@ -118,7 +118,7 @@ export default function AILoginPage() {
                 placeholder="ACCESS_KEY"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                className="w-full px-6 py-4 rounded-2xl bg-[#07111d] border border-white/5 text-white text-xs font-black uppercase tracking-widest outline-none transition-all focus:border-risen-primary/40 focus:bg-[#0a1829] placeholder:text-white/10"
+                className="w-full px-6 py-4 rounded-2xl bg-[#07111d] border border-white/20 text-white text-xs font-black uppercase tracking-widest outline-none transition-all focus:border-risen-primary/60 focus:bg-[#0a1829] placeholder:text-white/40"
                 required
               />
            </div>

@@ -101,7 +101,7 @@ export default function AIPage() {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Execute cognitive query..."
-                                className="flex-1 bg-transparent px-4 py-3 outline-none text-sm placeholder:text-white/20 font-medium"
+                                className="flex-1 bg-transparent px-4 py-3 outline-none text-sm placeholder:text-white/40 font-medium"
                             />
                             <button type="submit" className="bg-risen-primary text-black h-10 w-10 rounded-xl flex items-center justify-center hover:scale-105 transition">➔</button>
                         </div>
@@ -166,10 +166,10 @@ function OrbCard({ title, desc, icon, onClick }: { title: string; desc: string; 
       </div>
       <div className="relative z-10">
         <h3 className="text-sm font-black uppercase tracking-widest text-risen-primary mb-2 italic">{title}</h3>
-        <p className="text-[11px] font-medium text-white/40 leading-relaxed group-hover:text-white/60 transition-colors">{desc}</p>
+        <p className="text-[11px] font-medium text-white/70 leading-relaxed group-hover:text-white transition-colors">{desc}</p>
       </div>
       <div className="mt-4 flex justify-end">
-         <span className="text-[10px] font-black uppercase tracking-widest text-white/10 group-hover:text-risen-primary transition-colors">Access Loop ➔</span>
+         <span className="text-[10px] font-black uppercase tracking-widest text-white/30 group-hover:text-risen-primary transition-colors">Access Loop ➔</span>
       </div>
     </motion.div>
   );

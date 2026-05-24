@@ -56,8 +56,8 @@ const APPS = [
     category: "Defi • Cross-chain",
     description: "Seamlessly migrate liquidity between meme tokens and major networks with optimized tax logic and routing.",
     icon: "🌉",
-    status: "development",
-    link: "#",
+    status: "deployed",
+    link: "/bridge",
     installable: false,
   },
   {
@@ -66,8 +66,8 @@ const APPS = [
     category: "Utility • Wallet",
     description: "Automated cleanup protocol that converts small, unused token balances into $RSN or native liquidity.",
     icon: "🧹",
-    status: "development",
-    link: "#",
+    status: "deployed",
+    link: "/sweeper",
     installable: false,
   },
   {
@@ -76,9 +76,10 @@ const APPS = [
     category: "Security • Audit",
     description: "Real-time contract monitoring and fraud detection system for the RISEN community.",
     icon: "🛡️",
-    status: "development",
-    link: "#",
-    installable: false,
+    status: "deployed",
+    link: "/guardian",
+    installable: true,
+    apkLink: "/apps/risen-guardian.apk",
   }
 ];
 
@@ -206,7 +207,7 @@ export default function AppStorePage() {
               </p>
               <div className="flex items-center justify-center gap-6">
                   <div className="flex flex-col items-center">
-                      <span className="text-2xl font-black text-white italic tracking-tighter">03</span>
+                      <span className="text-2xl font-black text-white italic tracking-tighter">06</span>
                       <span className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-1">Live Apps</span>
                   </div>
                   <div className="h-8 w-px bg-white/10" />

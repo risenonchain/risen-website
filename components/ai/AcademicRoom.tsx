@@ -37,13 +37,13 @@ export default function AcademicRoom({ onBack }: Props) {
           <div className="h-11 w-11 rounded-2xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-center text-xl shadow-[0_0_30px_rgba(251,191,36,0.1)] transition-transform group-hover:scale-110">🏛️</div>
           <div>
             <h2 className="text-xs font-black uppercase tracking-[0.4em] text-amber-400">Library</h2>
-            <div className="text-[9px] font-black text-white/20 uppercase tracking-widest mt-1 italic">Knowledge Hub V3</div>
+            <div className="text-[9px] font-black text-white/40 uppercase tracking-widest mt-1 italic">Knowledge Hub V3</div>
           </div>
         </div>
 
         <div className="flex-1 space-y-3 overflow-y-auto custom-scroll pr-2">
-          <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/10 mb-6 px-2 flex items-center gap-2">
-            <div className="h-px w-4 bg-white/10" /> Modules
+          <div className="text-[10px] font-black uppercase tracking-[0.5em] text-white/20 mb-6 px-2 flex items-center gap-2">
+            <div className="h-px w-4 bg-white/20" /> Modules
           </div>
           {SYLLABUS.map((item) => (
             <button
@@ -51,14 +51,14 @@ export default function AcademicRoom({ onBack }: Props) {
               onClick={() => selectTopic(item)}
               className={`w-full p-4 rounded-[24px] border transition-all duration-500 text-left group flex items-center gap-4 relative overflow-hidden ${
                 activeTopic === item.id
-                ? "bg-amber-400/10 border-amber-400/30 shadow-[0_0_20px_rgba(251,191,36,0.08)]"
-                : "bg-white/5 border-white/5 hover:border-white/10 hover:bg-white/10"
+                ? "bg-amber-400/10 border-amber-400/40 shadow-[0_0_20px_rgba(251,191,36,0.08)]"
+                : "bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10"
               }`}
             >
-              <span className={`text-xl transition-all duration-500 group-hover:rotate-6 ${activeTopic === item.id ? "grayscale-0 scale-110" : "grayscale opacity-20"}`}>{item.icon}</span>
+              <span className={`text-xl transition-all duration-500 group-hover:rotate-6 ${activeTopic === item.id ? "grayscale-0 scale-110" : "grayscale opacity-40"}`}>{item.icon}</span>
               <div className="flex-1 relative z-10">
-                <div className={`text-[10px] font-black uppercase tracking-widest leading-tight ${activeTopic === item.id ? "text-white" : "text-white/40 group-hover:text-white/60"}`}>{item.title}</div>
-                <div className={`text-[8px] font-bold uppercase tracking-tighter mt-1 italic ${activeTopic === item.id ? "text-amber-400/60" : "text-white/5"}`}>
+                <div className={`text-[10px] font-black uppercase tracking-widest leading-tight ${activeTopic === item.id ? "text-white" : "text-white/60 group-hover:text-white"}`}>{item.title}</div>
+                <div className={`text-[8px] font-bold uppercase tracking-tighter mt-1 italic ${activeTopic === item.id ? "text-amber-400/80" : "text-white/10"}`}>
                    {activeTopic === item.id ? "Protocol Synchronized" : "Initialize Link"}
                 </div>
               </div>
@@ -79,29 +79,29 @@ export default function AcademicRoom({ onBack }: Props) {
 
       {/* Main Study Area */}
       <div className="flex-1 flex flex-col h-full relative z-10">
-        <header className="flex items-center justify-between px-8 py-5 border-b border-white/5 bg-[#020912]/80 backdrop-blur-xl">
+        <header className="flex items-center justify-between px-8 py-5 border-b border-white/10 bg-[#020912]/80 backdrop-blur-xl">
           <div className="flex items-center gap-6">
             <button
               onClick={onBack}
-              className="h-11 w-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all active:scale-90 group"
+              className="h-11 w-11 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all active:scale-90 group"
             >
-              <span className="text-white/20 group-hover:text-white transition-colors">✕</span>
+              <span className="text-white/40 group-hover:text-white transition-colors">✕</span>
             </button>
-            <div className="h-10 w-px bg-white/5" />
+            <div className="h-10 w-px bg-white/10" />
             <div>
               <h2 className="text-sm font-black uppercase tracking-[0.3em] text-white flex items-center gap-3 italic">
                  <span className="text-amber-400">🏛️</span> Academic Core
               </h2>
               <div className="flex items-center gap-2 mt-1">
                   <div className="h-1 w-1 rounded-full bg-amber-400 animate-pulse" />
-                  <span className="text-[9px] font-black uppercase tracking-widest text-white/20 italic">Deep Logic Sector 07</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-white/40 italic">Deep Logic Sector 07</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
              <div className="text-right hidden sm:block">
-                <div className="text-[8px] font-black text-white/20 uppercase tracking-widest">Active Node</div>
+                <div className="text-[8px] font-black text-white/40 uppercase tracking-widest">Active Node</div>
                 <div className="text-[10px] font-black text-amber-400 uppercase tracking-[0.2em] italic">Elite_Scholar_v2</div>
              </div>
              <div className="h-12 w-12 rounded-[20px] border-2 border-amber-400/30 bg-amber-400/5 flex items-center justify-center text-xl shadow-[0_0_30px_rgba(251,191,36,0.1)]">📜</div>

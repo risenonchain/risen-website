@@ -1,14 +1,15 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   fetchRushUsers,
   MeResponse,
   LeagueChallengeOut,
   fetchMyChallenges,
   sendLeagueChallenge,
-  respondToChallenge
+  respondToChallenge,
+  BASE_URL
 } from "@/lib/api";
-import { Users, Send, Check, X, Clock, ChevronDown, AlertCircle } from "lucide-react";
+import { Users, Send, Check, X, Clock, ChevronDown, AlertCircle, RefreshCw } from "lucide-react";
 
 type Props = { leagueId: number };
 
@@ -16,6 +17,7 @@ export default function LeagueChallenges({ leagueId }: Props) {
   const [players, setPlayers] = useState<MeResponse[]>([]);
   const [challenges, setChallenges] = useState<LeagueChallengeOut[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncingPlayers, setSyncingPlayers] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,28 +25,45 @@ export default function LeagueChallenges({ leagueId }: Props) {
   const [selectedPlayerId, setSelectedPlayerId] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
 
-  async function init() {
+  const init = useCallback(async () => {
     setLoading(true);
     setError("");
+
+    if (!BASE_URL) {
+      setError("Neural Gateway Unreachable. Check API Config.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      const [pData, cData] = await Promise.all([
-        fetchRushUsers(),
-        fetchMyChallenges()
+      // We fetch these in parallel but handle errors individually to prevent total failure
+      const [cData, pData] = await Promise.all([
+        fetchMyChallenges().catch(err => {
+          console.error("Challenges fetch failed:", err);
+          return null; // Return null to indicate failure
+        }),
+        fetchRushUsers().catch(err => {
+          console.error("Players fetch failed:", err);
+          return null;
+        })
       ]);
-      setPlayers(pData);
-      setChallenges(cData);
+
+      if (cData === null || pData === null) {
+        setError("Failed to synchronize with Neural Network. Some nodes may be offline.");
+      }
+
+      setChallenges(cData || []);
+      setPlayers(pData || []);
     } catch (err: any) {
-      console.error("P2P Sync Error:", err);
       setError(err.message || "Establishing Neural Link Failed");
     } finally {
       setLoading(false);
     }
-  }
+  }, [leagueId]);
 
-  useEffect(() => { init(); }, [leagueId]);
+  useEffect(() => { init(); }, [init]);
 
   const handlePlay = (challengeId: number) => {
-    // Trigger P2P game start
     window.dispatchEvent(new CustomEvent("risen-rush-start-p2p", { detail: { challengeId } }));
   };
 
@@ -77,77 +96,101 @@ export default function LeagueChallenges({ leagueId }: Props) {
     }
   }
 
-  if (loading) return <div className="py-10 text-white/20 text-[10px] font-black uppercase tracking-widest animate-pulse">Establishing Neural Link...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 space-y-4">
+        <div className="h-10 w-10 border-2 border-amber-400/20 border-t-amber-400 rounded-full animate-spin" />
+        <div className="text-white/20 text-[10px] font-black uppercase tracking-[0.4em] animate-pulse">
+          Establishing Neural Link...
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-10 pb-10">
+    <div className="space-y-10 pb-10 animate-in fade-in duration-500">
       <div className="flex items-center justify-between px-2">
         <div className="text-left">
             <h3 className="text-sm font-black text-white uppercase italic tracking-widest">P2P Protocols</h3>
             <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1 italic">Direct Node Engagement</p>
         </div>
-        <button
-            onClick={() => setShowSendForm(!showSendForm)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${showSendForm ? 'bg-white/10 text-white' : 'bg-amber-400 text-black shadow-lg shadow-amber-400/10'} active:scale-95`}
-        >
-            {showSendForm ? <X className="w-3 h-3" /> : <Send className="w-3 h-3" />}
-            {showSendForm ? "Cancel" : "Initialize"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={init}
+            className="p-2 rounded-xl bg-white/5 border border-white/10 text-white/40 hover:text-white transition-all"
+            title="Resync Matrix"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+          </button>
+          <button
+              onClick={() => setShowSendForm(!showSendForm)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${showSendForm ? 'bg-white/10 text-white' : 'bg-amber-400 text-black shadow-lg shadow-amber-400/10'} active:scale-95`}
+          >
+              {showSendForm ? <X className="w-3 h-3" /> : <Send className="w-3 h-3" />}
+              {showSendForm ? "Cancel" : "Initialize"}
+          </button>
+        </div>
       </div>
 
       {error && (
         <div className="mx-2 p-5 rounded-[30px] bg-red-500/5 border border-red-500/20 flex items-center gap-4 text-red-400 animate-in fade-in zoom-in duration-300">
            <AlertCircle className="w-5 h-5 shrink-0" />
            <div className="flex-1">
-              <div className="text-[10px] font-black uppercase tracking-widest">Connection Error</div>
-              <div className="text-[9px] font-bold opacity-70 mt-1">{error}</div>
+              <div className="text-[10px] font-black uppercase tracking-widest">Network Alert</div>
+              <div className="text-[9px] font-bold opacity-70 mt-1 uppercase tracking-tight leading-relaxed">
+                {error.includes("Failed to fetch") ? "Neural Gateway Timeout. The server node might be initializing or unreachable." : error}
+              </div>
            </div>
-           <button onClick={init} className="text-[8px] font-black underline uppercase tracking-widest">Retry</button>
+           <button onClick={init} className="text-[8px] font-black underline uppercase tracking-widest whitespace-nowrap">Try Again</button>
         </div>
       )}
 
       {showSendForm && (
-        <form onSubmit={handleSendChallenge} className="mx-2 p-7 rounded-[35px] bg-[#030913] border border-amber-400/20 space-y-5 animate-in slide-in-from-top duration-500 shadow-2xl">
-            <div className="space-y-2">
-                <label className="text-[9px] font-black text-white/30 uppercase ml-2 tracking-[0.2em]">Select Opponent Node</label>
-                <div className="relative">
-                    <select
-                        value={selectedPlayerId}
-                        onChange={e => setSelectedPlayerId(e.target.value)}
-                        className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pr-12 text-[11px] font-black uppercase text-white outline-none focus:border-amber-400/50 transition-all appearance-none cursor-pointer"
-                        required
-                    >
-                        <option value="" className="bg-[#07111d] text-white/40">{players.length === 0 ? "SCANNING NETWORK..." : "SELECT TARGET..."}</option>
-                        {players.map(p => (
-                            <option key={p.id} value={p.id} className="bg-[#07111d] text-white">
-                                {p.username} {p.is_premium ? '— PRIME' : ''}
-                            </option>
-                        ))}
-                    </select>
-                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none" />
-                </div>
-                {players.length === 0 && !error && (
-                    <p className="text-[8px] font-black text-amber-400/40 uppercase ml-2 italic tracking-widest">Searching for available entities...</p>
-                )}
-            </div>
-            <div className="space-y-2">
-                <label className="text-[9px] font-black text-white/30 uppercase ml-2 tracking-[0.2em]">Temporal Schedule</label>
-                <input
-                    type="datetime-local"
-                    value={scheduledTime}
-                    onChange={e => setScheduledTime(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-[11px] font-black text-white outline-none focus:border-amber-400/50 transition-all"
-                    required
-                />
-            </div>
-            <button
-                type="submit"
-                disabled={sending || !selectedPlayerId}
-                className="w-full py-5 bg-amber-400 text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-2xl shadow-xl shadow-amber-400/10 active:scale-95 transition-all disabled:opacity-50"
-            >
-                {sending ? "TRANSMITTING..." : "COMMIT CHALLENGE"}
-            </button>
-        </form>
+        <div className="mx-2 p-7 rounded-[35px] bg-[#030913] border border-amber-400/20 space-y-5 animate-in slide-in-from-top duration-500 shadow-2xl">
+            <form onSubmit={handleSendChallenge} className="space-y-5">
+              <div className="space-y-2">
+                  <label className="text-[9px] font-black text-white/30 uppercase ml-2 tracking-[0.2em]">Target Opponent Node</label>
+                  <div className="relative">
+                      <select
+                          value={selectedPlayerId}
+                          onChange={e => setSelectedPlayerId(e.target.value)}
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pr-12 text-[11px] font-black uppercase text-white outline-none focus:border-amber-400/50 transition-all appearance-none cursor-pointer"
+                          required
+                      >
+                          <option value="" className="bg-[#07111d] text-white/40">
+                            {players.length === 0 ? "NO NODES SYNCED" : "SELECT TARGET..."}
+                          </option>
+                          {players.map(p => (
+                              <option key={p.id} value={p.id} className="bg-[#07111d] text-white">
+                                  {p.username} {p.is_premium ? '— PRIME' : ''}
+                              </option>
+                          ))}
+                      </select>
+                      <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none" />
+                  </div>
+                  {players.length === 0 && !error && (
+                      <p className="text-[8px] font-black text-amber-400/40 uppercase ml-2 italic tracking-widest animate-pulse">Searching for active identities...</p>
+                  )}
+              </div>
+              <div className="space-y-2">
+                  <label className="text-[9px] font-black text-white/30 uppercase ml-2 tracking-[0.2em]">Temporal Schedule</label>
+                  <input
+                      type="datetime-local"
+                      value={scheduledTime}
+                      onChange={e => setScheduledTime(e.target.value)}
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-[11px] font-black text-white outline-none focus:border-amber-400/50 transition-all"
+                      required
+                  />
+              </div>
+              <button
+                  type="submit"
+                  disabled={sending || !selectedPlayerId}
+                  className="w-full py-5 bg-amber-400 text-black font-black uppercase text-[10px] tracking-[0.3em] rounded-2xl shadow-xl shadow-amber-400/10 active:scale-95 transition-all disabled:opacity-50"
+              >
+                  {sending ? "TRANSMITTING..." : "COMMIT CHALLENGE"}
+              </button>
+            </form>
+        </div>
       )}
 
       {/* Accepted Challenges - Ready to Play */}
