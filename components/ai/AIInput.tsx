@@ -24,9 +24,9 @@ export default function AIInput({ onSend, onUpload }: Props) {
   return (
     <div className="relative flex items-center gap-3">
       {/* 📎 Upload Node */}
-      <label className="shrink-0 h-14 w-14 cursor-pointer rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-lg transition-all hover:bg-white/10 hover:border-white/20 active:scale-90 group relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <span className="opacity-30 group-hover:opacity-100 group-hover:scale-125 transition-all duration-500 relative z-10">📎</span>
+      <label className="shrink-0 h-14 w-14 cursor-pointer rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-lg transition-all hover:bg-white/20 hover:border-white/30 active:scale-90 group relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        <span className="opacity-60 group-hover:opacity-100 group-hover:scale-125 transition-all duration-500 relative z-10">📎</span>
         <input type="file" hidden onChange={handleFile} />
       </label>
 
@@ -43,7 +43,7 @@ export default function AIInput({ onSend, onUpload }: Props) {
                 handleSend();
               }
             }}
-            className="relative w-full h-14 px-6 rounded-2xl bg-[#07111d] text-white text-[11px] font-black uppercase tracking-[0.2em] border border-white/5 outline-none transition-all focus:border-risen-primary/50 focus:bg-[#081628] shadow-2xl placeholder:text-white/10 italic"
+            className="relative w-full h-14 px-6 rounded-2xl bg-[#07111d] text-white text-[11px] font-black uppercase tracking-[0.2em] border border-white/10 outline-none transition-all focus:border-risen-primary/60 focus:bg-[#081628] shadow-2xl placeholder:text-white/40 italic"
           />
           {/* Scanning Line */}
           <div className="absolute top-0 left-0 w-full h-[1px] bg-risen-primary/20 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-700" />

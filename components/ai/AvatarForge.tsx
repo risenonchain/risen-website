@@ -131,10 +131,10 @@ export default function AvatarForge({ onBack }: Props) {
                      <span className={`text-[8px] font-black uppercase tracking-widest ${activePreset === preset.id ? "text-risen-primary" : "text-white/20"}`}>Core Sector</span>
                   </div>
                   <div className="relative z-10">
-                    <span className={`text-[11px] font-black uppercase tracking-widest italic ${activeTopic === item.id ? "text-white" : "text-white/40 group-hover:text-white/60"}`}>
+                    <span className={`text-[11px] font-black uppercase tracking-widest italic ${activePreset === preset.id ? "text-white" : "text-white/40 group-hover:text-white/60"}`}>
                       {preset.label}
                     </span>
-                    <div className="text-[9px] font-bold text-white/20 leading-relaxed mt-1 uppercase italic group-hover:text-white/40">
+                    <div className="text-[9px] font-bold text-white/20 leading-relaxed mt-1 uppercase italic group-hover:text-white/60">
                       {preset.desc}
                     </div>
                   </div>

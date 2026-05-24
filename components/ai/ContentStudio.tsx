@@ -72,7 +72,7 @@ export default function ContentStudio({ onBack }: Props) {
         <div className="flex items-center gap-4">
           <button
             onClick={onBack}
-            className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all active:scale-90"
+            className="h-10 w-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center hover:bg-white/20 transition-all active:scale-90"
           >
             <span className="text-white/40">✕</span>
           </button>
@@ -82,14 +82,14 @@ export default function ContentStudio({ onBack }: Props) {
             </h2>
             <div className="flex items-center gap-2 mt-0.5">
                 <div className="h-1 w-1 rounded-full bg-purple-500 animate-pulse" />
-                <span className="text-[8px] font-black uppercase tracking-widest text-white/20 italic">Social Architecture & Narrative Design</span>
+                <span className="text-[8px] font-black uppercase tracking-widest text-white/40 italic">Social Architecture & Narrative Design</span>
             </div>
           </div>
         </div>
 
         <div className="hidden md:flex items-center gap-6">
            <div className="text-right">
-              <div className="text-[8px] font-black text-white/20 uppercase tracking-widest">Workspace</div>
+              <div className="text-[8px] font-black text-white/40 uppercase tracking-widest">Workspace</div>
               <div className="text-[10px] font-black text-purple-400 uppercase tracking-widest">Viral Optimized</div>
            </div>
            <div className="h-10 w-10 rounded-xl border border-purple-500/20 bg-purple-500/5 flex items-center justify-center text-xl shadow-[0_0_20px_rgba(168,85,247,0.1)]">✍️</div>
@@ -99,8 +99,8 @@ export default function ContentStudio({ onBack }: Props) {
       {/* Main Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Templates Grid - Left side */}
-        <div className="hidden xl:flex w-[340px] flex-col p-6 bg-[#01060f] border-r border-white/5">
-           <div className="text-[9px] font-black uppercase tracking-[0.4em] text-white/10 mb-8 px-2 italic">Narrative Templates</div>
+        <div className="hidden xl:flex w-[340px] flex-col p-6 bg-[#01060f] border-r border-white/10">
+           <div className="text-[9px] font-black uppercase tracking-[0.4em] text-white/20 mb-8 px-2 italic">Narrative Templates</div>
 
            <div className="space-y-4 flex-1 overflow-y-auto custom-scroll pr-2">
               {TEMPLATES.map((t) => (
@@ -109,17 +109,17 @@ export default function ContentStudio({ onBack }: Props) {
                   onClick={() => applyTemplate(t)}
                   className={`w-full p-5 rounded-[28px] border transition-all text-left flex flex-col gap-3 group relative overflow-hidden ${
                     activeTemplate === t.id
-                    ? "bg-purple-500/10 border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.05)]"
-                    : "bg-white/5 border-white/5 hover:border-white/10"
+                    ? "bg-purple-500/10 border-purple-500/40 shadow-[0_0_20px_rgba(168,85,247,0.05)]"
+                    : "bg-white/5 border-white/10 hover:border-white/20"
                   }`}
                 >
                   <div className="flex items-center justify-between relative z-10">
                      <span className={`text-2xl transition-transform duration-500 group-hover:scale-110 ${activeTemplate === t.id ? "opacity-100 grayscale-0" : "opacity-30 grayscale"}`}>{t.icon}</span>
-                     <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${activeTemplate === t.id ? "text-purple-400" : "text-white/5"}`}>Sector {TEMPLATES.indexOf(t) + 1}</span>
+                     <span className={`text-[8px] font-black uppercase tracking-[0.2em] ${activeTemplate === t.id ? "text-purple-400" : "text-white/10"}`}>Sector {TEMPLATES.indexOf(t) + 1}</span>
                   </div>
                   <div className="relative z-10">
-                    <div className={`text-[11px] font-black uppercase tracking-widest leading-tight ${activeTemplate === t.id ? "text-white" : "text-white/40 group-hover:text-white/60"}`}>{t.label}</div>
-                    <div className="text-[9px] font-bold text-white/10 leading-relaxed mt-2 uppercase italic group-hover:text-white/20 transition-colors">{t.desc}</div>
+                    <div className={`text-[11px] font-black uppercase tracking-widest leading-tight ${activeTemplate === t.id ? "text-white" : "text-white/40 group-hover:text-white"}`}>{t.label}</div>
+                    <div className="text-[9px] font-bold text-white/20 leading-relaxed mt-2 uppercase italic group-hover:text-white/40 transition-colors">{t.desc}</div>
                   </div>
 
                   {activeTemplate === t.id && (
@@ -129,9 +129,9 @@ export default function ContentStudio({ onBack }: Props) {
               ))}
            </div>
 
-           <div className="mt-8 p-6 rounded-[32px] bg-purple-500/5 border border-purple-500/10 relative overflow-hidden group">
+           <div className="mt-8 p-6 rounded-[32px] bg-purple-500/5 border border-purple-500/20 relative overflow-hidden group">
               <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
-              <p className="text-[9px] font-black text-purple-200/40 leading-relaxed uppercase italic text-center relative z-10">
+              <p className="text-[9px] font-black text-purple-200/60 leading-relaxed uppercase italic text-center relative z-10">
                 AI narratives are algorithmically calibrated for cross-chain virality and architectural impact.
               </p>
            </div>
