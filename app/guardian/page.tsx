@@ -162,9 +162,9 @@ export default function GuardianDashboard() {
               Quick Actions
             </h3>
             <div className="grid grid-cols-1 gap-2">
-              <QuickAction label="Check Honeypot" />
-              <QuickAction label="Verify Liquidity" />
-              <QuickAction label="Wallet Audit" />
+              <QuickAction label="Scan Contract" href="/guardian/scanner" />
+              <QuickAction label="Wallet Audit" href="/guardian/wallet" />
+              <QuickAction label="Check Alerts" href="/guardian/alerts" />
             </div>
           </section>
         </div>
@@ -195,11 +195,25 @@ function StatCard({ title, value, subtitle, icon, trend }: any) {
   );
 }
 
-function QuickAction({ label }: { label: string }) {
-  return (
-    <button className="w-full text-left px-4 py-3 rounded-xl text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all border border-transparent hover:border-slate-700 flex items-center justify-between group">
+function QuickAction({ label, href }: { label: string; href?: string; }) {
+  const content = (
+    <>
       {label}
       <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="w-full text-left px-4 py-3 rounded-xl text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all border border-transparent hover:border-slate-700 flex items-center justify-between group">
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button className="w-full text-left px-4 py-3 rounded-xl text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all border border-transparent hover:border-slate-700 flex items-center justify-between group">
+      {content}
     </button>
   );
 }
