@@ -189,12 +189,12 @@ export default function Home() {
                 <h1 className="font-extrabold tracking-tight leading-[0.96]">
                   <span className="block text-[2.9rem] sm:text-6xl md:text-7xl lg:text-[4.8rem]">
                     {t("home.heroTitleLine1")}{" "}
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/70">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/80 to-white/40 bg-[length:200%_auto] animate-text-shimmer">
                       {t("home.heroTitleLine1Accent")}
                     </span>
                   </span>
                   <span className="block mt-1 sm:mt-2 text-[2.9rem] sm:text-6xl md:text-7xl lg:text-[4.8rem]">
-                    <span className="text-risen-primary drop-shadow-[0_0_28px_rgba(46,219,255,0.45)]">
+                    <span className="text-risen-primary drop-shadow-[0_0_28px_rgba(46,219,255,0.45)] bg-gradient-to-r from-risen-primary via-white to-risen-primary bg-[length:200%_auto] bg-clip-text text-transparent animate-text-shimmer">
                       {t("home.heroTitleLine2")}
                     </span>
                   </span>
@@ -328,7 +328,7 @@ export default function Home() {
                 </div>
 
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-                  <div className={microCard}>
+                  <div className={microCard + " animate-float [animation-delay:0s]"}>
                     <div className="flex items-center gap-2">
                       <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-risen-primary/15 border border-risen-primary/20">
                         <span className="w-2 h-2 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
@@ -340,7 +340,7 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <div className={microCard}>
+                  <div className={microCard + " animate-float [animation-delay:1.5s]"}>
                     <div className="flex items-center gap-2">
                       <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-white/10 border border-white/10">
                         <span className="w-2 h-2 rounded-full bg-white/60" />
@@ -352,7 +352,7 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <div className={microCard}>
+                  <div className={microCard + " animate-float [animation-delay:3s]"}>
                     <div className="flex items-center gap-2">
                       <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-white/10 border border-white/10">
                         <span className="w-2 h-2 rounded-full bg-white/60" />

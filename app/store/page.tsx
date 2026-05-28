@@ -23,12 +23,11 @@ const APPS = [
     id: "atlas",
     name: "RISEN Atlas",
     category: "Intelligence • Market Analyst",
-    description: "Your intelligent pocket market analyst. Real-time data, neural insights, and algorithmic trading signals at your fingertips.",
+    description: "Your unified intelligence hub. Real-time market surveillance, neural insights, and algorithmic signals in one terminal.",
     icon: "🧭",
     status: "deployed",
-    link: "#",
-    installable: true,
-    apkLink: "/apps/risen-atlas.apk",
+    link: "/atlas",
+    installable: false,
   },
   {
     id: "ai-engine",
@@ -46,7 +45,7 @@ const APPS = [
     category: "Utility • Telegram",
     description: "The neural command center for the RISEN ecosystem. Manage your assets, track market data, and interact with the protocol via Telegram.",
     icon: "🤖",
-    status: "maintenance",
+    status: "deployed",
     link: "https://t.me/RisenInfrastructureBot",
     installable: false,
   },
@@ -56,7 +55,7 @@ const APPS = [
     category: "Defi • Cross-chain",
     description: "Seamlessly migrate liquidity between meme tokens and major networks with optimized tax logic and routing.",
     icon: "🌉",
-    status: "deployed",
+    status: "development",
     link: "/bridge",
     installable: false,
   },
@@ -170,7 +169,7 @@ export default function AppStorePage() {
                     {/* Actions */}
                     <div className="flex flex-col gap-3">
                         <Link
-                            href={app.link}
+                            href={app.id === 'guardian' && typeof window !== 'undefined' && !localStorage.getItem("rush_token") ? "/guardian/login" : app.link}
                             target={app.link.startsWith('http') ? '_blank' : '_self'}
                             className={`w-full py-4 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center justify-center gap-2 transition-all active:scale-95 ${app.status === 'deployed' ? 'bg-white text-black hover:bg-risen-primary hover:text-white' : 'bg-white/5 text-white/20 cursor-not-allowed pointer-events-none'}`}
                         >

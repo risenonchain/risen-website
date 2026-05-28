@@ -11,22 +11,32 @@ import {
   User
 } from "lucide-react";
 import Link from "next/link";
-import { fetchGuardianAlerts, GuardianAlertResponse, fetchCurrentRushUser, MeResponse } from "@/lib/api";
+import {
+    fetchGuardianAlerts,
+    GuardianAlertResponse,
+    fetchCurrentRushUser,
+    MeResponse,
+    fetchGuardianStats,
+    GuardianStatsResponse
+} from "@/lib/api";
 
 export default function GuardianDashboard() {
   const [alerts, setAlerts] = useState<GuardianAlertResponse[]>([]);
+  const [stats, setStats] = useState<GuardianStatsResponse | null>(null);
   const [user, setUser] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [alertsData, userData] = await Promise.all([
+        const [alertsData, userData, statsData] = await Promise.all([
             fetchGuardianAlerts(),
-            fetchCurrentRushUser()
+            fetchCurrentRushUser(),
+            fetchGuardianStats().catch(() => null)
         ]);
         setAlerts(alertsData.slice(0, 5));
         setUser(userData);
+        setStats(statsData);
       } catch (err) {
         console.error("Failed to load dashboard data", err);
       } finally {
@@ -60,26 +70,26 @@ export default function GuardianDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Overall Safety"
-          value="98%"
+          value={stats?.safety_score || "98%"}
           subtitle="System wide score"
           icon={<ShieldCheck className="text-emerald-400" />}
           trend="+0.2%"
         />
         <StatCard
           title="Monitored Assets"
-          value="12"
+          value={stats?.monitored_assets.toString() || "0"}
           subtitle="Contracts & Wallets"
           icon={<Activity className="text-blue-400" />}
         />
         <StatCard
           title="Active Alerts"
-          value={alerts.length.toString()}
+          value={stats?.active_alerts.toString() || "0"}
           subtitle="Pending review"
           icon={<AlertTriangle className="text-amber-400" />}
         />
         <StatCard
           title="Total Scans"
-          value="1.2k"
+          value={stats?.total_scans.toString() || "0"}
           subtitle="Community total"
           icon={<History className="text-slate-400" />}
         />

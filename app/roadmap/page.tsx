@@ -29,10 +29,11 @@ export default function RoadmapPage() {
           "Official token launch and liquidity establishment",
           "Premium multi-language website rollout",
           "Live market data integration and analytics visibility",
-          "Telegram utility bot deployment and expansion",
-          "RISEN Rush launch as an engagement-based earning and ecosystem activity layer",
+          "Infrastructure Bot [LIVE]",
+          "RISEN Rush [LIVE] - Engagement-based earning and ecosystem activity layer",
+          "Neural Bridge [IN BUILD] - Cross-chain liquidity migration",
           "Initial RISEN AI development and ecosystem intelligence framework",
-          "Launch of early utility products including Memecoin Bridger and Dust Sweeper",
+          "Launch of early utility products including Dust Sweeper",
           "Community growth campaigns and ambassador activation",
           "Brand positioning, ecosystem messaging, and foundational trust layer refinement",
         ],
@@ -288,17 +289,41 @@ export default function RoadmapPage() {
                     </p>
 
                     <div className="mt-5 space-y-3">
-                      {active.milestones.map((milestone) => (
-                        <div
-                          key={milestone}
-                          className="flex items-start gap-3 rounded-xl border border-white/5 bg-white/[0.03] px-4 py-3"
-                        >
-                          <span className="mt-1 inline-block h-2 w-2 shrink-0 rounded-full bg-risen-primary shadow-[0_0_12px_rgba(46,219,255,0.95)]" />
-                          <p className="text-sm leading-relaxed text-white/78 sm:text-[15px]">
-                            {milestone}
-                          </p>
-                        </div>
-                      ))}
+                      {active.milestones.map((milestone) => {
+                        const isLive = milestone.includes("[LIVE]");
+                        const isInBuild = milestone.includes("[IN BUILD]");
+                        const cleanText = milestone.replace(/\[LIVE\]|\[IN BUILD\]/g, "").trim();
+
+                        return (
+                          <div
+                            key={milestone}
+                            className={`flex items-start gap-3 rounded-xl border px-4 py-3 transition-all ${
+                              isLive
+                                ? "border-emerald-500/30 bg-emerald-500/5"
+                                : isInBuild
+                                  ? "border-amber-500/30 bg-amber-500/5"
+                                  : "border-white/5 bg-white/[0.03]"
+                            }`}
+                          >
+                            <span className={`mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full shadow-[0_0_12px_rgba(46,219,255,0.95)] ${
+                              isLive ? "bg-emerald-500 shadow-emerald-500/50" : isInBuild ? "bg-amber-500 shadow-amber-500/50" : "bg-risen-primary"
+                            }`} />
+                            <div className="flex flex-1 items-center justify-between gap-4">
+                              <p className={`text-sm leading-relaxed sm:text-[15px] ${
+                                isLive ? "text-emerald-50" : isInBuild ? "text-amber-50" : "text-white/78"
+                              }`}>
+                                {cleanText}
+                              </p>
+                              {isLive && (
+                                <span className="shrink-0 px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">Live</span>
+                              )}
+                              {isInBuild && (
+                                <span className="shrink-0 px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-400 text-[9px] font-black uppercase tracking-widest border border-amber-500/20">In Build</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 

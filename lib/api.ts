@@ -552,6 +552,16 @@ export async function scanContract(address: string, network: string = "bsc"): Pr
   return request(`/guardian/scan/${address}?network=${network}`);
 }
 
+export async function scanWalletDust(address: string, network: string = "bsc"): Promise<any[]> {
+  // Mocking dust scan for now since it's not implemented in backend yet
+  return [
+    { name: "Pepe Fragment", symbol: "PEPE", balance: "1,240,000", value_usd: "4.12", icon: "🐸" },
+    { name: "Floki Dust", symbol: "FLOKI", balance: "45,000", value_usd: "0.85", icon: "🐕" },
+    { name: "Old Shib", symbol: "SHIB", balance: "120,000", value_usd: "1.20", icon: "🐕" },
+    { name: "Dusty BNB", symbol: "WBNB", balance: "0.002", value_usd: "1.15", icon: "🔶" },
+  ];
+}
+
 export async function fetchGuardianWatchlist(): Promise<GuardianWatchlistResponse[]> {
   return request("/guardian/watchlist");
 }
@@ -575,6 +585,17 @@ export async function markGuardianAlertRead(alertId: number) {
   return request(`/guardian/alerts/${alertId}/read`, {
     method: "PATCH",
   });
+}
+
+export type GuardianStatsResponse = {
+  total_scans: number;
+  active_alerts: number;
+  monitored_assets: number;
+  safety_score: string;
+};
+
+export async function fetchGuardianStats(): Promise<GuardianStatsResponse> {
+  return request("/guardian/stats");
 }
 
 export async function explainGuardianScan(scanId: number): Promise<{ explanation: string }> {

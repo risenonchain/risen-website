@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Zap,
   Trash2,
@@ -9,23 +10,38 @@ import {
   RefreshCw,
   AlertCircle,
   ShieldCheck,
-  Search
+  Search,
+  ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
-
-const MOCK_DUST = [
-  { name: "Pepe AI", symbol: "PAI", balance: "12,400.22", value: "$0.04", icon: "🐸" },
-  { name: "Inu Moon", symbol: "INM", balance: "0.00004", value: "$0.001", icon: "🐕" },
-  { name: "Safu Rug", symbol: "SRUG", balance: "1,000,000", value: "$0.00", icon: "🧹" },
-];
+import { scanWalletDust } from "@/lib/api";
 
 export default function DustSweeper() {
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [dust, setDust] = useState<any[]>([]);
+  const [wallet, setWallet] = useState("0x0000...0000");
+  const router = useRouter();
 
-  const startScan = () => {
+  useEffect(() => {
+    if (typeof window !== "undefined" && !localStorage.getItem("rush_token")) {
+      router.replace("/sweeper/login");
+    }
+  }, [router]);
+
+  const startScan = async () => {
+    // In a real app, we'd get this from the connected wallet
+    const addr = "0x873a984B10265dD40fB67D3A7c7E5C8554340c3";
+    setWallet(addr);
     setScanning(true);
-    setTimeout(() => setScanning(false), 3000);
+    try {
+        const data = await scanWalletDust(addr, "bsc");
+        setDust(data);
+    } catch (e) {
+        console.error("Dust Scan Failed", e);
+    } finally {
+        setScanning(false);
+    }
   };
 
   return (
@@ -38,9 +54,9 @@ export default function DustSweeper() {
       <nav className="max-w-7xl mx-auto px-6 py-8 flex items-center justify-between relative z-10">
         <Link href="/store" className="flex items-center gap-3 group">
           <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-amber-400/50 transition-all">
-             <span className="text-white/40 group-hover:text-white">←</span>
+             <ChevronLeft size={16} className="text-white/40 group-hover:text-white" />
           </div>
-          <span className="text-sm font-black uppercase tracking-widest text-white/40 group-hover:text-white transition-colors italic">App Store</span>
+          <span className="text-sm font-black uppercase tracking-widest text-white/40 group-hover:text-white transition-colors italic">Back to App Store</span>
         </Link>
         <div className="flex items-center gap-4">
            <div className="px-4 py-2 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-black uppercase tracking-widest italic">Sweeper_Protocol_v1.0</div>
@@ -68,7 +84,7 @@ export default function DustSweeper() {
                      </div>
                      <div>
                         <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">Active Wallet</div>
-                        <div className="text-xs font-black text-white italic">0x...7A42</div>
+                        <div className="text-xs font-black text-white italic truncate max-w-[120px]">{wallet}</div>
                      </div>
                   </div>
                   <div className="space-y-1">
@@ -96,7 +112,7 @@ export default function DustSweeper() {
                   </div>
 
                   <div className="space-y-4">
-                     {MOCK_DUST.map((token, i) => (
+                     {dust.length > 0 ? dust.map((token, i) => (
                         <div key={i} className="flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 group hover:border-amber-400/30 transition-all">
                            <div className="flex items-center gap-4">
                               <span className="text-2xl">{token.icon}</span>
@@ -106,11 +122,15 @@ export default function DustSweeper() {
                               </div>
                            </div>
                            <div className="text-right flex items-center gap-6">
-                              <div className="text-xs font-black text-amber-400/80">{token.value}</div>
+                              <div className="text-xs font-black text-amber-400/80">${token.value_usd}</div>
                               <div className="h-5 w-5 rounded-md border-2 border-white/10 group-hover:border-amber-400/40" />
                            </div>
                         </div>
-                     ))}
+                     )) : (
+                        <div className="py-10 text-center text-white/10 uppercase font-black text-[10px] tracking-widest italic">
+                            Awaiting Neural Scan...
+                        </div>
+                     )}
                   </div>
 
                   <div className="mt-10 pt-8 border-t border-white/5">

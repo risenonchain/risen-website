@@ -9,7 +9,8 @@ export default function GuardianLayout({ children }: { children: React.ReactNode
   const router = useRouter();
 
   useEffect(() => {
-    if (!hasRushToken() && pathname !== "/guardian/login") {
+    const token = localStorage.getItem("rush_token");
+    if (!token && pathname !== "/guardian/login") {
       router.replace("/guardian/login");
     }
   }, [pathname, router]);

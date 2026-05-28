@@ -3,6 +3,7 @@ import "./globals.css";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import ClientNavbarWrapper from "@/components/ClientNavbarWrapper";
+import PremiumNavbar from "@/components/PremiumNavbar";
 import AnnouncementModal from "@/components/AnnouncementModal";
 import { LanguageProvider } from "@/context/LanguageContext";
 import AIButton from "@/components/ai/AIButton";
@@ -24,8 +25,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const isRush = pathname.startsWith("/rush");
   const isAI = pathname.startsWith("/ai");
   const isGuardian = pathname.startsWith("/guardian");
+  const isBridge = pathname.startsWith("/bridge");
+  const isSweeper = pathname.startsWith("/sweeper");
 
-  const showMainUI = !isAdmin && !isRush && !isAI && !isGuardian;
+  const showMainUI = !isAdmin && !isRush && !isAI && !isGuardian && !isBridge && !isSweeper;
 
   return (
     <html lang="en">
@@ -39,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </Head>
       <body>
         <LanguageProvider>
+          <PremiumNavbar />
           {/* ONLY MAIN SITE */}
           {showMainUI && <ClientNavbarWrapper />}
           {(showMainUI || isAI) && <AIButton />}

@@ -1,5 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { hasRushToken } from "@/lib/api";
 import {
   Zap,
   ArrowRightLeft,
@@ -8,7 +10,8 @@ import {
   Info,
   RefreshCw,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
 
@@ -24,6 +27,13 @@ export default function NeuralBridge() {
   const [toNet, setToNet] = useState(NETWORKS[0]); // ETH
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && !localStorage.getItem("rush_token")) {
+      router.replace("/bridge/login");
+    }
+  }, [router]);
 
   const swapNetworks = () => {
     const temp = fromNet;
@@ -41,9 +51,9 @@ export default function NeuralBridge() {
       <nav className="max-w-7xl mx-auto px-6 py-8 flex items-center justify-between relative z-10">
         <Link href="/store" className="flex items-center gap-3 group">
           <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-blue-500/50 transition-all">
-             <span className="text-white/40 group-hover:text-white">←</span>
+             <ChevronLeft size={16} className="text-white/40 group-hover:text-white" />
           </div>
-          <span className="text-sm font-black uppercase tracking-widest text-white/40 group-hover:text-white transition-colors italic">App Store</span>
+          <span className="text-sm font-black uppercase tracking-widest text-white/40 group-hover:text-white transition-colors italic">Back to App Store</span>
         </Link>
         <div className="flex items-center gap-4">
            <div className="px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-black uppercase tracking-widest italic">Neural_Bridge_v1.0</div>

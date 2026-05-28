@@ -87,10 +87,14 @@ export default function Navbar() {
     <div
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-700 ${
         scrolled
-          ? "py-3 bg-[#010913]/80 backdrop-blur-2xl border-b border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
+          ? "py-3 bg-[#010913]/80 backdrop-blur-2xl border-b border-risen-primary/20 shadow-[0_10px_40px_rgba(0,0,0,0.4)]"
           : "py-6 bg-transparent"
       }`}
     >
+      {/* Premium Animated Border */}
+      {scrolled && (
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-risen-primary/50 to-transparent animate-shimmer" />
+      )}
       <div className="max-w-[1400px] mx-auto px-6 flex items-center justify-between">
         {/* Brand */}
         <div
@@ -150,9 +154,10 @@ export default function Navbar() {
                     href={RISEN_BUY_LINK}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-8 py-3 rounded-2xl bg-risen-primary text-white font-black uppercase text-[10px] tracking-widest shadow-[0_0_30px_rgba(46,219,255,0.3)] hover:scale-105 active:scale-95 transition-all"
+                    className="px-8 py-3 rounded-2xl bg-risen-primary text-white font-black uppercase text-[10px] tracking-widest shadow-[0_0_30px_rgba(46,219,255,0.3)] hover:shadow-[0_0_50px_rgba(46,219,255,0.6)] hover:scale-105 active:scale-95 transition-all relative overflow-hidden group/buy"
                 >
-                    Buy $RSN
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/buy:animate-shimmer-fast" />
+                    <span className="relative z-10">Buy $RSN</span>
                 </a>
             )}
 
