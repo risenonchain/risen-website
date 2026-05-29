@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 
+import { hasRushToken } from "@/lib/api";
+
 const AcademicRoom = dynamic(() => import("@/components/ai/AcademicRoom"), { ssr: false });
 const MarketWarRoom = dynamic(() => import("@/components/ai/MarketWarRoom"), { ssr: false });
 const AvatarForge = dynamic(() => import("@/components/ai/AvatarForge"), { ssr: false });
@@ -19,7 +21,7 @@ export default function AIPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !localStorage.getItem("risen_ai_token")) {
+    if (typeof window !== "undefined" && !hasRushToken()) {
       router.replace("/ai/login");
     }
   }, [router]);

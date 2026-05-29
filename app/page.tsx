@@ -454,7 +454,7 @@ export default function Home() {
                   <Image
                     src={logo}
                     alt="RISEN Logo"
-                    className="w-40 sm:w-52 md:w-64 lg:w-72 relative drop-shadow-[0_0_70px_rgba(46,219,255,0.80)]"
+                    className="w-56 sm:w-72 md:w-80 lg:w-[420px] relative drop-shadow-[0_0_90px_rgba(46,219,255,0.90)]"
                     priority
                   />
                 </div>

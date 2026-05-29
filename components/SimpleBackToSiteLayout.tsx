@@ -28,10 +28,11 @@ export default function SimpleBackToSiteLayout({ children }: { children: React.R
 
   return (
     <div>
-      <div style={{ padding: "1rem", background: "#010913", textAlign: "center" }}>
-        <a href="/" style={{ color: "#2EDBFF", fontWeight: 600, fontSize: 16, cursor: "pointer" }} onClick={handleBack}>
-          Back to Main Site
+      <div style={{ padding: "0.75rem 2rem", background: "#010913", borderBottom: "1px solid rgba(46, 219, 255, 0.1)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <a href="/" style={{ color: "rgba(255, 255, 255, 0.4)", fontWeight: 800, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.2em", cursor: "pointer", fontStyle: "italic", display: "flex", alignItems: "center", gap: "0.5rem" }} onClick={handleBack}>
+          <span style={{ fontSize: 14 }}>←</span> Back to Terminal
         </a>
+        <div style={{ color: "#2EDBFF", fontWeight: 900, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.4em" }}>RISEN Neural Network</div>
       </div>
       {children}
     </div>

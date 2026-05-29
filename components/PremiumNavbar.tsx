@@ -14,6 +14,7 @@ import {
   Sparkles
 } from "lucide-react";
 
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { RISEN_BUY_LINK, RISEN_IS_CONTRACT_LIVE } from "@/lib/risenConfig";
 
 const NAV_LINKS = [
@@ -108,12 +109,11 @@ export default function PremiumNavbar() {
                 </a>
             )}
 
-            <Link
-              href="/rush"
-              className="hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white/60 font-black uppercase text-[10px] tracking-widest hover:border-white/20 hover:text-white transition-all"
-            >
-              Launch App
-            </Link>
+            <div className="hidden md:block h-10 w-px bg-white/10 mx-2" />
+
+            <div className="hidden md:block">
+                <LanguageSwitcher />
+            </div>
 
             {/* Mobile Toggle */}
             <button

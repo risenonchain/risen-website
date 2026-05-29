@@ -115,51 +115,71 @@ export default function DocumentEngine({
         )}
 
         {/* Markdown */}
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            h1: ({ children }) => {
-              const ref = useRef(null);
-              const isInView = useInView(ref, { once: false, margin: "-40% 0px -40% 0px" });
+        <div className="prose prose-invert max-w-none">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              h1: ({ children }) => {
+                const ref = useRef(null);
+                const isInView = useInView(ref, { once: false, margin: "-40% 0px -40% 0px" });
 
-              return (
-                <div ref={ref} className="mt-28 mb-12">
-                  <div
-                    className={`inline-block px-6 py-3 rounded-xl border transition-all duration-500 ${
-                      isInView
-                        ? "border-risen-primary shadow-[0_0_30px_rgba(46,219,255,0.4)]"
-                        : "border-white/10"
-                    } bg-white/5 backdrop-blur-md`}
-                  >
-                    <h1
-                      id={children?.toString().toLowerCase().replace(/\s+/g, "-")}
-                      className="text-3xl font-bold text-risen-primary tracking-tight"
+                return (
+                  <div ref={ref} className="mt-28 mb-12">
+                    <div
+                      className={`inline-block px-6 py-3 rounded-xl border transition-all duration-500 ${
+                        isInView
+                          ? "border-risen-primary shadow-[0_0_30px_rgba(46,219,255,0.4)]"
+                          : "border-white/10"
+                      } bg-white/5 backdrop-blur-md`}
                     >
-                      {children}
-                    </h1>
+                      <h1
+                        id={children?.toString().toLowerCase().replace(/\s+/g, "-")}
+                        className="text-3xl font-black text-risen-primary tracking-tighter uppercase italic"
+                      >
+                        {children}
+                      </h1>
+                    </div>
                   </div>
+                );
+              },
+              h2: ({ children }) => (
+                <h2 className="text-2xl font-bold text-white mt-16 mb-6 tracking-tight border-b border-white/5 pb-4">
+                  {children}
+                </h2>
+              ),
+              h3: ({ children }) => (
+                <h3 className="text-xl font-bold text-risen-primary/80 mt-12 mb-4">
+                  {children}
+                </h3>
+              ),
+              p: ({ children }) => (
+                <p className="text-gray-300 leading-relaxed mb-6 text-base md:text-lg">
+                  {children}
+                </p>
+              ),
+              ul: ({ children }) => (
+                <ul className="space-y-4 text-gray-300 mb-8 list-disc pl-6">
+                  {children}
+                </ul>
+              ),
+              li: ({ children }) => (
+                <li className="leading-relaxed">{children}</li>
+              ),
+              blockquote: ({ children }) => (
+                <div className="border-l-4 border-risen-primary bg-risen-primary/5 px-8 py-6 italic text-gray-300 my-10 rounded-r-2xl">
+                  {children}
                 </div>
-              );
-            },
-            p: ({ children }) => (
-              <p className="text-gray-300 leading-relaxed mb-6">
-                {children}
-              </p>
-            ),
-            ul: ({ children }) => (
-              <ul className="space-y-3 text-gray-300 mb-6">
-                {children}
-              </ul>
-            ),
-            blockquote: ({ children }) => (
-              <div className="border-l-4 border-risen-primary pl-6 italic text-gray-300 my-8">
-                {children}
-              </div>
-            ),
-          }}
-        >
-          {content}
-        </ReactMarkdown>
+              ),
+              code: ({ children }) => (
+                <code className="bg-white/10 px-1.5 py-0.5 rounded text-risen-primary font-mono text-sm">
+                  {children}
+                </code>
+              ),
+            }}
+          >
+            {content}
+          </ReactMarkdown>
+        </div>
       </div>
     </LazyMotion>
   );

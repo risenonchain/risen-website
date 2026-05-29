@@ -73,21 +73,24 @@ export default function GuardianLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 relative overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#01070e] text-slate-200 relative overflow-hidden font-sans p-6">
+
+      {/* Back Link */}
+      <div className="absolute top-8 left-8 z-50">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors text-xs font-black uppercase tracking-widest italic"
+        >
+          <ChevronLeft size={16} />
+          Back to Terminal
+        </Link>
+      </div>
 
       {/* Visual background */}
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/5 blur-[120px] rounded-full -z-10" />
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[100px] rounded-full -z-10" />
 
-      <div className="w-full max-w-md px-6">
-        <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-slate-500 hover:text-white transition-colors mb-10 text-sm font-medium"
-        >
-            <ChevronLeft size={16} />
-            Back to Website
-        </Link>
-
+      <div className="w-full max-w-md">
         <form
             onSubmit={handleSubmit}
             className="bg-slate-900/50 border border-slate-800 p-10 rounded-[32px] shadow-2xl backdrop-blur-xl flex flex-col items-center"

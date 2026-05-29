@@ -3,7 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { loginRushUser, getTurnstileSiteKey } from "@/lib/api";
+import { loginRushUser, getTurnstileSiteKey, saveRushAuth } from "@/lib/api";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 export default function AILoginPage() {
   const [email, setEmail] = useState("");
@@ -57,8 +59,8 @@ export default function AILoginPage() {
     try {
       const data = await loginRushUser({ email, password }, turnstileToken);
       if (data.access_token) {
+        saveRushAuth(data.access_token);
         localStorage.setItem("risen_ai_token", data.access_token);
-        localStorage.setItem("rush_token", data.access_token);
         router.replace("/ai");
       }
     } catch (err: any) {
@@ -73,7 +75,18 @@ export default function AILoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#010913] text-white relative overflow-hidden font-sans">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#010913] text-white relative overflow-hidden font-sans p-6">
+
+      {/* Back Link */}
+      <div className="absolute top-8 left-8 z-50">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-white/40 hover:text-white transition-colors text-xs font-black uppercase tracking-widest italic"
+        >
+          <ChevronLeft size={16} />
+          Back to Terminal
+        </Link>
+      </div>
 
       {/* 🌌 DYNAMIC BACKGROUND */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(46,219,255,0.12),transparent_70%)] pointer-events-none" />

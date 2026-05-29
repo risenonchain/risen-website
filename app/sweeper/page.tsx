@@ -14,28 +14,30 @@ import {
   ChevronLeft
 } from "lucide-react";
 import Link from "next/link";
-import { scanWalletDust } from "@/lib/api";
+import { scanWalletDust, hasRushToken } from "@/lib/api";
 
 export default function DustSweeper() {
   const [loading, setLoading] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [dust, setDust] = useState<any[]>([]);
-  const [wallet, setWallet] = useState("0x0000...0000");
+  const [wallet, setWallet] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !localStorage.getItem("rush_token")) {
+    if (typeof window !== "undefined" && !hasRushToken()) {
       router.replace("/sweeper/login");
     }
   }, [router]);
 
   const startScan = async () => {
-    // In a real app, we'd get this from the connected wallet
-    const addr = "0x873a984B10265dD40fB67D3A7c7E5C8554340c3";
-    setWallet(addr);
+    if (!wallet || !wallet.startsWith("0x")) {
+        alert("Please enter a valid wallet address");
+        return;
+    }
+
     setScanning(true);
     try {
-        const data = await scanWalletDust(addr, "bsc");
+        const data = await scanWalletDust(wallet, "bsc");
         setDust(data);
     } catch (e) {
         console.error("Dust Scan Failed", e);
@@ -83,8 +85,14 @@ export default function DustSweeper() {
                         <Wallet size={18} className="text-white/40" />
                      </div>
                      <div>
-                        <div className="text-[10px] font-black text-white/20 uppercase tracking-widest">Active Wallet</div>
-                        <div className="text-xs font-black text-white italic truncate max-w-[120px]">{wallet}</div>
+                        <div className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Active Wallet</div>
+                        <input
+                            type="text"
+                            placeholder="0x..."
+                            value={wallet}
+                            onChange={(e) => setWallet(e.target.value)}
+                            className="bg-black/40 border border-white/5 rounded-xl px-4 py-2 w-full text-xs font-black text-white italic outline-none focus:border-amber-400/50 transition-all"
+                        />
                      </div>
                   </div>
                   <div className="space-y-1">

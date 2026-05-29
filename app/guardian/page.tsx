@@ -11,13 +11,15 @@ import {
   User
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     fetchGuardianAlerts,
     GuardianAlertResponse,
     fetchCurrentRushUser,
     MeResponse,
     fetchGuardianStats,
-    GuardianStatsResponse
+    GuardianStatsResponse,
+    hasRushToken
 } from "@/lib/api";
 
 export default function GuardianDashboard() {
@@ -25,8 +27,14 @@ export default function GuardianDashboard() {
   const [stats, setStats] = useState<GuardianStatsResponse | null>(null);
   const [user, setUser] = useState<MeResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
+    if (!hasRushToken()) {
+      router.replace("/guardian/login");
+      return;
+    }
+
     async function loadData() {
       try {
         const [alertsData, userData, statsData] = await Promise.all([
@@ -39,12 +47,13 @@ export default function GuardianDashboard() {
         setStats(statsData);
       } catch (err) {
         console.error("Failed to load dashboard data", err);
+        router.replace("/guardian/login");
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, []);
+  }, [router]);
 
   return (
     <div className="space-y-10">
