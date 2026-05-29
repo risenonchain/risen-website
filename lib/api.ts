@@ -553,13 +553,14 @@ export async function scanContract(address: string, network: string = "bsc"): Pr
 }
 
 export async function scanWalletDust(address: string, network: string = "bsc"): Promise<any[]> {
-  // Mocking dust scan for now since it's not implemented in backend yet
-  return [
-    { name: "Pepe Fragment", symbol: "PEPE", balance: "1,240,000", value_usd: "4.12", icon: "🐸" },
-    { name: "Floki Dust", symbol: "FLOKI", balance: "45,000", value_usd: "0.85", icon: "🐕" },
-    { name: "Old Shib", symbol: "SHIB", balance: "120,000", value_usd: "1.20", icon: "🐕" },
-    { name: "Dusty BNB", symbol: "WBNB", balance: "0.002", value_usd: "1.15", icon: "🔶" },
-  ];
+  return request(`/sweeper/scan?address=${address}&chain=${network}`);
+}
+
+export async function convertDust(address: string, tokens: string[]): Promise<any> {
+  return request(`/sweeper/convert?address=${address}`, {
+    method: "POST",
+    body: JSON.stringify(tokens)
+  });
 }
 
 export async function fetchGuardianWatchlist(): Promise<GuardianWatchlistResponse[]> {
