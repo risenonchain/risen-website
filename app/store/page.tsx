@@ -23,11 +23,12 @@ const APPS = [
     id: "atlas",
     name: "RISEN Atlas",
     category: "Intelligence • Market Analyst",
-    description: "Your unified intelligence hub. Real-time market surveillance, neural insights, and algorithmic signals in one terminal.",
+    description: "Your intelligent pocket market analyst. Real-time data, neural insights, and algorithmic trading signals at your fingertips.",
     icon: "🧭",
     status: "deployed",
-    link: "/atlas",
-    installable: false,
+    link: "#",
+    installable: true,
+    apkLink: "/apps/risen-atlas.apk",
   },
   {
     id: "ai-engine",
@@ -77,8 +78,7 @@ const APPS = [
     icon: "🛡️",
     status: "deployed",
     link: "/guardian",
-    installable: true,
-    apkLink: "/apps/risen-guardian.apk",
+    installable: false,
   }
 ];
 

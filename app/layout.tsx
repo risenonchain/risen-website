@@ -2,7 +2,6 @@
 import "./globals.css";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import ClientNavbarWrapper from "@/components/ClientNavbarWrapper";
 import PremiumNavbar from "@/components/PremiumNavbar";
 import AnnouncementModal from "@/components/AnnouncementModal";
 import { LanguageProvider } from "@/context/LanguageContext";
@@ -43,8 +42,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <LanguageProvider>
           <PremiumNavbar />
-          {/* ONLY MAIN SITE */}
-          {showMainUI && <ClientNavbarWrapper />}
           {(showMainUI || isAI) && <AIButton />}
           {(showMainUI || isAI) && <AIDrawer />}
           {showMainUI && <AnnouncementModal />}

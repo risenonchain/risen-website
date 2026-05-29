@@ -14,6 +14,8 @@ import {
   Sparkles
 } from "lucide-react";
 
+import { RISEN_BUY_LINK, RISEN_IS_CONTRACT_LIVE } from "@/lib/risenConfig";
+
 const NAV_LINKS = [
   { name: "Structure", href: "/#structure" },
   { name: "Engine", href: "/#capital" },
@@ -40,7 +42,9 @@ export default function PremiumNavbar() {
                     pathname.startsWith("/bridge") ||
                     pathname.startsWith("/sweeper") ||
                     pathname.startsWith("/rush") ||
-                    pathname.startsWith("/ai");
+                    pathname.startsWith("/ai") ||
+                    pathname.startsWith("/atlas") ||
+                    pathname.startsWith("/admin");
 
   if (isAppPage) return null;
 
@@ -89,12 +93,26 @@ export default function PremiumNavbar() {
               <span className="text-[10px] font-black uppercase tracking-widest text-white">{isScrolled ? "Store" : "App Store"}</span>
             </Link>
 
+            {RISEN_IS_CONTRACT_LIVE && (
+                <a
+                    href={RISEN_BUY_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative group px-8 py-2.5 rounded-xl bg-risen-primary text-white font-black uppercase text-[10px] tracking-widest shadow-[0_0_30px_rgba(46,219,255,0.3)] hover:shadow-[0_0_50px_rgba(46,219,255,0.6)] hover:scale-[1.02] active:scale-95 transition-all overflow-hidden"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer-fast" />
+                    <span className="relative z-10 flex items-center gap-2">
+                        <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                        Buy $RSN
+                    </span>
+                </a>
+            )}
+
             <Link
               href="/rush"
-              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-risen-primary text-white font-black uppercase text-[10px] tracking-widest shadow-[0_0_30px_rgba(46,219,255,0.3)] hover:shadow-[0_0_40px_rgba(46,219,255,0.5)] hover:scale-[1.02] active:scale-95 transition-all"
+              className="hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-xl border border-white/10 bg-white/5 text-white/60 font-black uppercase text-[10px] tracking-widest hover:border-white/20 hover:text-white transition-all"
             >
-              <Sparkles size={14} className="fill-white" />
-              Launch
+              Launch App
             </Link>
 
             {/* Mobile Toggle */}
