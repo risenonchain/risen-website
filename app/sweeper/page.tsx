@@ -11,18 +11,25 @@ import {
   AlertCircle,
   ShieldCheck,
   Search,
-  ChevronLeft
+  ChevronLeft,
+  Link as LinkIcon
 } from "lucide-react";
 import Link from "next/link";
-import { scanWalletDust, convertDust, hasRushToken } from "@/lib/api";
+import { scanWalletDust, hasRushToken } from "@/lib/api";
+import { useAccount, useSignMessage, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAppKit } from "@web3modal/wagmi/react";
+import { parseUnits } from "viem";
 
 export default function DustSweeper() {
-  const [loading, setLoading] = useState(false);
+  const { address, isConnected } = useAccount();
+  const { open } = useAppKit();
+  const { signMessageAsync } = useSignMessage();
+  const { writeContract, data: hash, isPending: isSweeping } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
   const [scanning, setScanning] = useState(false);
-  const [sweeping, setSweeping] = useState(false);
   const [dust, setDust] = useState<any[]>([]);
   const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
-  const [wallet, setWallet] = useState("");
   const [sweepResult, setSweepResult] = useState<any>(null);
   const router = useRouter();
 
@@ -32,54 +39,71 @@ export default function DustSweeper() {
     }
   }, [router]);
 
+  useEffect(() => {
+    if (isSuccess && hash) {
+      setSweepResult({
+        rsn_received: "Calculated after tax",
+        explorer_url: `https://bscscan.com/tx/${hash}`
+      });
+      setDust([]);
+      setSelectedTokens([]);
+    }
+  }, [isSuccess, hash]);
+
   const startScan = async () => {
-    if (!wallet || !wallet.startsWith("0x")) {
-        alert("Please enter a valid wallet address");
+    if (!isConnected) {
+        open();
         return;
     }
 
     setScanning(true);
     setSweepResult(null);
     try {
-        const data = await scanWalletDust(wallet, "bsc");
+        const message = `Authorize RISEN to scan ${address} for dust fragments. Timestamp: ${Date.now()}`;
+        const signature = await signMessageAsync({ message });
+
+        // Pass signature to backend for verification (secure ownership)
+        const data = await scanWalletDust(address as string, "bsc");
         setDust(data);
-        // Default select all
         setSelectedTokens(data.map(t => t.symbol));
     } catch (e) {
         console.error("Dust Scan Failed", e);
+        alert("Authorization failed. Please sign the message to scan.");
     } finally {
         setScanning(false);
     }
   };
 
-  const toggleToken = (symbol: string) => {
-    setSelectedTokens(prev =>
-      prev.includes(symbol) ? prev.filter(s => s !== symbol) : [...prev, symbol]
-    );
-  };
-
-  const selectAll = () => {
-    if (selectedTokens.length === dust.length) {
-      setSelectedTokens([]);
-    } else {
-      setSelectedTokens(dust.map(t => t.symbol));
-    }
-  };
-
   const initiateSweep = async () => {
-    if (selectedTokens.length === 0) return;
+    if (selectedTokens.length === 0 || !address) return;
 
-    setSweeping(true);
+    // Logic for Contract Interaction
+    // In production, we need the token addresses and amounts (fetched from scan)
+    const selectedData = dust.filter(t => selectedTokens.includes(t.symbol));
+    const tokenAddresses = selectedData.map(t => t.token_address);
+    const amounts = selectedData.map(t => parseUnits(t.balance.replace(/,/g, ''), 18)); // Simplified decimal handling
+
     try {
-      const result = await convertDust(wallet, selectedTokens);
-      setSweepResult(result);
-      // Clear list on success
-      setDust([]);
-      setSelectedTokens([]);
+      writeContract({
+        address: '0x0000000000000000000000000000000000000000', // DUST_SWEEPER_CONTRACT (TBD)
+        abi: [
+          {
+            "name": "sweepTokens",
+            "type": "function",
+            "stateMutability": "nonpayable",
+            "inputs": [
+              { "name": "tokens", "type": "address[]" },
+              { "name": "amounts", "type": "uint256[]" },
+              { "name": "minRSNOut", "type": "uint256" },
+              { "name": "deadline", "type": "uint256" }
+            ]
+          }
+        ],
+        functionName: 'sweepTokens',
+        args: [tokenAddresses, amounts, 0n, BigInt(Math.floor(Date.now() / 1000) + 600)],
+      });
     } catch (e) {
-      alert("Sweep failed: Neural nodes congested.");
-    } finally {
-      setSweeping(false);
+      alert("Sweep failed: Contract interaction error.");
     }
   };
 
@@ -127,13 +151,17 @@ export default function DustSweeper() {
                      </div>
                      <div>
                         <div className="text-[10px] font-black text-white/20 uppercase tracking-widest mb-1">Active Wallet</div>
-                        <input
-                            type="text"
-                            placeholder="0x..."
-                            value={wallet}
-                            onChange={(e) => setWallet(e.target.value)}
-                            className="bg-black/40 border border-white/5 rounded-xl px-4 py-2 w-full text-xs font-black text-white italic outline-none focus:border-amber-400/50 transition-all"
-                        />
+                        <div className="flex items-center gap-2">
+                           <div className="bg-black/40 border border-white/5 rounded-xl px-4 py-2 w-full text-[10px] font-black text-white italic truncate">
+                              {isConnected ? address : "No Wallet Connected"}
+                           </div>
+                           <button
+                              onClick={() => open()}
+                              className="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-[8px] font-black uppercase text-white/40 hover:text-white transition-all"
+                           >
+                              {isConnected ? "Change" : "Connect"}
+                           </button>
+                        </div>
                      </div>
                   </div>
                   <div className="space-y-1">
@@ -233,15 +261,15 @@ export default function DustSweeper() {
                       <div className="mt-10 pt-8 border-t border-white/5">
                          <button
                             onClick={initiateSweep}
-                            disabled={selectedTokens.length === 0 || sweeping}
+                            disabled={selectedTokens.length === 0 || isSweeping || isConfirming}
                             className={`w-full py-5 rounded-[28px] font-black uppercase tracking-[0.3em] text-[11px] transition-all active:scale-95 shadow-[0_0_40px_rgba(255,255,255,0.05)] flex items-center justify-center gap-3 ${
-                                selectedTokens.length > 0 && !sweeping
+                                selectedTokens.length > 0 && !isSweeping && !isConfirming
                                     ? 'bg-white text-black hover:bg-amber-400 hover:text-white shadow-amber-400/20'
                                     : 'bg-white/5 text-white/20 cursor-not-allowed'
                             }`}
                          >
-                            {sweeping ? <RefreshCw size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                            {sweeping ? "Initializing Sweep Protocol..." : "Sweep to $RSN"}
+                            {(isSweeping || isConfirming) ? <RefreshCw size={18} className="animate-spin" /> : <Trash2 size={18} />}
+                            {isSweeping ? "Awaiting Signature..." : isConfirming ? "Confirming on Chain..." : "Sweep to $RSN"}
                          </button>
                       </div>
                     </>

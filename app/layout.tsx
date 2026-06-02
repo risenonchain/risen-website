@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import PremiumNavbar from "@/components/PremiumNavbar";
 import AnnouncementModal from "@/components/AnnouncementModal";
 import { LanguageProvider } from "@/context/LanguageContext";
+import { Web3Provider } from "@/context/Web3Provider";
 import AIButton from "@/components/ai/AIButton";
 import AIDrawer from "@/components/ai/AIDrawer";
 import Head from "next/head";
@@ -40,13 +41,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ></script>
       </Head>
       <body>
-        <LanguageProvider>
-          <PremiumNavbar />
-          {(showMainUI || isAI) && <AIButton />}
-          {(showMainUI || isAI) && <AIDrawer />}
-          {showMainUI && <AnnouncementModal />}
-          {children}
-        </LanguageProvider>
+        <Web3Provider>
+          <LanguageProvider>
+            <PremiumNavbar />
+            {(showMainUI || isAI) && <AIButton />}
+            {(showMainUI || isAI) && <AIDrawer />}
+            {showMainUI && <AnnouncementModal />}
+            {children}
+          </LanguageProvider>
+        </Web3Provider>
       </body>
     </html>
   );
