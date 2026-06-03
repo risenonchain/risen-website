@@ -51,8 +51,11 @@ export default function AdminLoginPage() {
         },
         body: formData.toString(),
       });
-      if (!res.ok) throw new Error("Invalid credentials");
-      const { access_token } = await res.json();
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Login failed");
+
+      const { access_token } = data;
       localStorage.setItem("risen_admin_token", access_token);
       router.replace("/admin");
     } catch (err: any) {
