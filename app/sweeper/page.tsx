@@ -17,12 +17,12 @@ import {
 import Link from "next/link";
 import { scanWalletDust, hasRushToken } from "@/lib/api";
 import { useAccount, useSignMessage, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { useAppKit } from "@web3modal/wagmi/react";
+import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { parseUnits } from "viem";
 
 export default function DustSweeper() {
   const { address, isConnected } = useAccount();
-  const { open } = useAppKit();
+  const { open } = useWeb3Modal();
   const { signMessageAsync } = useSignMessage();
   const { writeContract, data: hash, isPending: isSweeping } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });

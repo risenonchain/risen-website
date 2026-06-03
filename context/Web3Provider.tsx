@@ -1,7 +1,6 @@
 "use client";
 
-import { createAppKit } from '@web3modal/wagmi/react'
-import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
+import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 
 import { WagmiProvider } from 'wagmi'
 import { bsc, mainnet, polygon } from 'wagmi/chains'
@@ -30,7 +29,7 @@ export const config = defaultWagmiConfig({
 })
 
 // 3. Create modal
-createAppKit({
+createWeb3Modal({
   wagmiConfig: config,
   projectId,
   enableAnalytics: true, // Optional - defaults to your Cloud configuration
