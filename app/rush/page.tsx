@@ -750,16 +750,20 @@ function LobbyView({
   // Calculate premium days left
   const daysLeft = isPremium && user?.premium_expires_at ? Math.max(0, Math.ceil((new Date(user.premium_expires_at).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))) : null;
 
+  // Grace period logic (3 days)
+  const isExpired = isPremium && user?.premium_expires_at && new Date() > new Date(user.premium_expires_at);
+  const isInGracePeriod = isExpired && daysLeft !== null && daysLeft <= 0 && (new Date().getTime() - new Date(user.premium_expires_at).getTime()) <= (3 * 24 * 60 * 60 * 1000);
+
   return (
     <div className="relative flex flex-col w-full min-h-screen pb-32 md:pb-44 overflow-y-auto font-sans">
       <div className={`absolute inset-0 -z-10 ${isPremium ? "bg-[radial-gradient(circle_at_top_right,rgba(251,191,36,0.12),transparent_30%)]" : "bg-[radial-gradient(circle_at_top_right,rgba(46,219,255,0.14),transparent_30%)]"}`} />
 
       {/* Announcements Bar */}
-      {(announcement || daysLeft !== null) && (
+      {(announcement || (daysLeft !== null && !isExpired)) && (
         <div className="w-full bg-black/40 backdrop-blur-md border-b border-white/5 py-3 px-6 overflow-hidden">
           <div className="max-w-7xl mx-auto flex items-center gap-6 overflow-hidden whitespace-nowrap">
             <div className="flex-1 flex items-center gap-4 animate-[marquee_20s_linear_infinite]">
-              {daysLeft !== null && (
+              {daysLeft !== null && !isExpired && (
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,1)]" />
                   <span className="text-[10px] font-black uppercase text-amber-400 tracking-widest italic">
@@ -775,7 +779,6 @@ function LobbyView({
                   </span>
                 </div>
               )}
-              {/* Duplicate for seamless loop if needed, but for now simple marquee is fine */}
             </div>
           </div>
         </div>
@@ -794,22 +797,26 @@ function LobbyView({
                      )}
                   </div>
                </div>
-               {!isPremium && (
+               {(!isPremium || isExpired) && (
                  <button
                    onClick={onGoPremium}
                    disabled={isPaymentLoading}
                    className="text-[9px] font-black text-amber-400 uppercase tracking-[0.1em] hover:underline text-center block"
                  >
-                   {isPaymentLoading ? "..." : "UPGRADE"}
+                   {isPaymentLoading ? "..." : (isExpired ? "RENEW PRIME" : "UPGRADE")}
                  </button>
                )}
             </div>
             <div>
                <div className="flex items-center gap-2">
                  <span className="text-base font-black uppercase tracking-tight text-white">{user?.username || "Player"}</span>
-                 {isPremium && <span className="bg-amber-400 text-[9px] font-black px-2 py-0.5 rounded-lg text-black uppercase tracking-widest shadow-[0_0_10px_rgba(251,191,36,0.3)]">Prime</span>}
+                 {isPremium && (
+                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg text-black uppercase tracking-widest shadow-[0_0_10px_rgba(251,191,36,0.3)] ${isExpired ? "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.3)]" : "bg-amber-400"}`}>
+                        {isExpired ? "Expired" : "Prime"}
+                    </span>
+                 )}
                </div>
-               <div className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">{isPremium ? "Elite Protocol Active" : "Standard Sync"}</div>
+               <div className="text-[10px] text-white/30 uppercase tracking-[0.2em] font-black">{isPremium ? (isExpired ? "Grace Period Active" : "Elite Protocol Active") : "Standard Sync"}</div>
             </div>
          </div>
 

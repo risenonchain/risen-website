@@ -194,27 +194,54 @@ export default function LeagueChallenges({ leagueId }: Props) {
       )}
 
       {/* Accepted Challenges - Ready to Play */}
-      {challenges.filter(c => c.status === 'accepted').length > 0 && (
+      {challenges.filter(c => c.status === 'accepted' || c.status === 'completed').length > 0 && (
         <div className="space-y-5 px-2">
             <div className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.4em] px-2 flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Live Protocols
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> Direct Engagements
             </div>
-            {challenges.filter(c => c.status === 'accepted').map(c => (
-                <div key={c.id} className="p-6 rounded-[35px] bg-[#030913] border border-emerald-500/20 flex items-center justify-between group transition-all shadow-lg relative overflow-hidden">
-                    <div className="text-left">
-                        <div className="text-[12px] font-black text-white uppercase italic tracking-tighter">
-                            {c.challenger_id === Number(localStorage.getItem("risen_rush_id")) ? c.challenged_username : c.challenger_username}
+            {challenges.filter(c => c.status === 'accepted' || c.status === 'completed').map(c => {
+                const myId = Number(localStorage.getItem("risen_rush_id"));
+                const amIChallenger = c.challenger_id === myId;
+                const myScore = amIChallenger ? c.challenger_score : c.challenged_score;
+                const opponentScore = amIChallenger ? c.challenged_score : c.challenger_score;
+                const opponentName = amIChallenger ? c.challenged_username : c.challenger_username;
+                const hasPlayed = myScore !== null;
+                const isWinner = c.winner_id === myId;
+                const isDraw = c.status === 'completed' && c.winner_id === null;
+
+                return (
+                    <div key={c.id} className={`p-6 rounded-[35px] bg-[#030913] border flex items-center justify-between group transition-all shadow-lg relative overflow-hidden ${c.status === 'completed' ? (isWinner ? 'border-amber-400/40 shadow-amber-400/5' : isDraw ? 'border-white/20' : 'border-red-500/20 opacity-80') : 'border-emerald-500/20'}`}>
+                        <div className="text-left">
+                            <div className="flex items-center gap-2">
+                                <div className="text-[12px] font-black text-white uppercase italic tracking-tighter">
+                                    {opponentName}
+                                </div>
+                                {c.status === 'completed' && (
+                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-md uppercase ${isWinner ? 'bg-amber-400 text-black' : isDraw ? 'bg-white/10 text-white/40' : 'bg-red-500/20 text-red-500'}`}>
+                                        {isWinner ? 'Victory' : isDraw ? 'Draw' : 'Defeat'}
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-4 mt-1.5">
+                                <div className="text-[8px] font-bold text-white/30 uppercase tracking-widest italic">
+                                    {c.status === 'completed' ? `Final: ${myScore ?? 0} - ${opponentScore ?? 0}` : (hasPlayed ? 'Score Transmitted' : 'Node Link Verified')}
+                                </div>
+                            </div>
                         </div>
-                        <div className="text-[8px] font-bold text-emerald-400/60 uppercase mt-1 tracking-widest italic">Node Link Verified</div>
+                        {c.status === 'accepted' && !hasPlayed && (
+                            <button
+                                onClick={() => handlePlay(c.id)}
+                                className="bg-emerald-500 text-white font-black px-6 py-3 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all"
+                            >
+                                Deploy
+                            </button>
+                        )}
+                        {c.status === 'accepted' && hasPlayed && (
+                            <div className="text-[9px] font-black text-white/20 uppercase tracking-widest italic">Syncing Opponent...</div>
+                        )}
                     </div>
-                    <button
-                        onClick={() => handlePlay(c.id)}
-                        className="bg-emerald-500 text-white font-black px-6 py-3 rounded-2xl text-[10px] uppercase tracking-widest shadow-lg active:scale-95 transition-all"
-                    >
-                        Deploy
-                    </button>
-                </div>
-            ))}
+                );
+            })}
         </div>
       )}
 

@@ -13,7 +13,9 @@ import {
   ArrowUpDown,
   Filter,
   CheckCircle2,
-  XCircle
+  XCircle,
+  Zap,
+  UserPlus
 } from "lucide-react";
 
 export default function AnalyticsPage() {
@@ -163,6 +165,37 @@ export default function AnalyticsPage() {
     }
   };
 
+  const handlePrimeCleanup = async () => {
+    if (!confirm("This will immediately revert all Prime users past their 3-day grace period to Standard. Continue?")) return;
+    try {
+      const res = await fetch(`${BASE_URL}/admin/prime/cleanup`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message);
+        fetchStats();
+        fetchUsers();
+      }
+    } catch (e) { alert("Cleanup failed"); }
+  };
+
+  const handleGrantPrime = async (userId: number, username: string) => {
+    if (!confirm(`Grant 30 days of Prime access to ${username}?`)) return;
+    try {
+      const res = await fetch(`${BASE_URL}/admin/prime/grant/${userId}`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${localStorage.getItem("risen_admin_token")}` }
+      });
+      if (res.ok) {
+        alert(`Prime access granted to ${username}`);
+        fetchUsers();
+        fetchStats();
+      }
+    } catch (e) { alert("Grant failed"); }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500 pb-20 text-white">
       <div className="flex items-center justify-between">
@@ -203,6 +236,14 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+                <button
+                    onClick={handlePrimeCleanup}
+                    className="flex items-center gap-2 px-4 py-3 bg-amber-400/10 border border-amber-400/20 text-amber-400 rounded-2xl font-black uppercase text-[9px] tracking-widest hover:bg-amber-400/20 transition-all"
+                >
+                    <Zap className="w-3.5 h-3.5" />
+                    Revert Expired
+                </button>
+
                 <div className="relative flex-1 md:w-80">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
                     <input
@@ -236,13 +277,15 @@ export default function AnalyticsPage() {
                         <th className="px-4 py-6 cursor-pointer hover:text-white transition-colors" onClick={() => toggleSort("is_premium")}>
                             <div className="flex items-center gap-2">PROTOCOL <ArrowUpDown className="w-3 h-3" /></div>
                         </th>
+                        <th className="px-4 py-6">EXPIRES</th>
                         <th className="px-4 py-6 cursor-pointer hover:text-white transition-colors" onClick={() => toggleSort("available_points")}>
                             <div className="flex items-center gap-2">VAULT BAL <ArrowUpDown className="w-3 h-3" /></div>
                         </th>
                         <th className="px-4 py-6 cursor-pointer hover:text-white transition-colors" onClick={() => toggleSort("best_score")}>
                             <div className="flex items-center gap-2">HIGHEST <ArrowUpDown className="w-3 h-3" /></div>
                         </th>
-                        <th className="px-4 py-6 text-right">JOINED</th>
+                        <th className="px-4 py-6">JOINED</th>
+                        <th className="px-4 py-6 text-right">ACTION</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -274,6 +317,9 @@ export default function AnalyticsPage() {
                                         <div className="text-[8px] font-black text-white/20 uppercase tracking-widest">BASIC_NODE</div>
                                     )}
                                 </td>
+                                <td className="px-4 py-6 text-[10px] font-black text-white/40 uppercase italic">
+                                    {u.premium_expires_at ? new Date(u.premium_expires_at).toLocaleDateString() : "-"}
+                                </td>
                                 <td className="px-4 py-6">
                                     <div className="text-sm font-black text-emerald-400 italic tracking-tighter">{u.available_points.toLocaleString()}</div>
                                     <div className="text-[8px] text-white/20 font-bold uppercase">Points</div>
@@ -288,6 +334,17 @@ export default function AnalyticsPage() {
                                     </div>
                                     {u.is_today && (
                                         <div className="text-[7px] text-risen-primary font-black uppercase tracking-widest mt-1 animate-pulse">New Cycle</div>
+                                    )}
+                                </td>
+                                <td className="px-4 py-6 text-right">
+                                    {!u.is_premium && (
+                                        <button
+                                            onClick={() => handleGrantPrime(u.id, u.username)}
+                                            className="p-2 rounded-lg bg-risen-primary/10 text-risen-primary hover:bg-risen-primary hover:text-black transition-all"
+                                            title="Grant Prime Access"
+                                        >
+                                            <UserPlus className="w-4 h-4" />
+                                        </button>
                                     )}
                                 </td>
                             </tr>
