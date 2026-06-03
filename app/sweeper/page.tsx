@@ -85,7 +85,7 @@ export default function DustSweeper() {
 
     try {
       writeContract({
-        address: '0x0000000000000000000000000000000000000000', // DUST_SWEEPER_CONTRACT (TBD)
+        address: '0x6Ac725cF68419184704e0dbAB75A507dC3570305', // DUST_SWEEPER_CONTRACT (TBD)
         abi: [
           {
             "name": "sweepTokens",
