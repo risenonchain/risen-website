@@ -50,6 +50,20 @@ export default function DustSweeper() {
     }
   }, [isSuccess, hash]);
 
+  const toggleToken = (symbol: string) => {
+    setSelectedTokens(prev =>
+      prev.includes(symbol) ? prev.filter(s => s !== symbol) : [...prev, symbol]
+    );
+  };
+
+  const selectAll = () => {
+    if (selectedTokens.length === dust.length) {
+      setSelectedTokens([]);
+    } else {
+      setSelectedTokens(dust.map(t => t.symbol));
+    }
+  };
+
   const startScan = async () => {
     if (!isConnected) {
         open();
