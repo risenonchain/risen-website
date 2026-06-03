@@ -100,7 +100,7 @@ export default function DustSweeper() {
           }
         ],
         functionName: 'sweepTokens',
-        args: [tokenAddresses, amounts, 0n, BigInt(Math.floor(Date.now() / 1000) + 600)],
+        args: [tokenAddresses, amounts, BigInt(0), BigInt(Math.floor(Date.now() / 1000) + 600)],
       });
     } catch (e) {
       alert("Sweep failed: Contract interaction error.");
