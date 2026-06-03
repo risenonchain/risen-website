@@ -38,6 +38,9 @@ export type LeagueChallengeOut = {
   challenger_username?: string;
   challenged_id: number;
   challenged_username?: string;
+  challenger_score?: number | null;
+  challenged_score?: number | null;
+  winner_id?: number | null;
   scheduled_at: string;
   status: string;
   created_at: string;
@@ -68,6 +71,7 @@ export type ProfileStatsResponse = {
   total_points_earned?: number;
   claimed_points?: number;
   is_premium?: boolean;
+  premium_expires_at?: string | null;
   premium_until?: string;
   wallet_address?: string;
   avatar_url?: string;
