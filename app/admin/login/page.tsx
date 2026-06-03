@@ -10,6 +10,7 @@ import Image from "next/image";
 export default function AdminLoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [alreadyLoggedIn, setAlreadyLoggedIn] = useState(false);
@@ -44,7 +45,10 @@ export default function AdminLoginPage() {
       formData.append("password", password);
       const res = await fetch(process.env.NEXT_PUBLIC_RUSH_API_URL + "/admin-auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          "X-Admin-OTP": otp
+        },
         body: formData.toString(),
       });
       if (!res.ok) throw new Error("Invalid credentials");
@@ -113,6 +117,15 @@ export default function AdminLoginPage() {
             onChange={e => setPassword(e.target.value)}
             className="w-full mb-4 px-4 py-2 rounded-lg bg-[#0a101a] border border-yellow-400/20 text-white focus:outline-none focus:ring-2 focus:ring-yellow-400/40 transition"
             required
+          />
+          <input
+            type="text"
+            placeholder="8-Digit Neural Sync Code"
+            value={otp}
+            onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 8))}
+            className="w-full mb-4 px-4 py-2 rounded-lg bg-[#0a101a] border border-risen-primary/40 text-risen-primary font-mono text-center tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-risen-primary/40 transition placeholder:text-risen-primary/20 placeholder:tracking-normal placeholder:text-xs"
+            required
+            maxLength={8}
           />
           {error && <div className="text-red-400 mb-4 text-center font-semibold">{error}</div>}
           <button
