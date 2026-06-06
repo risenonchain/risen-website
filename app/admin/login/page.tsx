@@ -126,7 +126,7 @@ export default function AdminLoginPage() {
             placeholder="8-Digit Neural Sync Code"
             value={otp}
             onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 8))}
-            className="w-full mb-4 px-4 py-2 rounded-lg bg-[#0a101a] border border-risen-primary/40 text-risen-primary font-mono text-center tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-risen-primary/40 transition placeholder:text-risen-primary/20 placeholder:tracking-normal placeholder:text-xs"
+            className="w-full mb-4 px-4 py-2 rounded-lg bg-[#0a101a] border border-[#2EDBFF]/40 text-[#2EDBFF] font-mono text-center tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-[#2EDBFF]/40 transition placeholder:text-[#2EDBFF]/20 placeholder:tracking-normal placeholder:text-xs"
             required
             maxLength={8}
           />
